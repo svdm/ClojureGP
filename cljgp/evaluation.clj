@@ -1,5 +1,8 @@
 
 ;;; cljgp.evaluation.clj
+;;;
+;;; Code concerning the evaluation of (populations of) individuals
+;;;
 
 (ns cljgp.evaluation)
 
@@ -32,3 +35,8 @@
   with all individuals evaluated using the given evaluator fn."
   [evaluator pop]
   (map (partial evaluate-ind evaluator) pop))
+
+(defn best-fitness
+  "Returns the individual with the best (lowest) fitness in the population."
+  [pop]
+  (first (sort-by :fitness pop))) ;FIXME: replace with something faster?

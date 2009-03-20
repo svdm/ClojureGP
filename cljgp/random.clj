@@ -19,5 +19,5 @@
 (defn pick-rand
   "Returns a random item from the given collection."
   [coll]
-  (nth coll (gp-rand-int (count coll))))
+  (nth coll (gp-rand-int (count coll)) nil))
 

@@ -9,7 +9,7 @@
 ; 'manually'/explicitly rather than using the positional parameter method of
 ; these macros. Explicit maps not hidden behind the macros will likely be
 ; clearer. These macros are (for now) still offered here for users who prefer
-; conciseness over clarity.
+; them.
 
 (defmacro func-set-entry
   "Returns a map of {:sym 'func-sym, :arity 'arity, :as-arg 'as-arg}. If as-arg

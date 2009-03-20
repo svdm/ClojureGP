@@ -6,14 +6,6 @@
   (:use cljgp.random
 	cljgp.util))
 
-; TODO: arg list
-(defn make-individual
-  "Returns map representing an individual in the population."
-  [tree gen arg-list]
-  {:func `(fn ~arg-list ~tree)
-   :gen gen
-   :fitness nil})
-
 ;;
 ;; Tree generation
 ;;
@@ -22,9 +14,11 @@
   "Returns a tree generated from given func-set and term-set. If 'method
   is :grow, grow method will be used to generate the tree up to max-depth in
   size. Else, 'full' method will be used, resulting in a tree with a depth equal
-  to max-depth in all its branches."
+  to max-depth in all its branches.
+  
+  For max-depth < 0, will return a tree of size 1."
   [func-set term-set max-depth method]
-  (if (or (= max-depth 0)
+  (if (or (<= max-depth 1)
 	  (and (= method :grow)
 	       (< (gp-rand) (/ (count term-set)
 			       (+ (count term-set) (count func-set))))))
@@ -36,7 +30,7 @@
 		  (generate-tree func-set term-set (dec max-depth) method))))))
 
 (defn generate-ramped
-  "Returns a tree generated using a version of the ramped half and half
+   "Returns a tree generated using a version of the ramped half and half
   method. Tree will be generated from func-set and term-set, up to
   max-depth (inclusive) if given (default 7). The 'grow' method will be used
   half the time by default, or with the probability given as grow-chance."

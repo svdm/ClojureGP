@@ -1,4 +1,4 @@
-; TODO: header
+; TODO: headers
 
 ;;; cljgp.core.clj
 
@@ -68,22 +68,3 @@
 	     (some #(>= fit-tolerance (:fitness %)) pop)))))
   ([max-generations] (make-simple-end max-generations 0.0001)))
 
-(defn best-fitness
-  "Returns the individual with the best (lowest) fitness in the population."
-  [pop]
-  (first (sort-by :fitness pop))) ;FIXME: replace with something faster?
-
-; FIXME: this is pretty useless these days
-(defn perform-simple-run
-  "Performs a basic run with the given parameters, and returns the best
-  individual of the final generation.
-
-  Primarily meant as an example or quick testing tool."
-  [func-set term-set evaluator breeders
-   pop-size max-generations]
-  (let [stop-run? (make-simple-end max-generations)
-	final-pop (last (generate-run func-set term-set
-				      evaluator breeders
-				      pop-size
-				      stop-run?))]
-    (best-fitness final-pop)))

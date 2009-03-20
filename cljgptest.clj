@@ -51,9 +51,6 @@
 					 my-select)}])
 
 (defn evaluate-maths
-  "Super-simple evaluation that selects for approximating 42.
-
-  Takes an (eval'd) function and returns a fitness value."
   [func]
   (let [result (func)]
     (Math/abs (float (- 42 result)))))
@@ -206,9 +203,11 @@
 
 ; TODO:
 
-; - source control
-
 ; - update docstrings re: config
+
+; - add filling out of config if keys are missing, w/ errors for keys without
+;   defaults
+; - move make-simple-end into config.clj
 
 ; - random seeds for determinism
 ;   - is going to require 1) per-thread random gens, 2) explicit threading
