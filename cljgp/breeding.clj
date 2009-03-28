@@ -154,8 +154,9 @@
 
 
 (defn crossover-breeder
-  "Selects two individuals from pop by applying the selection-fn specified in to
-   it twice, performs crossover and returns seq of two resulting new trees."
+  "Selects two individuals from pop by applying the selection-fn specified in
+   run-config to it twice, performs crossover and returns seq of two resulting
+   new trees."
   [pop run-config]
   (let [{:keys [selection-fn arg-list]} run-config]
     (crossover-inds crossover-uniform

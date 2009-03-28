@@ -1,7 +1,7 @@
 
-;;; cljgp.tools.config.clj
+;;; cljgp.tools.config-macros.clj
 
-(ns cljgp.tools.config)
+(ns cljgp.tools.config-macros.clj)
 
 ; The macros/functions below are meant as helpers for defining run parameters
 ; such as the function and terminal sets. Since all these parameters are maps

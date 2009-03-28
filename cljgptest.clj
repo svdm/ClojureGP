@@ -2,15 +2,15 @@
 (ns cljgptest
   (:require [cljgp.tools.logging :as gp-log]
 	    [cljgp.tools.graph :as gp-graph])
-  (:use [cljgp.core :only (generate-run 
-			   make-simple-end
-			   best-fitness)]
+  (:use [cljgp.core :only (generate-run)]
+	[cljgp.evaluation :only (best-fitness)]
 	[cljgp.selection :only (tournament-select)]
 	[cljgp.breeding :only (crossover-breeder 
 			       mutation-breeder 
 			       reproduction-breeder
 			       generate-ramped)]
-	[cljgp.random :only (gp-rand)]))
+	[cljgp.random :only (gp-rand)]
+	[cljgp.tools.config :only (make-simple-end)]))
 
 ;java -cp .;k:/clojure/svn-trunk/clojure.jar;./lib/plot.jar clojure.lang.Repl cljgptest.clj
 
@@ -203,17 +203,16 @@
 
 ; TODO:
 
-; - update docstrings re: config
-
-; - add filling out of config if keys are missing, w/ errors for keys without
-;   defaults
-; - move make-simple-end into config.clj
-
 ; - random seeds for determinism
 ;   - is going to require 1) per-thread random gens, 2) explicit threading
 ;   - add thread managing function that binds an rng to each thread
 
-; - consider naming consistency of functions and config keys
+;   - concept:
+;     - given a seq of N seeds, create seq of N RNGs in config
+;     - when evaluating:
+;       - create N futures/threads
+;       - each is a fn first binding gp-rand to the given RNG
+;       - and then performing actual computation
 
 ; - typed GP
 ;   - store type data in metadata?
@@ -222,3 +221,7 @@
 ;     that easy, or store for every node what type it satisfies for super-quick
 ;     reference. The meta option seems the least hack-ish and the most trans-
 ;     parant to non-typed gp.
+
+; - consider naming consistency of functions and config keys
+
+; - document config key requirements etc

@@ -6,7 +6,8 @@
   (:use cljgp.random
 	cljgp.selection
 	cljgp.breeding
-	cljgp.evaluation))
+	cljgp.evaluation
+	[cljgp.config :only (check-config)]))
 
 
 (defn evolve-future-gens
@@ -42,29 +43,16 @@
 			(take-while-eager pred (rest s)))))))
 
 (defn generate-run
-  "Returns a lazy seq of successive generations in an evolution run until
-  'reached-end-condition? returns true. Initial population (of size 'pop-size)
-  will be generated from 'func-set and 'term-set. Evaluation will be performed
-  using the 'evaluator function, and new populations will be bred using the
-  breeding functions given as 'breeders.
+  "Returns a lazy seq of successive generations in an evolution run whose
+  parameters are defined in 'run-config.
 
   See 'evolve-future-gens for more details on the returned lazy seq."
   [run-config]
-  (let [pop-initial (generate-pop run-config)
-	end? (:end-condition run-config)]
+  (let [config (check-config run-config)
+	pop-initial (generate-pop config)
+	end? (:end-condition config)]
     (take-while-eager (complement end?)
-		      (evolve-future-gens pop-initial run-config))))
+		      (evolve-future-gens pop-initial config))))
 
-; TODO: move into config
-(defn make-simple-end
-  "Returns a simple end condition predicate that stops the evolution when the
-  given max number of generations is reached, or the fitness of any individual
-  in a generation is lower than (+ 0 fit-tolerance), where fit-tolerance is
-  0.0001 by default."
-  ([max-generations fit-tolerance]
-     (fn [pop]
-       (let [ind (first pop)]
-	 (or (>= (:gen ind) max-generations)
-	     (some #(>= fit-tolerance (:fitness %)) pop)))))
-  ([max-generations] (make-simple-end max-generations 0.0001)))
+
 
