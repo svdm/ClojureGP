@@ -6,7 +6,8 @@
 
 (ns cljgp.tests.helpers
   (:use cljgp.breeding
-	cljgp.selection))
+	cljgp.selection
+	cljgp.config))
 
 ; Validity checks
 
@@ -43,7 +44,7 @@
       :evaluation-fn (fn [x] (rand))
       :selection-fn (partial tournament-select 3)
 
-      ;:end-condition (make-simple-end 50)
+      :end-condition (make-simple-end 50)
       :population-size 8
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}

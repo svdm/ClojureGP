@@ -3,7 +3,8 @@
 (ns cljgp.tests.test-core
   (:use clojure.contrib.test-is
 	cljgp.tests.helpers
-	cljgp.core))
+	cljgp.core
+	[cljgp.breeding :only (generate-pop)]))
 
 (deftest test-evolve-future-gens
   (let [pop-size (:population-size config-maths)
@@ -18,8 +19,7 @@
 	"Each generation should be of the required size")))
 
 ; For generate-run, test-evolve-future-gens already tests the core of the
-; function, otherwise it's only a combination of that, generate-pop, and the end
-; condition (which is the responsibility of the experiment config).
+; function, otherwise it's only a combination of that and generate-pop.
 ; Hence, no test at this time.
 
 

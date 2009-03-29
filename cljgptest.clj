@@ -202,7 +202,6 @@
 						   16 (make-simple-end 50))))))))
 
 ; TODO:
-
 ; - random seeds for determinism
 ;   - is going to require 1) per-thread random gens, 2) explicit threading
 ;   - add thread managing function that binds an rng to each thread

@@ -12,7 +12,9 @@
       :test-evaluation
       :test-random
       :test-breeding
-      :test-selection])
+      :test-selection
+      :test-core
+      :test-config])
 
 (def test-namespaces
      (map #(symbol (str "cljgp.tests." (name %))) test-names))
