@@ -7,7 +7,8 @@
 (ns cljgp.tests.helpers
   (:use cljgp.breeding
 	cljgp.selection
-	cljgp.config))
+	cljgp.config
+	cljgp.random))
 
 ; Validity checks
 
@@ -51,5 +52,7 @@
 		 {:prob 0.1    :breeder-fn mutation-breeder}
 		 {:prob 0.1    :breeder-fn reproduction-breeder}]
       :pop-generation-fn (partial generate-ramped 7 0.5)
+
+      :rand-fn gp-rand
       })
 

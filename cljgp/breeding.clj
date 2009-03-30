@@ -37,7 +37,7 @@
   [max-depth grow-chance func-set term-set]
   (generate-tree func-set
 		 term-set
-		 (inc (rand-int max-depth))
+		 (inc (gp-rand-int max-depth))
 		 (if (< (gp-rand) grow-chance) :grow :full)))
 
 (defn generate-pop
@@ -52,10 +52,12 @@
 		pop-generation-fn
 		arg-list
 		population-size]} run-config]
-      (take population-size
-	    (repeatedly #(make-individual (pop-generation-fn function-set 
-							     terminal-set) 
-					  0 arg-list)))))
+    (binding [cljgp.random/gp-rand (:rand-fn run-config)]
+      (doall 
+       (take population-size
+	     (repeatedly #(make-individual (pop-generation-fn function-set 
+							      terminal-set) 
+					   0 arg-list)))))))
 
 ;;
 ;; Breeding
@@ -206,12 +208,13 @@
   "Returns a new population of equal size bred from the given evaluated pop by
    repeatedly applying a random breeder to pop-evaluated."
   [pop-evaluated run-config]
-  (let [bs (setup-breeders (:breeders run-config))
-	size (count pop-evaluated)
-	bred (fn breed-new []
-	       (lazy-seq
-		 (concat ((:breeder-fn (select-breeder bs)) pop-evaluated 
-			                                    run-config)
-			 (breed-new))))]
-    (take size (bred))))
+  (binding [cljgp.random/gp-rand (:rand-fn run-config)]
+    (let [bs (setup-breeders (:breeders run-config))
+	  size (count pop-evaluated)
+	  bred (fn breed-new []
+		 (lazy-seq
+		   (concat ((:breeder-fn (select-breeder bs)) pop-evaluated 
+			    run-config)
+			   (breed-new))))]
+      (doall (take size (bred))))))
 

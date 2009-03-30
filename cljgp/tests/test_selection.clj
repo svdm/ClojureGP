@@ -14,8 +14,7 @@
 ; can be assumed valid.
 (deftest test-tournament-select
   (let [tsize 5
-	pop (evaluate-pop (:evaluation-fn config-maths)
-			  (generate-pop config-maths))
+	pop (evaluate-pop (generate-pop config-maths) config-maths)
 	ind (tournament-select tsize pop)]
     (is (valid-ind? ind)
 	"Result should be a valid individual")))

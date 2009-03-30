@@ -1,5 +1,6 @@
 
 (ns cljgptest
+  (:import java.util.Random)
   (:require [cljgp.tools.logging :as gp-log]
 	    [cljgp.tools.graph :as gp-graph])
   (:use [cljgp.core :only (generate-run)]
@@ -10,7 +11,7 @@
 			       reproduction-breeder
 			       generate-ramped)]
 	[cljgp.random :only (gp-rand)]
-	[cljgp.tools.config :only (make-simple-end)]))
+	[cljgp.config :only (make-simple-end)]))
 
 ;java -cp .;k:/clojure/svn-trunk/clojure.jar;./lib/plot.jar clojure.lang.Repl cljgptest.clj
 
@@ -125,7 +126,7 @@
 	(Math/abs (float (- target result)))))
 
 (defn evaluate-mvr
-  "Evaluate by testing the function on ten random data points and summing its
+  "Evaluate by testing the function on random data points and summing its
   error.
 
   Takes an (eval'd) function and returns a fitness value."
@@ -144,7 +145,7 @@
       :arg-list ['x 'y] ; can't generate automatically user has to know order
 
       :evaluation-fn evaluate-mvr
-      :end-condition (make-simple-end 50)
+      :end-condition (make-simple-end 50 0)
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
 		 {:prob 0.1    :breeder-fn mutation-breeder}
@@ -154,13 +155,25 @@
 
       :population-size 64
       :pop-generation-fn (partial generate-ramped 7 0.5)
+
+      :rand-fn (let [rng (Random. (long 5))] (fn [] (.nextDouble rng)))
       })
+
+(defn test-rand
+  []
+  (dotimes [i 50]
+    (println ((:rand-fn config-mvr)))))
+
 
 (defn run-mvr
   []
   (best-fitness
    (last
     (map gp-log/print-details (generate-run config-mvr)))))
+
+(defn bench-mvr
+  []
+  (time (dorun (generate-run config-mvr))))
 
 (defn run-mvr-graphed
   []

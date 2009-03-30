@@ -31,7 +31,7 @@
   (let [given-fitness 1.33
 	old-pop (take 5 (repeatedly #(make-individual '(+ 1 2) 99 '[])))
 	evaluator (constantly given-fitness)
-	new-pop (evaluate-pop evaluator old-pop)]
+	new-pop (evaluate-pop old-pop {:evaluation-fn evaluator})]
     (is (seq? new-pop) 
 	"Pop should be a sequence")
     (is (= (count old-pop) (count new-pop)) 
@@ -44,8 +44,7 @@
 
 
 (deftest test-best-fitness
-  (let [pop (evaluate-pop (:evaluation-fn config-maths) 
-			  (generate-pop config-maths))
+  (let [pop (evaluate-pop (generate-pop config-maths) config-maths)
 	real-best (first (sort-by :fitness pop))]
     (is (= (best-fitness pop) real-best))))
 

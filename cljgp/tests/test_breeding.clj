@@ -149,8 +149,7 @@
 
 (deftest test-breed-new-pop
   (let [target-size (:population-size config-maths)
-	pop-evaluated (evaluate-pop (:evaluation-fn config-maths) 
-				    (generate-pop config-maths))
+	pop-evaluated (evaluate-pop (generate-pop config-maths) config-maths)
 	pop-new (breed-new-pop pop-evaluated config-maths)]
     (is (seq (doall pop-new)))
     (is (= (count pop-new) target-size))))

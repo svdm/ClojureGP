@@ -8,13 +8,12 @@
 
 (defn gp-rand
   "Identical to clojure.core/rand, but possibly with a different PRNG."
-  ([] (. Math random))
-  ([n] (* n (gp-rand))))
+  [] (comment (. Math random)) (throw (Exception. "Old rand")))
 
 (defn gp-rand-int
   "Identical to clojure.core/rand-int, but using gp-rand internally."
   [n]
-  (int (gp-rand n)))
+  (int (* n (gp-rand))))
 
 (defn pick-rand
   "Returns a random item from the given collection."

@@ -22,7 +22,7 @@
   (lazy-seq
     (when-let [pop-seq (seq pop)]
       (comment (println "Realizing generation..."))
-      (let [pop-evaluated (evaluate-pop (:evaluation-fn run-config) pop-seq)]
+      (let [pop-evaluated (evaluate-pop pop-seq run-config)]
 	(cons pop-evaluated
 	      (evolve-future-gens (breed-new-pop pop-evaluated run-config)
 				  run-config))))))

@@ -93,9 +93,10 @@
   "Verifies that all required keys are present in the given configuration,
   showing a warning if not, and reverting to a default if possible. If a key is
   missing and there is no default, or a value fails the test associated with a
-  key, an exception is thrown."
+  key, an exception is thrown. Values for which no test is defined will be
+  ignored."
   [run-config]
-  (loop [final {}
+  (loop [final run-config
 	 todo config-spec]
     (if (not (seq todo))
       final

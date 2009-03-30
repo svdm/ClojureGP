@@ -7,13 +7,9 @@
 	cljgp.random))
 
 (deftest test-gp-rand
-  (let [r (gp-rand)
-	n 10
-	r-n (gp-rand n)]
+  (let [r (gp-rand)]
     (is (number? r))
-    (is (number? r-n))
-    (is (and (>= r 0) (< r 1)))
-    (is (and (>= r-n 0) (< r-n n)))))
+    (is (and (>= r 0) (< r 1)))))
 
 (deftest test-gp-rand-int
   (let [n 10
