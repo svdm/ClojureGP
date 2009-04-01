@@ -29,3 +29,24 @@
       (+ 1 (apply max (map tree-depth (next node))))
       (count node))
     1))
+
+
+; I assume there's an easier way to do this, but I can't think of any. 
+(defn divide-up
+  "Divides some number up into a seq of numbers of length 'pieces, with each
+  element at most (ceil (/ num pieces)) in size. Essentially tries to do the
+  equivalent of applying (partition ..) to the interval 0..num."
+  [num pieces]
+  (let [per (Math/ceil (/ num pieces))]
+    (loop [s []
+	   n num]
+      (if (<= n 0)
+	s
+	(recur (conj s (min per n)) (- n per))))))
+
+(defn partition-full
+  "As (partition ..) but includes last partition if smaller than n."
+  [n coll]
+  (lazy-seq
+    (when-let [s (seq coll)]
+      (cons (take n s) (partition-full n (drop n s))))))

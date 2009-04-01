@@ -8,6 +8,8 @@
 			       generate-ramped)]
 	[cljgp.selection :only (tournament-select)]))
 
+
+
 (defn make-simple-end
   "Returns a simple end condition predicate that stops the evolution when the
   given max number of generations is reached, or the fitness of any individual

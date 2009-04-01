@@ -53,6 +53,7 @@
 		 {:prob 0.1    :breeder-fn reproduction-breeder}]
       :pop-generation-fn (partial generate-ramped 7 0.5)
 
-      :rand-fn gp-rand
+      :threads 2
+      :rand-fns (repeatedly #(rand-fn nextDouble (new java.util.Random)))
       })
 

@@ -5,7 +5,8 @@
 ;;;
 
 (ns cljgp.evaluation
-  (:use [cljgp.random :only (gp-rand)]))
+  (:use [cljgp.random :only (gp-rand)]
+	[cljgp.util :only (partition-full)]))
 
 ; It's recommended that evaluator functions handle any exceptions they might
 ; expect themselves, for example by catching them and giving the individual a
@@ -31,11 +32,22 @@
     (assoc ind :fitness fitness)))
 
 (defn evaluate-pop
-  "Takes a population (collection) of individuals and returns a new seq
-  with all individuals evaluated using the evaluator fn defined in run-config."
+  "Takes a population (collection) of individuals and returns a new seq with all
+  individuals evaluated using the evaluator fn defined in run-config. Work is
+  divided over worker threads."
   [pop run-config]
-  (binding [cljgp.random/gp-rand (:rand-fn run-config)]
-    (doall (map (partial evaluate-ind (:evaluation-fn run-config)) pop))))
+  (let [num-futures (:threads run-config)
+	per-future (Math/ceil (/ (count pop) num-futures))
+	e-fn (:evaluation-fn run-config)]
+    (mapcat deref
+	 (doall			    ; force creation of futures 
+	  (map #(future
+		  (binding [cljgp.random/gp-rand %2]
+		    (doall	    ; force actual evaluation to occur in future
+		     (map (partial evaluate-ind e-fn) %1))))
+	       (partition-full per-future pop)
+	       (:rand-fns run-config))))))
+
 
 (defn best-fitness
   "Returns the individual with the best (lowest) fitness in the population."

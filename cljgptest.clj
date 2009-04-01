@@ -1,4 +1,6 @@
 
+(set! *warn-on-reflection* true)
+
 (ns cljgptest
   (:import java.util.Random)
   (:require [cljgp.tools.logging :as gp-log]
@@ -10,13 +12,13 @@
 			       mutation-breeder 
 			       reproduction-breeder
 			       generate-ramped)]
-	[cljgp.random :only (gp-rand)]
+	cljgp.random
 	[cljgp.config :only (make-simple-end)]))
 
-;java -cp .;k:/clojure/svn-trunk/clojure.jar;./lib/plot.jar clojure.lang.Repl cljgptest.clj
+;java -cp .;k:/clojure/svn-trunk/clojure.jar;k:/clojure/contrib/clojure-contrib.jar;./lib/plot.jar clojure.lang.Repl cljgptest.clj
 
 
-(set! *warn-on-reflection* true)
+
 
 ;
 ; MATHS PROBLEM DEF
@@ -142,7 +144,7 @@
       :terminal-set [{:sym 'x :as-arg true}
 		     {:sym 'y :as-arg true}]
 
-      :arg-list ['x 'y] ; can't generate automatically user has to know order
+      :arg-list ['x 'y]	   ; can't generate automatically user has to know order
 
       :evaluation-fn evaluate-mvr
       :end-condition (make-simple-end 50 0)
@@ -156,13 +158,10 @@
       :population-size 64
       :pop-generation-fn (partial generate-ramped 7 0.5)
 
-      :rand-fn (let [rng (Random. (long 5))] (fn [] (.nextDouble rng)))
-      })
+      :threads 2
 
-(defn test-rand
-  []
-  (dotimes [i 50]
-    (println ((:rand-fn config-mvr)))))
+      :rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741])
+      })
 
 
 (defn run-mvr
@@ -173,7 +172,8 @@
 
 (defn bench-mvr
   []
-  (time (dorun (generate-run config-mvr))))
+  (time (dorun (generate-run (assoc config-mvr
+			       :rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741]))))))
 
 (defn run-mvr-graphed
   []
@@ -215,9 +215,16 @@
 						   16 (make-simple-end 50))))))))
 
 ; TODO:
-; - random seeds for determinism
-;   - is going to require 1) per-thread random gens, 2) explicit threading
-;   - add thread managing function that binds an rng to each thread
+
+; - instead of creating the RNGs in the config, they should be created when the
+;   experiment is run, so that repeated runs will be identical without having
+;   to recreate the config.
+;   - let user specify a list of seeds, and an RNG-producer function that takes
+;     a seed and returns a no-arg rand fn.
+;   - also easier to provide defaults for and let users only specify seeds
+
+; - check in config of (>= (count rand-fns) (ceil (/ pop-size threads))) 
+;   else warn and (cycle ...)
 
 ;   - concept:
 ;     - given a seq of N seeds, create seq of N RNGs in config

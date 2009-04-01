@@ -8,7 +8,7 @@
 
 (defn gp-rand
   "Identical to clojure.core/rand, but possibly with a different PRNG."
-  [] (comment (. Math random)) (throw (Exception. "Old rand")))
+  [] #_(. Math random) (throw (Exception. "Old rand")))
 
 (defn gp-rand-int
   "Identical to clojure.core/rand-int, but using gp-rand internally."

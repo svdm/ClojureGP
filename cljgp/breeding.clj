@@ -40,30 +40,44 @@
 		 (inc (gp-rand-int max-depth))
 		 (if (< (gp-rand) grow-chance) :grow :full)))
 
+(defn- ind-generator-seq
+  "Returns a lazy infinite sequence of individuals with generation 0 and
+  expression trees generated from the function- and terminal-set, all as
+  specified in the given run-config. Used internally by generate-pop."
+  [run-config]
+  (let [{:keys [function-set terminal-set
+		pop-generation-fn
+		arg-list]} run-config]
+    (repeatedly #(make-individual (pop-generation-fn function-set terminal-set)
+				  0 arg-list))))
+
+; Note that it is intentional that (ind-generator-seq ..) is called inside each
+; future, even though one might think it's just a producer function that is
+; identical between futures. The reason is that the closure appears to inherit
+; the bindings as they are at the point where it is created, as opposed to that
+; where it is called. Bindings are nefarious things.
 (defn generate-pop
   "Returns a population of individuals generated from scratch out of the nodes
-  in the function set and terminal set, using the ramped-half-and-half
-  method. Population size and both sets are grabbed from the given run-config.
-
-  Meant for generating the initial population. For breeding subsequent
-  populations see 'breed-new-pop."
+  in the function set and terminal set, using the tree producer function also
+  specified in the run-config (typically ramped half and half). The work is
+  divided over worker threads."
   [run-config]
-  (let [{:keys [function-set terminal-set 
-		pop-generation-fn
-		arg-list
-		population-size]} run-config]
-    (binding [cljgp.random/gp-rand (:rand-fn run-config)]
-      (doall 
-       (take population-size
-	     (repeatedly #(make-individual (pop-generation-fn function-set 
-							      terminal-set) 
-					   0 arg-list)))))))
+  (let [{:keys [population-size threads rand-fns]} run-config
+	per-future (divide-up population-size threads)]
+    (mapcat deref
+	    (doall 
+	     (map #(future
+		     (binding [cljgp.random/gp-rand %2]
+		       (doall (take %1 (ind-generator-seq run-config)))))
+		  per-future
+		  rand-fns)))))
 
 ;;
 ;; Breeding
 ;;
 
 (defn tree-replace
+  "Returns given tree with node at idx replaced by new-node."
   [idx new-node tree]
   (let [i (atom -1)
 	r-fn (fn do-replace [node]
@@ -72,7 +86,7 @@
 		 (= @i idx) new-node
 		 (> @i idx) node	; means idx has already been replaced
 		 (seq? node) (cons (first node)
-				    (doall (map do-replace (next node))))
+				   (doall (map do-replace (next node))))
 		 :else node))]
     (r-fn tree)))
 
@@ -206,15 +220,23 @@
 
 (defn breed-new-pop
   "Returns a new population of equal size bred from the given evaluated pop by
-   repeatedly applying a random breeder to pop-evaluated."
+   repeatedly applying a random breeder to pop-evaluated. Work is divided over
+   worker threads."
   [pop-evaluated run-config]
-  (binding [cljgp.random/gp-rand (:rand-fn run-config)]
-    (let [bs (setup-breeders (:breeders run-config))
-	  size (count pop-evaluated)
-	  bred (fn breed-new []
-		 (lazy-seq
-		   (concat ((:breeder-fn (select-breeder bs)) pop-evaluated 
-			    run-config)
-			   (breed-new))))]
-      (doall (take size (bred))))))
+  (let [{:keys [breeders population-size 
+		threads rand-fns]} run-config
+	bs (setup-breeders breeders)
+	per-future (divide-up population-size threads)
+	breed-generator (fn breed-new []
+			  (lazy-seq
+			    (when-let [breed (:breeder-fn (select-breeder bs))]
+			      (concat (breed pop-evaluated run-config) 
+				      (breed-new)))))]
+    (mapcat deref
+	    (doall
+	     (map #(future
+		     (binding [cljgp.random/gp-rand %2]
+		       (doall (take %1 (breed-generator)))))
+		  per-future
+		  rand-fns)))))
 
