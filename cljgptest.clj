@@ -133,7 +133,7 @@
 
   Takes an (eval'd) function and returns a fitness value."
   [func]
-  (reduce + (take 5 (repeatedly #(test-mvr-once-args func)))))
+  (reduce + (take 10 (repeatedly #(test-mvr-once-args func)))))
 
 (def config-mvr
      {
@@ -147,7 +147,7 @@
       :arg-list ['x 'y]	   ; can't generate automatically user has to know order
 
       :evaluation-fn evaluate-mvr
-      :end-condition (make-simple-end 50 0)
+      :end-condition (make-simple-end 50 -1)
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
 		 {:prob 0.1    :breeder-fn mutation-breeder}
@@ -155,12 +155,15 @@
 
       :selection-fn (partial tournament-select 7)
 
-      :population-size 64
+      :population-size 128
       :pop-generation-fn (partial generate-ramped 7 0.5)
 
       :threads 2
 
-      :rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741])
+      :rand-fn-maker make-default-rand
+      :rand-seeds [21312 773290 4901 9928]
+
+      ;:rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741])
       })
 
 
@@ -171,9 +174,9 @@
     (map gp-log/print-details (generate-run config-mvr)))))
 
 (defn bench-mvr
-  []
+  [threads]
   (time (dorun (generate-run (assoc config-mvr
-			       :rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741]))))))
+			       :threads threads)))))
 
 (defn run-mvr-graphed
   []
@@ -215,23 +218,6 @@
 						   16 (make-simple-end 50))))))))
 
 ; TODO:
-
-; - instead of creating the RNGs in the config, they should be created when the
-;   experiment is run, so that repeated runs will be identical without having
-;   to recreate the config.
-;   - let user specify a list of seeds, and an RNG-producer function that takes
-;     a seed and returns a no-arg rand fn.
-;   - also easier to provide defaults for and let users only specify seeds
-
-; - check in config of (>= (count rand-fns) (ceil (/ pop-size threads))) 
-;   else warn and (cycle ...)
-
-;   - concept:
-;     - given a seq of N seeds, create seq of N RNGs in config
-;     - when evaluating:
-;       - create N futures/threads
-;       - each is a fn first binding gp-rand to the given RNG
-;       - and then performing actual computation
 
 ; - typed GP
 ;   - store type data in metadata?

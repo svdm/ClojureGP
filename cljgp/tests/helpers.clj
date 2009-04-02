@@ -10,6 +10,11 @@
 	cljgp.config
 	cljgp.random))
 
+(defmacro quiet
+  [form]
+  `(binding [println (constantly nil)]
+     ~form))
+
 ; Validity checks
 
 (defn valid-tree?
@@ -54,6 +59,10 @@
       :pop-generation-fn (partial generate-ramped 7 0.5)
 
       :threads 2
-      :rand-fns (repeatedly #(rand-fn nextDouble (new java.util.Random)))
+      :rand-seeds [0 1] ; not used
+      :rand-fn-maker make-default-rand
+      ; supply premade rand-fns instead of depending on preproc to do this
+      :rand-fns (map make-default-rand 
+		     (take 2 (repeatedly #(System/currentTimeMillis))))
       })
 

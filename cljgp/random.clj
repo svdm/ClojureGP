@@ -1,14 +1,13 @@
 
 ;;; cljgp.random.clj
 
-(ns cljgp.random)
+(ns cljgp.random
+  (:import java.util.Random))
 
-; TODO: provide a way of initing RNG(s) with seed(s)
-; TODO: slot in better RNG than java's
 
 (defn gp-rand
   "Identical to clojure.core/rand, but possibly with a different PRNG."
-  [] #_(. Math random) (throw (Exception. "Old rand")))
+  [] (. Math random))
 
 (defn gp-rand-int
   "Identical to clojure.core/rand-int, but using gp-rand internally."
@@ -35,7 +34,13 @@
 
   Also useful, for easily creating several seeded PRNG-fns for a threaded
   experiment: (map #(rand-fn nextDouble (Random. %)) [1234 8472 9000])"
- [method rng]
-  `(let [r# ~rng]
-     (fn [] (. r# ~method))))
+ [method rng] 
+ `(let [r# ~rng]
+    (fn [] (. r# ~method))))
 
+(defn make-default-rand
+  "Default producer function of rand functions, for use in :rand-fn-maker in
+  run-config. Returns a rand-like function with the default java.util.Random
+  PRNG, initialised with the given seed. See 'rand-fn."
+  [seed]
+  (rand-fn nextDouble (new Random seed)))

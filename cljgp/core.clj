@@ -7,7 +7,7 @@
 	cljgp.selection
 	cljgp.breeding
 	cljgp.evaluation
-	[cljgp.config :only (check-config)]))
+	[cljgp.config :only (prepare-config)]))
 
 
 (defn evolve-future-gens
@@ -48,7 +48,7 @@
 
   See 'evolve-future-gens for more details on the returned lazy seq."
   [run-config]
-  (let [config (check-config run-config)
+  (let [config (prepare-config run-config)
 	pop-initial (generate-pop config)
 	end? (:end-condition config)]
     (take-while-eager (complement end?)

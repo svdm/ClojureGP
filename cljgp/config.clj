@@ -6,7 +6,8 @@
 			       mutation-breeder
 			       reproduction-breeder
 			       generate-ramped)]
-	[cljgp.selection :only (tournament-select)]))
+	[cljgp.selection :only (tournament-select)]
+	cljgp.random))
 
 
 
@@ -30,7 +31,9 @@
 		 {:prob 0.1  :breeder-fn reproduction-breeder}]
       :selection-fn (partial tournament-select 7)
       :end-condition (make-simple-end 100)
-      :pop-generation-fn (partial generate-ramped 7 0.5)})
+      :pop-generation-fn (partial generate-ramped 7 0.5)
+      :rand-fn-maker make-default-rand
+      })
 
 (defn valid-func-entry?
   "Returns true if the given map is a valid function set entry."
@@ -47,9 +50,10 @@
 	   (number? (:sym entry)))))
 
 (defn valid-breeder-entry?
+  "Returns true if the given map is a valid breeder specification."
   [entry]
   (and (map? entry)
-       (number? (:prob entry))
+       (float? (:prob entry))
        (fn? (:breeder-fn entry))))
 
 (defn strict-every?
@@ -68,7 +72,10 @@
       :breeders #(strict-every? valid-breeder-entry? %)
       :selection-fn fn?
       :population-size number?
-      :pop-generation-fn fn?})
+      :pop-generation-fn fn?
+      :threads integer?
+      :rand-fn-maker fn?
+      })
 
 (defn check-key
   "If k does not exist in config, returns (k config-defaults) if any, else
@@ -80,7 +87,7 @@
       (nil? entry) 
         (if (k config-defaults) 
 	  (do (println "Warning: key" k "missing from configuration,"
-		       "reverted to default.")
+		       "using default.")
 	      (find config-defaults k))
 	  nil)
       (not (test (val entry))) nil
@@ -108,3 +115,30 @@
 	  (recur (conj final checked-entry)
 		 (next todo))
 	  (throw-config k run-config))))))
+
+(defmacro assert-msg
+  "Like assert, but with a more useful message."
+  [test msg]
+  `(when-not ~test
+     (throw (Exception. ~msg))))
+
+(defn assert-constraints
+  "Checks constraints between keys (ie. 'global' constraints) and throws
+  exception if a test fails. Returns run-config unmodified."
+  [run-config]
+  (let [{:keys [threads rand-seeds]} run-config]
+    (assert-msg (<= threads (count (take threads rand-seeds)))
+		"Insufficient seeds for the number of threads."))
+  run-config)
+
+(defn prepare-config
+  "First calls check-config on given run-config, then performs both
+  preprocessing and checks involving multiple keys."
+  [run-config]
+  (let [checked (assert-constraints (check-config run-config))
+	rand-fns {:rand-fns (map (:rand-fn-maker checked) 
+				 (:rand-seeds checked))}]
+    (merge run-config 
+	   checked	 ; keys changed in check-config will override run-config
+	   rand-fns)))
+
