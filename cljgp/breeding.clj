@@ -11,10 +11,10 @@
 ;;
 
 (defn generate-tree
-  "Returns a tree generated from given func-set and term-set. If 'method
-  is :grow, grow method will be used to generate the tree up to max-depth in
-  size. Else, 'full' method will be used, resulting in a tree with a depth equal
-  to max-depth in all its branches.
+  "Returns a tree generated from given func-set and term-set, which have to be
+  nth-able. If 'method is :grow, grow method will be used to generate the tree
+  up to max-depth in size. Else, 'full' method will be used, resulting in a tree
+  with a depth equal to max-depth in all its branches.
   
   For max-depth < 0, will return a tree of size 1."
   [func-set term-set max-depth method]
@@ -22,15 +22,14 @@
 	  (and (= method :grow)
 	       (< (gp-rand) (/ (count term-set)
 			       (+ (count term-set) (count func-set))))))
-    ; add a terminal to the tree
-    (:sym (pick-rand term-set))
-    ; else add a function node and grow its leaves
-    (let [{:keys [sym arity]} (pick-rand func-set)]
-      (cons sym (for [i (range arity)]
-		  (generate-tree func-set term-set (dec max-depth) method))))))
+    (pick-rand term-set)
+    (let [fnode (pick-rand func-set)]
+      (cons fnode (for [i (range (:arity ^fnode))]
+		    (generate-tree func-set term-set 
+				   (dec max-depth) method))))))
 
 (defn generate-ramped
-   "Returns a tree generated using a version of the ramped half and half
+  "Returns a tree generated using a version of the ramped half and half
   method. Tree will be generated from func-set and term-set, up to
   max-depth (inclusive) if given (default 7). The 'grow' method will be used
   half the time by default, or with the probability given as grow-chance."

@@ -5,9 +5,9 @@
   (:use clojure.contrib.test-is
 	cljgp.breeding
 	cljgp.evaluation
-	cljgp.tests.helpers
-	cljgp.util))
-
+	;cljgp.tests.helpers
+	cljgp.util)
+  (:refer cljgp.tests.helpers))
 
 (def func-set-maths (:function-set config-maths))
 (def term-set-maths (:terminal-set config-maths))
@@ -83,21 +83,21 @@
 ; breeding function tests
 
 (deftest test-tree-replace
-  (let [tree-orig '(+ (* (+ 1 2) (- 3 4)) (/ (/ 2 1) (+ 4 5)))]
+  (let [tree-orig `(+ (* (+ _1 _2) (- _3 _4)) (/ (/ _5 _1) (+ _2 _3)))]
     (doseq [i (range (count (make-tree-seq tree-orig)))]
       (is (= :test
 	     (nth (make-tree-seq (tree-replace i :test tree-orig)) i))
 	  "Replace should work correctly in any tree node."))))
 
 (deftest test-crossover-uniform
-  (let [trees (crossover-uniform '(+ (- 1 2) (* 3 4)) '(* 2 3))]
+  (let [trees (crossover-uniform `(+ (- _1 _2) (* _3 _4)) `(* _5 _1))]
     (is (= (count trees) 2))
     (is (every? valid-tree? trees)
 	"Should result in two valid trees.")
     (is (every? valid-eval? trees))))
 
 (deftest test-mutate
-  (let [tree (mutate '(+ (- 1 2) (* 3 4)) func-set-maths term-set-maths)]
+  (let [tree (mutate `(+ (- _1 _2) (* _3 _4)) func-set-maths term-set-maths)]
     (is (valid-tree? tree))
     (is (valid-eval? tree))))
 
@@ -119,21 +119,21 @@
 (deftest test-crossover-inds
   (let [gen-old 0
 	inds (crossover-inds crossover-uniform 
-			     (make-individual '(+ 1 2) gen-old [])
-			     (make-individual '(* 3 4) gen-old [])
+			     (make-individual `(+ _1 _2) gen-old [])
+			     (make-individual `(* _3 _4) gen-old [])
 			     [])]
     (test-inds inds gen-old 2)))
 
 (deftest test-mutate-ind
   (let [gen-old 0
 	ind (mutate-ind func-set-maths term-set-maths
-			(make-individual '(+ 1 2) gen-old [])
+			(make-individual `(+ _1 _2) gen-old [])
 			[])]
     (test-inds ind gen-old 1)))
 
 (deftest test-reproduce-ind
   (let [gen-old 0
-	ind-old (make-individual '(+ 1 2) gen-old [])
+	ind-old (make-individual `(+ _1 _2) gen-old [])
 	ind (reproduce-ind ind-old [])]
     (test-inds ind gen-old 1)
     (is (= (dissoc ind-old :gen) (dissoc (first ind) :gen))

@@ -9,7 +9,14 @@
 	[cljgp.selection :only (tournament-select)]
 	cljgp.random))
 
-
+(defn prim
+  "Given a symbol and a map of its properties, returns a GP primitive for use in
+  the function or terminal sets. This is simply the symbol with the properties
+  as its metadata."
+  [sym properties]
+  (assert (or (map? properties) (nil? properties)))
+  (assert (symbol? sym))
+  (with-meta sym properties))
 
 (defn make-simple-end
   "Returns a simple end condition predicate that stops the evolution when the
@@ -36,18 +43,16 @@
       })
 
 (defn valid-func-entry?
-  "Returns true if the given map is a valid function set entry."
+  "Returns true if the given function set entry is valid."
   [entry]
-  (and (map? entry)
-       (symbol? (:sym entry))
-       (number? (:arity entry))))
+  (let [m (meta entry)]
+    (and (symbol? entry)
+	 (number? (:arity m)))))
 
 (defn valid-term-entry?
-  "Returns true if the given map is a valid terminal set entry."
+  "Returns true if the given terminal set entry is valid."
   [entry]
-  (and (map? entry)
-       (or (symbol? (:sym entry))
-	   (number? (:sym entry)))))
+  (symbol? entry))
 
 (defn valid-breeder-entry?
   "Returns true if the given map is a valid breeder specification."

@@ -13,7 +13,7 @@
 			       reproduction-breeder
 			       generate-ramped)]
 	cljgp.random
-	[cljgp.config :only (make-simple-end)]))
+	cljgp.config))
 
 ;java -cp .;k:/clojure/svn-trunk/clojure.jar;k:/clojure/contrib/clojure-contrib.jar;./lib/plot.jar clojure.lang.Repl cljgptest.clj
 
@@ -27,54 +27,6 @@
 (defn sdiv [a b] (if (> b 0) (/ a b) 0))
 (defn except-me [a] (throw (Exception. "I'm an exception!")))
 
-(def func-set-maths 
-     [{:sym '- :arity 2 :as-arg true}
-      {:sym `+ :arity 2}
-      {:sym `* :arity 2}
-      {:sym `sdiv :arity 2}])
-
-(def term-set-maths
-     [{:sym 1}
-      {:sym 2}
-      {:sym 3}
-      {:sym 4}
-      {:sym 5}])
-
-(def my-select (partial tournament-select 7))
-
-(def breeders-maths
-     [{:prob 0.8    :breeder-fn (partial crossover-breeder 
-					 my-select)}
-
-      {:prob 0.1    :breeder-fn (partial mutation-breeder 
-					 func-set-maths term-set-maths
-					 my-select)}
-      
-      {:prob 0.1    :breeder-fn (partial reproduction-breeder
-					 my-select)}])
-
-(defn evaluate-maths
-  [func]
-  (let [result (func)]
-    (Math/abs (float (- 42 result)))))
-
-
-(def config-maths
-     {
-      :function-set func-set-maths
-      :terminal-set term-set-maths
-      :argument-list [] ; if any as-arg
-
-      :evaluation-fn evaluate-maths
-
-      :end-condition (make-simple-end 100 -1) #_(make-simple-end 50)
-      :population-size 16
-
-      :breeders breeders-maths
-      :pop-generation-fn (partial generate-ramped func-set-maths 
-				                  term-set-maths
-						  7 0.5)
-      })
 
 ;
 ; SIMPLE REGRESSION PROBLEM DEF
@@ -137,17 +89,18 @@
 
 (def config-mvr
      {
-      :function-set [{:sym `- :arity 2}
-		     {:sym `+ :arity 2}
-		     {:sym `* :arity 2}]
+      :function-set [(prim `- {:arity 2})
+		     (prim `+ {:arity 2})
+		     (prim `* {:arity 2})
+		     (prim `sdiv {:arity 2})]
 
-      :terminal-set [{:sym 'x :as-arg true}
-		     {:sym 'y :as-arg true}]
+      :terminal-set [(prim 'x {:as-arg true})
+		     (prim 'y {:as-arg true})]
 
-      :arg-list ['x 'y]	   ; can't generate automatically user has to know order
+      :arg-list ['x 'y]
 
       :evaluation-fn evaluate-mvr
-      :end-condition (make-simple-end 50 -1)
+      :end-condition (make-simple-end 50 0.0001)
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
 		 {:prob 0.1    :breeder-fn mutation-breeder}
@@ -163,7 +116,7 @@
       :rand-fn-maker make-default-rand
       :rand-seeds [21312 773290 4901 9928]
 
-      ;:rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741])
+					;:rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741])
       })
 
 
@@ -219,6 +172,15 @@
 
 ; TODO:
 
+; - restructure function set as a set of symbols with their properties as
+;   metadata
+;   - drops support for numbers/strings as terminals, needs updates elsewhere
+
+; - limit on tree depth
+;   - more relevant in typed gp as function nodes can be only choice
+;   - as general "constraint on tree" concept?
+;   - limit on mutation tree depth?
+
 ; - typed GP
 ;   - store type data in metadata?
 ;   - we need to know what type a node *satisfies* in a tree, not only what type
@@ -226,7 +188,19 @@
 ;     that easy, or store for every node what type it satisfies for super-quick
 ;     reference. The meta option seems the least hack-ish and the most trans-
 ;     parant to non-typed gp.
+;   - STGP uses a lookup table for the above
+
+; - relevant metadata properties:
+;   - can be attached to quoted and backquoted symbols
+;   - (meta 'x) is not equal to (meta (with-meta 'x {}))
+;   - hence it is easy to tell the difference between no type info and nil type
+;   - config preproc should attach type metadata to all primitives
+;   - for symbols with no type data, perform lookup in the respective set
+
+; - seeds-from-time fn in config.clj
 
 ; - consider naming consistency of functions and config keys
 
 ; - document config key requirements etc
+;   - notes:
+;     - fset and tset should not be sets as they have to be seq'd for pick-rand

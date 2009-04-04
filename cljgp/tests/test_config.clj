@@ -28,21 +28,24 @@
 (deftest test-validators
   (testing "valid-func-entry?"
 	   (let [vfe valid-func-entry?]
-	     (is (vfe {:sym 'a :arity 2}))
-	     (is (vfe {:sym `+ :arity 4}))
-	     (is (not (vfe [])))
-	     (is (not (vfe {})))
-	     (is (not (vfe {:sym 'a})))
-	     (is (not (vfe {:arity 2})))
-	     (is (not (vfe {:sym 1 :arity 2})))
-	     (is (not (vfe {:sym 'b :arity true})))))
+	     (is (vfe (prim `+ {:arity 2})))
+	     (is (vfe (prim 'x {:arity 4})))
+	     (is (not (vfe 'x)))
+	     (is (not (vfe (prim 'x {}))))
+
+	     (is (not (vfe {:sym 'a :arity 2}))) ; old entry representation
+	     (is (not (vfe {:sym `+ :arity 4})))
+	     (is (not (vfe [])))))
   (testing "valid-term-entry?"
 	   (let [vte valid-term-entry?]
-	     (is (vte {:sym 'x}))
-	     (is (vte {:sym 1}))
-	     (is (not (vte {})))
-	     (is (not (vte [])))
-	     (is (not (vte {:sym +})))))
+	     (is (vte 'x))
+	     (is (vte (prim 'x {})))
+	     (is (vte (prim 'x nil)))
+	     (is (not (vte +)))
+	     (is (not (vte 1)))
+
+	     (is (not (vte {:sym 'x}))) ; old repr.
+	     (is (not (vte [])))))
   (testing "valid-breeder-entry?"
 	   (let [vbe valid-breeder-entry?
 		 b-fn #(println "mock breeder")]

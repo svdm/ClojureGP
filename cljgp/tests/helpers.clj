@@ -22,7 +22,7 @@
   a valid result?"
   [tree]
   (or (coll? tree) 
-      (or (symbol? tree) (number? tree)))) ; sufficient for test terminal set(s)
+      (symbol? tree)))	; sufficient for test terminal set(s)
 
 (defn valid-ind?
   "Returns whether given map contains keys required for individuals."
@@ -35,16 +35,22 @@
 
 ; A config for a simple gimped experiment
 
-(def config-maths
-     {:function-set [{:sym `- :arity 2}
-		     {:sym `+ :arity 2}
-		     {:sym `* :arity 2}]
+(def _1 1)
+(def _2 2)
+(def _3 3)
+(def _4 4)
+(def _5 5)
 
-      :terminal-set [{:sym 1}
-		     {:sym 2}
-		     {:sym 3}
-		     {:sym 4}
-		     {:sym 5}]
+(def config-maths
+     {:function-set [(prim `- {:arity 2})
+		     (prim `+ {:arity 2})
+		     (prim `* {:arity 2})]
+
+      :terminal-set [(prim `_1 {})
+		     (prim `_2 {})
+		     (prim `_3 {})
+		     (prim `_4 {})
+		     (prim `_5 {})]
       :arg-list []
 
       :evaluation-fn (fn [x] (rand))
@@ -59,9 +65,9 @@
       :pop-generation-fn (partial generate-ramped 7 0.5)
 
       :threads 2
-      :rand-seeds [0 1] ; not used
+      :rand-seeds [0 1]			; not used
       :rand-fn-maker make-default-rand
-      ; supply premade rand-fns instead of depending on preproc to do this
+					; supply premade rand-fns instead of depending on preproc to do this
       :rand-fns (map make-default-rand 
 		     (take 2 (repeatedly #(System/currentTimeMillis))))
       })

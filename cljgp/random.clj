@@ -17,7 +17,7 @@
 (defn pick-rand
   "Returns a random item from the given collection."
   [coll]
-  (nth coll (gp-rand-int (count coll)) nil))
+  (nth (seq coll) (gp-rand-int (count coll)) nil))
 
 (defmacro rand-fn
   "Macro that takes a method name and an expression returning a new instance of
