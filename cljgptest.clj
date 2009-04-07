@@ -12,6 +12,7 @@
 			       mutation-breeder 
 			       reproduction-breeder
 			       generate-ramped)]
+	cljgp.util
 	cljgp.random
 	cljgp.config))
 
@@ -106,6 +107,10 @@
 		 {:prob 0.1    :breeder-fn mutation-breeder}
 		 {:prob 0.1    :breeder-fn reproduction-breeder}]
 
+      :breeding-retries 5
+
+      :validate-tree-fn #(< (tree-depth %) 25)
+
       :selection-fn (partial tournament-select 7)
 
       :population-size 128
@@ -143,22 +148,6 @@
 ; END MVR
 ;
 
-(defn run-test
-    []
-    (best-fitness 
-     (last 
-      (map gp-log/print-details (generate-run config-maths)))))
-
-
-
-(defn time-test
-  []
-  (time
-   (best-fitness 
-    (last 
-     (generate-run config-maths)))))
-
-
 
 (comment
   (defn run-test
@@ -172,14 +161,7 @@
 
 ; TODO:
 
-; - restructure function set as a set of symbols with their properties as
-;   metadata
-;   - drops support for numbers/strings as terminals, needs updates elsewhere
-
-; - limit on tree depth
-;   - more relevant in typed gp as function nodes can be only choice
-;   - as general "constraint on tree" concept?
-;   - limit on mutation tree depth?
+; - also apply valid-tree constraint to initial population
 
 ; - typed GP
 ;   - store type data in metadata?
@@ -203,4 +185,5 @@
 
 ; - document config key requirements etc
 ;   - notes:
-;     - fset and tset should not be sets as they have to be seq'd for pick-rand
+;     - fset and tset are not recommended to be actual sets as they have to be
+;       seq'd for pick-rand

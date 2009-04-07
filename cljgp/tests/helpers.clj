@@ -62,6 +62,11 @@
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
 		 {:prob 0.1    :breeder-fn mutation-breeder}
 		 {:prob 0.1    :breeder-fn reproduction-breeder}]
+
+      :breeding-retries 5
+
+      :validate-tree-fn identity
+
       :pop-generation-fn (partial generate-ramped 7 0.5)
 
       :threads 2

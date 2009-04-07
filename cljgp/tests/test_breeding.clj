@@ -97,10 +97,13 @@
     (is (every? valid-eval? trees))))
 
 (deftest test-mutate
-  (let [tree (mutate `(+ (- _1 _2) (* _3 _4)) func-set-maths term-set-maths)]
+  (let [[tree] (mutate `(+ (- _1 _2) (* _3 _4)) func-set-maths term-set-maths)]
     (is (valid-tree? tree))
     (is (valid-eval? tree))))
 
+(deftest test-get-valid
+  (is (nil? (get-valid true? 2 #(vector [false false false]))))
+  (is (= [1 2] (get-valid number? 1 #(vector 1 2)))))
 
 (defn test-inds
   [inds gen-old num-expected]
@@ -121,20 +124,19 @@
 	inds (crossover-inds crossover-uniform 
 			     (make-individual `(+ _1 _2) gen-old [])
 			     (make-individual `(* _3 _4) gen-old [])
-			     [])]
+			     config-maths)]
     (test-inds inds gen-old 2)))
 
 (deftest test-mutate-ind
   (let [gen-old 0
-	ind (mutate-ind func-set-maths term-set-maths
-			(make-individual `(+ _1 _2) gen-old [])
-			[])]
+	ind (mutate-ind (make-individual `(+ _1 _2) gen-old [])
+			config-maths)]
     (test-inds ind gen-old 1)))
 
 (deftest test-reproduce-ind
   (let [gen-old 0
-	ind-old (make-individual `(+ _1 _2) gen-old [])
-	ind (reproduce-ind ind-old [])]
+	ind-old (make-individual `(+ _1 _2) gen-old (:arg-list config-maths))
+	ind (reproduce-ind ind-old config-maths)]
     (test-inds ind gen-old 1)
     (is (= (dissoc ind-old :gen) (dissoc (first ind) :gen))
 	"Reproduced individuals should be identical apart from :gen")))

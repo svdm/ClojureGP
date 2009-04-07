@@ -90,24 +90,6 @@
     (r-fn tree)))
 
 
-; old, zipper-based tree-replace, much slower, to be removed later
-(comment
-  (defn tree-replace-alt
-    "Returns given tree with the node at idx replaced by new-node."
-    [idx new-node tree]
-    (let [tree-zpr (zip/seq-zip tree)]
-      (loop [loc tree-zpr, n 0]
-	(cond 
-	  (zip/end? loc) (zip/root loc)
-	  (= n idx) (zip/root (zip/replace loc new-node))
-	  :else (recur (if (zip/branch? loc) 
-			 (zip/next (zip/next loc)) ; skip function symbol
-			 (zip/next loc))
-		       (inc n)))))))
-
-
-
-
 ;TODO/FIXME: crossover point selection is uniform instead of the traditional
 ;  90/10 split between nodes and leaves respectively
 ;  named appropriately for now
@@ -125,45 +107,65 @@
      (tree-replace idx-b pick-a tree-b)]))
 
 (defn mutate
-  "Performs a mutation operation on the given tree. Returns the new tree."
+  "Performs a mutation operation on the given tree. Returns the new tree in a
+  size 1 vector."
   [tree func-set term-set]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
 	;pick (nth tree-seq idx)
 	; having picked a mutation point, could use type data here in the future
 	subtree (generate-tree func-set term-set 17 :grow)]
-    (tree-replace idx subtree tree)))
+    [(tree-replace idx subtree tree)]))
 
 
-; TODO: macro-ify the breeder-result-to-individual pattern? Problem: all three
-; differ in subtle ways, leaving little to generalize.
+(defn get-valid
+  "Returns a result of 'gen-fn that passes the given 'valid-tree? test on each
+  element (ie. all produced trees are valid). Will retry gen-fn up to 'tries
+  times, if by then no valid result has been generated, returns nil."
+  [valid-tree? tries gen-fn]
+  (first (filter #(= % (filter valid-tree? %))
+		 (take tries (repeatedly gen-fn)))))
+
 
 (defn crossover-inds
-  "Performs a crossover operation on the given individuals of the form (fn []
-  tree) using given 'crossover-fn. Returns vector of two new individuals."
-  [crossover-fn ind-a ind-b arg-list]
-  (let [[tree-a tree-b] (crossover-fn (get-fn-body (:func ind-a))
-				      (get-fn-body (:func ind-b)))
+  "Performs a crossover operation on the given individuals using given
+  'crossover-fn. Returns vector of two new individuals."
+  [crossover-fn ind-a ind-b run-config]
+  (let [{:keys [arg-list validate-tree-fn breeding-retries]} run-config
+	orig-a (get-fn-body (:func ind-a))
+	orig-b (get-fn-body (:func ind-a))
+	[tree-a tree-b] (get-valid validate-tree-fn breeding-retries
+				   #(crossover-fn orig-a orig-b))
 	gen (inc (:gen ind-a))]
-    [(make-individual tree-a gen arg-list)
-     (make-individual tree-b gen arg-list)]))
+    (if (not (nil? tree-a))
+      [(make-individual tree-a gen arg-list) ; crossover succeeded
+       (make-individual tree-b gen arg-list)]
+
+      [(make-individual orig-a gen arg-list) ; failed, reproduce instead
+       (make-individual orig-b gen arg-list)])))
 
 (defn mutate-ind
   "Performs mutation on given individual's tree. Returns seq with the new
   individual as single element (for easy compatibility with crossover-ind)."
-  [func-set term-set ind arg-list]
-  (let [tree (mutate (get-fn-body (:func ind))
-		     func-set term-set)
+  [ind run-config]
+  (let [{:keys [arg-list validate-tree-fn breeding-retries
+		function-set terminal-set]} run-config
+	orig (get-fn-body (:func ind))
+	[tree] (get-valid validate-tree-fn breeding-retries
+			  #(mutate orig function-set terminal-set))
 	gen (inc (:gen ind))]
-    [(make-individual tree gen arg-list)]))
+    (if (not (nil? tree))
+      [(make-individual tree gen arg-list)]
+      [(make-individual orig gen arg-list)])))
 
 
 (defn reproduce-ind
   "Performs direct reproduction, ie. breeds a new individual by directly copying
   the given individual's tree. Returns seq with new individual as single
   element."
-  [ind arg-list]
-  (let [tree (get-fn-body (:func ind))
+  [ind run-config]
+  (let [arg-list (:arg-list run-config)
+	tree (get-fn-body (:func ind))
 	gen (inc (:gen ind))]
     [(make-individual tree gen arg-list)]))
 
@@ -173,10 +175,10 @@
    run-config to it twice, performs crossover and returns seq of two resulting
    new trees."
   [pop run-config]
-  (let [{:keys [selection-fn arg-list]} run-config]
+  (let [select (:selection-fn run-config)]
     (crossover-inds crossover-uniform
-		    (selection-fn pop) (selection-fn pop)
-		    arg-list)))
+		    (select pop) (select pop)
+		    run-config)))
 
 (defn mutation-breeder
   "Selects an individual from pop by applying selection-fn specified in the
@@ -184,16 +186,16 @@
   tree in it. Mutation will pull nodes from the function and terminal sets
   specified in run-config."
   [pop run-config]
-  (let [{:keys [terminal-set function-set selection-fn arg-list]} run-config]
-    (mutate-ind function-set terminal-set (selection-fn pop) arg-list)))
+  (let [select (:selection-fn run-config)]
+    (mutate-ind (select pop) run-config)))
 
 (defn reproduction-breeder
   "Selects an individual from pop by applying selection-fn specified in the
   run-config to it, returns seq with a new individual whose tree is identical to
   the selected individual."
   [pop run-config]
-  (let [{:keys [selection-fn arg-list]} run-config]
-    (reproduce-ind (selection-fn pop) arg-list)))
+  (let [select (:selection-fn run-config)]
+    (reproduce-ind (select pop) run-config)))
 
 (defn- setup-breeders
   "Sets up (lazy-)seq of breeders (maps with a :prob key) in a seq in
