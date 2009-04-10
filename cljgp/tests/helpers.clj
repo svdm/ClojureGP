@@ -42,15 +42,23 @@
 (def _5 5)
 
 (def config-maths
-     {:function-set [(prim `- {:arity 2})
-		     (prim `+ {:arity 2})
-		     (prim `* {:arity 2})]
+     {:function-set [(prim `- {:type Number 
+			       :arg-type [Number Number] 
+			       :arity 2})
 
-      :terminal-set [(prim `_1 {})
-		     (prim `_2 {})
-		     (prim `_3 {})
-		     (prim `_4 {})
-		     (prim `_5 {})]
+		     (prim `+ {:type Number 
+			       :arg-type [Number Number]
+			       :arity 2})
+
+		     (prim `* {:type Number 
+			       :arg-type [Number Number]
+			       :arity 2})]
+
+      :terminal-set [(prim `_1 {:type Number})
+		     (prim `_2 {:type Number})
+		     (prim `_3 {:type Number})
+		     (prim `_4 {:type Number})
+		     (prim `_5 {:type Number})]
       :arg-list []
 
       :evaluation-fn (fn [x] (rand))

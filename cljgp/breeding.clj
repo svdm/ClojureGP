@@ -6,6 +6,8 @@
   (:use cljgp.random
 	cljgp.util))
 
+
+
 ;;
 ;; Tree generation
 ;;
@@ -39,6 +41,19 @@
 		 (inc (gp-rand-int max-depth))
 		 (if (< (gp-rand) grow-chance) :grow :full)))
 
+(defn get-valid
+  "Returns a result of 'gen-fn (which should be a tree-generating function) that
+  passes the given 'valid-tree? test. If gen-fn returns a vector of trees, all
+  are tested (ie. all produced trees must be valid). If gen-fn returns anything
+  that is not a vector, it is assumed to be a single tree and tested
+  directly. Will retry gen-fn up to 'tries times, if by then no valid result has
+  been generated, returns nil."
+  [valid-tree? tries gen-fn]
+  (first (filter #(if (vector? %)
+		    (= % (filter valid-tree? %))
+		    (valid-tree? %))
+		 (take tries (repeatedly gen-fn)))))
+
 (defn- ind-generator-seq
   "Returns a lazy infinite sequence of individuals with generation 0 and
   expression trees generated from the function- and terminal-set, all as
@@ -46,9 +61,13 @@
   [run-config]
   (let [{:keys [function-set terminal-set
 		pop-generation-fn
-		arg-list]} run-config]
-    (repeatedly #(make-individual (pop-generation-fn function-set terminal-set)
-				  0 arg-list))))
+		validate-tree-fn
+		arg-list]} run-config
+	generate (fn [] (get-valid validate-tree-fn Integer/MAX_VALUE 
+				   #(pop-generation-fn function-set 
+						       terminal-set)))]
+
+    (repeatedly #(make-individual (generate) 0 arg-list))))
 
 ; Note that it is intentional that (ind-generator-seq ..) is called inside each
 ; future, even though one might think it's just a producer function that is
@@ -75,8 +94,33 @@
 ;; Breeding
 ;;
 
+; The low-level tree handling functions use a somewhat ugly side-effect counter
+; while traversing a tree to keep track of the node index. This appears to be
+; quite a bit faster than more elegant methods, and these functions are called
+; very often. Hence the optimization. Will hopefully be improved in the future.
+
+(defn parent-arg-type
+  "Returns the arg-type that the node at the given 'index of the 'tree
+  satisfies. In other words: returns the type that a node at the index must
+  satisfy in order to be valid. This type is retrieved from the parent
+  node's :arg-type metadata. For index 0, returns given 'root-type."
+  [idx tree root-type]
+  (let [i (atom -1)
+	pfn (fn ptype [node type]
+	      (swap! i inc)
+	      (println @i node (meta node) type)
+	      (if (>= @i idx)
+		type
+		(when (coll? node) 
+		  (first
+		   (remove nil?
+			   (map ptype
+				(next node)
+				(:arg-type ^(first node))))))))]
+    (pfn tree root-type)))
+
 (defn tree-replace
-  "Returns given tree with node at idx replaced by new-node."
+  "Returns given 'tree with node at 'idx replaced by 'new-node."
   [idx new-node tree]
   (let [i (atom -1)
 	r-fn (fn do-replace [node]
@@ -107,7 +151,7 @@
      (tree-replace idx-b pick-a tree-b)]))
 
 (defn mutate
-  "Performs a mutation operation on the given tree. Returns the new tree in a
+  "Performs a mutation operation on the given tree. Returns the new tree.
   size 1 vector."
   [tree func-set term-set]
   (let [tree-seq (make-tree-seq tree)
@@ -115,16 +159,7 @@
 	;pick (nth tree-seq idx)
 	; having picked a mutation point, could use type data here in the future
 	subtree (generate-tree func-set term-set 17 :grow)]
-    [(tree-replace idx subtree tree)]))
-
-
-(defn get-valid
-  "Returns a result of 'gen-fn that passes the given 'valid-tree? test on each
-  element (ie. all produced trees are valid). Will retry gen-fn up to 'tries
-  times, if by then no valid result has been generated, returns nil."
-  [valid-tree? tries gen-fn]
-  (first (filter #(= % (filter valid-tree? %))
-		 (take tries (repeatedly gen-fn)))))
+    (tree-replace idx subtree tree)))
 
 
 (defn crossover-inds
@@ -151,7 +186,7 @@
   (let [{:keys [arg-list validate-tree-fn breeding-retries
 		function-set terminal-set]} run-config
 	orig (get-fn-body (:func ind))
-	[tree] (get-valid validate-tree-fn breeding-retries
+	tree (get-valid validate-tree-fn breeding-retries
 			  #(mutate orig function-set terminal-set))
 	gen (inc (:gen ind))]
     (if (not (nil? tree))

@@ -90,15 +90,29 @@
 
 (def config-mvr
      {
-      :function-set [(prim `- {:arity 2})
-		     (prim `+ {:arity 2})
-		     (prim `* {:arity 2})
-		     (prim `sdiv {:arity 2})]
+      :function-set [(prim `- {:type Number 
+			       :arg-type [Number Number] 
+			       :arity 2})
 
-      :terminal-set [(prim 'x {:as-arg true})
-		     (prim 'y {:as-arg true})]
+		     (prim `+ {:type Number 
+			       :arg-type [Number Number]
+			       :arity 2})
 
-      :arg-list ['x 'y]
+		     (prim `* {:type Number 
+			       :arg-type [Number Number]
+			       :arity 2})
+
+		     (prim `sdiv {:type Number 
+				  :arg-type [Number Number] 
+				  :arity 2})]
+
+      :terminal-set [(prim 'x {:type Number
+			       :as-arg true})
+
+		     (prim 'y {:type Number
+			       :as-arg true})]
+
+      :arg-list '[x y]
 
       :evaluation-fn evaluate-mvr
       :end-condition (make-simple-end 50 0.0001)
@@ -106,22 +120,18 @@
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
 		 {:prob 0.1    :breeder-fn mutation-breeder}
 		 {:prob 0.1    :breeder-fn reproduction-breeder}]
-
       :breeding-retries 5
 
-      :validate-tree-fn #(< (tree-depth %) 25)
-
+      :validate-tree-fn #(< (tree-depth %) 20)
       :selection-fn (partial tournament-select 7)
+      :pop-generation-fn (partial generate-ramped 7 0.5)
 
       :population-size 128
-      :pop-generation-fn (partial generate-ramped 7 0.5)
 
       :threads 2
 
       :rand-fn-maker make-default-rand
       :rand-seeds [21312 773290 4901 9928]
-
-					;:rand-fns (map #(rand-fn nextDouble (Random. %)) [8472 29741])
       })
 
 
@@ -161,8 +171,6 @@
 
 ; TODO:
 
-; - also apply valid-tree constraint to initial population
-
 ; - typed GP
 ;   - store type data in metadata?
 ;   - we need to know what type a node *satisfies* in a tree, not only what type
@@ -172,12 +180,23 @@
 ;     parant to non-typed gp.
 ;   - STGP uses a lookup table for the above
 
+;   - alternative: type-get function that navigates to an index and returns 
+;     what type it satisfies. This is not too difficult, as we can simply pass
+;     the appropriate arg-type to every recursive call that navigates to a child
+;     node. Initially, at the root, this is the experiment's root type. This way
+;     we do not need to look back to the function, but we "remember" what we 
+;     need on type info.
+
+;   - in crossover: for second cross point, build list of valid indices in
+;     treeseq (ie. the list of indices of elements that return the type we
+;     want), then randomly select idx from that
+
 ; - relevant metadata properties:
 ;   - can be attached to quoted and backquoted symbols
 ;   - (meta 'x) is not equal to (meta (with-meta 'x {}))
 ;   - hence it is easy to tell the difference between no type info and nil type
 ;   - config preproc should attach type metadata to all primitives
-;   - for symbols with no type data, perform lookup in the respective set
+;   - for symbols with no type data, perform lookup in the respective set?
 
 ; - seeds-from-time fn in config.clj
 

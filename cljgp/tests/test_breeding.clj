@@ -97,7 +97,7 @@
     (is (every? valid-eval? trees))))
 
 (deftest test-mutate
-  (let [[tree] (mutate `(+ (- _1 _2) (* _3 _4)) func-set-maths term-set-maths)]
+  (let [tree (mutate `(+ (- _1 _2) (* _3 _4)) func-set-maths term-set-maths)]
     (is (valid-tree? tree))
     (is (valid-eval? tree))))
 
