@@ -82,6 +82,17 @@
 
 ; breeding function tests
 
+(deftest test-parent-arg-type
+  (let [p (fn [s t] (with-meta s {:arg-type t}))
+	tree-orig [(p '+ [:+1 :+2]) 
+		   [(p '* [:*1 :*2]) (p 'x []) (p 'y [])]
+		   [(p '- [:-1 :-2]) 
+		    [(p 'div [:div1 :div2]) (p 'a []) (p 'b [])]
+		    (p 'c [])]]]
+    (is (= [:root :+1 :*1 :*2 :+2 :-1 :div1 :div2 :-2]
+	   (map #(parent-arg-type % tree-orig :root)
+		(range (count (make-tree-seq tree-orig))))))))
+
 (deftest test-tree-replace
   (let [tree-orig `(+ (* (+ _1 _2) (- _3 _4)) (/ (/ _5 _1) (+ _2 _3)))]
     (doseq [i (range (count (make-tree-seq tree-orig)))]

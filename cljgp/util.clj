@@ -17,9 +17,9 @@
   (nth quoted-fn 2 '()))
 
 (defmacro make-tree-seq
-  "Returns a seq of a given S-exp-based tree using (tree-seq seq? next tree)."
+  "Returns a seq of a given S-exp-based tree using (tree-seq coll? next tree)."
   [tree]
-  `(tree-seq seq? next ~tree))
+  `(tree-seq coll? next ~tree))
 
 (defn tree-depth
   "Returns the depth of the given tree"

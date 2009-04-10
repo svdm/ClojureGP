@@ -27,7 +27,7 @@
 
 (deftest test-make-tree-seq
   (is (= (macroexpand-1 `(make-tree-seq valid-tree))
-	 `(tree-seq seq? next valid-tree))))
+	 `(tree-seq coll? next valid-tree))))
 
 (deftest test-tree-depth
   (is (= (tree-depth valid-tree) 3))

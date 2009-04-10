@@ -108,7 +108,6 @@
   (let [i (atom -1)
 	pfn (fn ptype [node type]
 	      (swap! i inc)
-	      (println @i node (meta node) type)
 	      (if (>= @i idx)
 		type
 		(when (coll? node) 
@@ -128,8 +127,8 @@
 	       (cond
 		 (= @i idx) new-node
 		 (> @i idx) node	; means idx has already been replaced
-		 (seq? node) (cons (first node)
-				   (doall (map do-replace (next node))))
+		 (coll? node) (cons (first node)
+				    (doall (map do-replace (next node))))
 		 :else node))]
     (r-fn tree)))
 
