@@ -6,6 +6,11 @@
 	cljgp.tests.helpers
 	cljgp.core))
 
+(deftest test-prim
+  (let [m {:foo 27723 :bar true}]
+    (is (= (meta (with-meta 'x m))
+	   (meta (prim 'x m))))))
+
 (deftest test-make-simple-end
   (let [pop [{:gen 10 :fitness 5} {:gen 10 :fitness 4.9999}]]
     (testing "generation limit"
@@ -17,6 +22,11 @@
 	     (is ((make-simple-end 99 4.9999) pop))
 	     (is (not ((make-simple-end 99 4.5) pop)))
 	     (is (not ((make-simple-end 99 0.1) pop))))))
+
+(deftest test-seeds-from-time
+  (is (every? number? (take 50 (seeds-from-time))))
+  (is (not= ""
+	    (with-out-str (dorun (take 5 (seeds-from-time true)))))))
 
 (deftest test-strict-every?
   (is (strict-every? true? [true true true]))

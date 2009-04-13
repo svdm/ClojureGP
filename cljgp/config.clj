@@ -9,6 +9,10 @@
 	[cljgp.selection :only (tournament-select)]
 	cljgp.random))
 
+;
+; Helper fns for config creation
+;
+
 (defn prim
   "Given a symbol and a map of its properties, returns a GP primitive for use in
   the function or terminal sets. This is simply the symbol with the properties
@@ -29,6 +33,23 @@
 	 (or (>= (:gen ind) max-generations)
 	     (some #(>= fit-tolerance (:fitness %)) pop)))))
   ([max-generations] (make-simple-end max-generations 0.0001)))
+
+(defn seeds-from-time
+  "Returns a lazy infinite sequence of calls to System/currentTimeMillis, which
+  can be used as PRNG seeds. Takes optional argument that when true enables
+  reporting of the seeds used to stdout. This is meant as a very basic way of
+  logging seeds in case the results need to be reproduced."
+  ([report?]
+      (if report?
+	(repeatedly #(let [t (System/currentTimeMillis)]
+		       (println "Used seed:" t)
+		       t))
+	(repeatedly #(System/currentTimeMillis))))
+  ([] (seeds-from-time false)))
+
+;
+; Configuration validation
+;
 
 ; Values used as defaults in run config when no user-defined value is present.
 (def config-defaults
