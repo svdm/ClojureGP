@@ -50,3 +50,12 @@
   (lazy-seq
     (when-let [s (seq coll)]
       (cons (take n s) (partition-full n (drop n s))))))
+
+(defn gp-type
+  "Returns type of given node, which is identical to (type (first node)) if it
+  is a coll (ie. non-terminal node) and (type node) if it is a terminal."
+  [node]
+  (if (coll? node)
+    (type (first node))
+    (type node)))
+

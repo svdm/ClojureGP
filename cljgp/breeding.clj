@@ -149,6 +149,27 @@
     [(tree-replace idx-a pick-b tree-a)
      (tree-replace idx-b pick-a tree-b)]))
 
+
+(defn crossover-uniform-typed
+  "Performs a subtree crossover operation on the given trees, taking node types
+  into account. Returns vector of two new trees, or nil if crossover failed."
+  [tree-a tree-b root-type]
+  (let [seq-a (make-tree-seq tree-a)
+	idx-a (gp-rand-int (count seq-a))
+	pick-a (nth seq-a idx-a)
+	type-a (parent-arg-type idx-a tree-a root-type)
+	
+	seq-b (vec (make-tree-seq tree-b)) ; vec for faster nth
+	valid-indices (filter #(isa? (gp-type (nth seq-b %)) type-a) 
+			      (range (count seq-b)))]
+    (if (seq valid-indices)
+      (let [idx-b (pick-rand valid-indices)
+	    pick-b (nth seq-b idx-b)]
+	[(tree-replace idx-a pick-b tree-a)
+	 (tree-replace idx-b pick-a tree-b)])
+
+      nil)))
+
 (defn mutate
   "Performs a mutation operation on the given tree. Returns the new tree.
   size 1 vector."

@@ -33,3 +33,8 @@
   (is (= (tree-depth valid-tree) 3))
   (is (= (tree-depth '()) 0))
   (is (= (tree-depth '(1)) 1)))
+
+(deftest test-gp-type
+  (let [sym (with-meta 'x {:type Number})]
+    (is (= (type sym) (gp-type sym)))
+    (is (= (type sym) (gp-type [sym 1 2])))))

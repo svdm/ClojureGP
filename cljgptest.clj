@@ -158,6 +158,28 @@
 ; END MVR
 ;
 
+(do
+  (derive ::num ::any)
+  (derive Number ::num)
+  (derive ::seq ::any)
+  (derive ::string ::seq))
+
+(def test-tree-a
+     [(prim '+ {:type Number :arg-type [Number Number] :arity 2})
+      [(prim '* {:type Number :arg-type [Number Number] :arity 2})
+       (prim 'x {:type Number})
+       (prim 'y {:type Number})]
+      [(prim 'count {:type Number :arg-type [::seq] :arity 1})
+       [(prim 'concat {:type ::seq :arg-type [::seq ::seq] :arity 2})
+	(prim 'str-a {:type ::string})
+	(prim 'str-b {:type ::string})]]])
+
+(def test-tree-b
+     [(prim '- {:type Number :arg-type [Number Number] :arity 2})
+      [(prim 'count {:type Number :arg-type [::seq] :arity 1})
+       (prim 'str-c {:type ::string})]
+      (prim 'z {:type Number})])
+
 
 (comment
   (defn run-test
@@ -180,16 +202,17 @@
 ;     parant to non-typed gp.
 ;   - STGP uses a lookup table for the above
 
-;   - alternative: type-get function that navigates to an index and returns 
-;     what type it satisfies. This is not too difficult, as we can simply pass
-;     the appropriate arg-type to every recursive call that navigates to a child
-;     node. Initially, at the root, this is the experiment's root type. This way
-;     we do not need to look back to the function, but we "remember" what we 
-;     need on type info.
-
 ;   - in crossover: for second cross point, build list of valid indices in
 ;     treeseq (ie. the list of indices of elements that return the type we
 ;     want), then randomly select idx from that
+
+;   - todo:
+;     - crossover needs to take types into account
+;     - generate-tree needs to take types into account
+;     - generate-tree needs to take root-type arg
+;     - mutation needs to give satisfied type of mut.point as root-type to gen
+;     - some fashion of gp-isa? that always returns true if nil is parent
+;     - test coverage
 
 ; - relevant metadata properties:
 ;   - can be attached to quoted and backquoted symbols
@@ -198,11 +221,14 @@
 ;   - config preproc should attach type metadata to all primitives
 ;   - for symbols with no type data, perform lookup in the respective set?
 
-; - seeds-from-time fn in config.clj
-
 ; - consider naming consistency of functions and config keys
+
+; - make max mutation growth configurable?
 
 ; - document config key requirements etc
 ;   - notes:
 ;     - fset and tset are not recommended to be actual sets as they have to be
 ;       seq'd for pick-rand
+;     - using java.lang.String as :type will cause errors in clojure's printer,
+;       better to derive a custom type instead, (or never print them I guess)
+;     - similarly, Iterable will print oddly etc.
