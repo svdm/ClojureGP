@@ -14,6 +14,8 @@
 
 (def my-gen (partial generate-tree func-set-maths term-set-maths))
 
+(def rtype (:root-type config-maths))
+
 ; for this primitive set, trees should always return a number
 (def valid-result? number?)
 
@@ -28,33 +30,33 @@
 (deftest test-generate-tree
   (testing "grow method"
     (let [max-depth 4
-	  tree (my-gen max-depth :grow)
+	  tree (my-gen max-depth :grow rtype)
 	  depth (tree-depth tree)]
       (is (valid-tree? tree)
 	  "Root must either be a seq, or a valid result constant.")
       (is (and (> depth 0) (<= depth max-depth))
 	  "Grow-method trees must be of a valid size up to the limit.")
-      (is (= (tree-depth (my-gen 0 :grow)) 1) 
+      (is (= (tree-depth (my-gen 0 :grow rtype)) 1) 
 	  "For max-depth 0, must return single node.")
       (is (valid-eval? tree)
 	  "Result of evaluating tree must be valid.")))
   (testing "full method"
     (let [max-depth 4
-	  tree (my-gen max-depth :full)]
+	  tree (my-gen max-depth :full rtype)]
       (is (valid-tree? tree)
 	  "Root must either be a seq, or a valid result constant.")
       (is (= (tree-depth tree) max-depth)
 	  "Full-method trees must be the given max-depth in size.")
-      (is (= (tree-depth (my-gen 0 :full)) 1)
+      (is (= (tree-depth (my-gen 0 :full rtype)) 1)
 	  "For max-depth 0, must return single node.")
       (is (valid-eval? tree)
 	  "Result of evaluating tree must be valid."))))
 
 (deftest test-generate-ramped
   (let [d 4
-	grown-tree (generate-ramped d 1 func-set-maths term-set-maths)
-	full-tree (generate-ramped d 0 func-set-maths term-set-maths)
-	rand-tree (generate-ramped d 0.5 func-set-maths term-set-maths)]
+	grown-tree (generate-ramped d 1 func-set-maths term-set-maths rtype)
+	full-tree (generate-ramped d 0 func-set-maths term-set-maths rtype)
+	rand-tree (generate-ramped d 0.5 func-set-maths term-set-maths rtype)]
     (testing "generated tree validity"
 	     (testing "basic structural requirements"
 		      (is (valid-tree? grown-tree))
@@ -101,14 +103,18 @@
 	  "Replace should work correctly in any tree node."))))
 
 (deftest test-crossover-uniform
-  (let [trees (crossover-uniform `(+ (- _1 _2) (* _3 _4)) `(* _5 _1))]
+  (let [trees (crossover-uniform-typed (my-gen 4 :full rtype)
+				       (my-gen 4 :grow rtype)
+				       rtype)]
     (is (= (count trees) 2))
     (is (every? valid-tree? trees)
 	"Should result in two valid trees.")
     (is (every? valid-eval? trees))))
 
 (deftest test-mutate
-  (let [tree (mutate `(+ (- _1 _2) (* _3 _4)) func-set-maths term-set-maths)]
+  (let [tree (mutate func-set-maths term-set-maths
+		     (my-gen 4 :full rtype)
+		     rtype)]
     (is (valid-tree? tree))
     (is (valid-eval? tree))))
 
@@ -132,15 +138,16 @@
 
 (deftest test-crossover-inds
   (let [gen-old 0
-	inds (crossover-inds crossover-uniform 
-			     (make-individual `(+ _1 _2) gen-old [])
-			     (make-individual `(* _3 _4) gen-old [])
+
+	inds (crossover-inds crossover-uniform-typed
+			     (make-individual (my-gen 4 :full rtype) gen-old [])
+			     (make-individual (my-gen 4 :grow rtype) gen-old [])
 			     config-maths)]
     (test-inds inds gen-old 2)))
 
 (deftest test-mutate-ind
   (let [gen-old 0
-	ind (mutate-ind (make-individual `(+ _1 _2) gen-old [])
+	ind (mutate-ind (make-individual (my-gen 4 :full rtype) gen-old [])
 			config-maths)]
     (test-inds ind gen-old 1)))
 

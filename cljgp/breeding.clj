@@ -67,7 +67,7 @@
   been generated, returns nil."
   [valid-tree? tries gen-fn]
   (first (filter #(if (vector? %)
-		    (= % (filter valid-tree? %))
+		    (every? valid-tree? %)
 		    (valid-tree? %))
 		 (take tries (repeatedly gen-fn)))))
 
@@ -201,9 +201,9 @@
 	pick-type (parent-arg-type idx tree root-type)
 	subtree (try (generate-tree func-set term-set 17 :grow pick-type)
 		     (catch RuntimeException e nil))]
-    (if (seq subtree)
-      (tree-replace idx subtree tree)
-      tree)))
+    (if (nil? subtree)
+      tree
+      (tree-replace idx subtree tree))))
 
 
 (defn crossover-inds
