@@ -261,7 +261,7 @@
    new trees."
   [pop run-config]
   (let [select (:selection-fn run-config)]
-    (crossover-inds crossover-uniform
+    (crossover-inds crossover-uniform-typed
 		    (select pop) (select pop)
 		    run-config)))
 

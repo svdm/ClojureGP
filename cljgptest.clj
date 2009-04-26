@@ -205,9 +205,6 @@
 ;     want), then randomly select idx from that
 
 ;   - todo:
-;     - mutation needs to give satisfied type of mut.point as root-type to gen
-;     - crossover-ind updating
-;     - mutate-ind updating
 ;     - test coverage
 
 ; - relevant metadata properties:
