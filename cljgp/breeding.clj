@@ -153,10 +153,8 @@
     (r-fn tree)))
 
 
-;TODO/FIXME: crossover point selection is uniform instead of the traditional
-;  90/10 split between nodes and leaves respectively
-;  named appropriately for now
-(defn crossover-uniform
+;FIXME: remove, deprecated
+#_(defn crossover-uniform
   "Performs a subtree crossover operation on the given trees. Returns vector of
   two new trees."  
   [tree-a tree-b]
@@ -168,6 +166,10 @@
 	pick-b (nth seq-b idx-b)]
     [(tree-replace idx-a pick-b tree-a)
      (tree-replace idx-b pick-a tree-b)]))
+
+
+;TODO/FIXME: crossover point selection is uniform instead of the traditional
+;  90/10 split between nodes and leaves respectively
 
 ; not the prettiest, could use cleanup
 (defn crossover-uniform-typed
@@ -191,26 +193,29 @@
       nil)))
 
 (defn mutate
-  "Performs a mutation operation on the given tree. Returns the new tree.
-  size 1 vector."
-  [tree func-set term-set]
+  "Performs a mutation operation on the given tree. Returns the new tree. If no
+  valid subtree could be generated, returns unmodified tree."
+  [func-set term-set tree root-type]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
-	;pick (nth tree-seq idx)
-	; having picked a mutation point, could use type data here in the future
-	subtree (generate-tree func-set term-set 17 :grow)]
-    (tree-replace idx subtree tree)))
+	pick-type (parent-arg-type idx tree root-type)
+	subtree (try (generate-tree func-set term-set 17 :grow pick-type)
+		     (catch RuntimeException e nil))]
+    (if (seq subtree)
+      (tree-replace idx subtree tree)
+      tree)))
 
 
 (defn crossover-inds
   "Performs a crossover operation on the given individuals using given
   'crossover-fn. Returns vector of two new individuals."
   [crossover-fn ind-a ind-b run-config]
-  (let [{:keys [arg-list validate-tree-fn breeding-retries]} run-config
+  (let [{:keys [arg-list validate-tree-fn 
+		breeding-retries root-type]} run-config
 	orig-a (get-fn-body (:func ind-a))
 	orig-b (get-fn-body (:func ind-a))
 	[tree-a tree-b] (get-valid validate-tree-fn breeding-retries
-				   #(crossover-fn orig-a orig-b))
+				   #(crossover-fn orig-a orig-b root-type))
 	gen (inc (:gen ind-a))]
     (if (not (nil? tree-a))
       [(make-individual tree-a gen arg-list) ; crossover succeeded
@@ -224,16 +229,21 @@
   individual as single element (for easy compatibility with crossover-ind)."
   [ind run-config]
   (let [{:keys [arg-list validate-tree-fn breeding-retries
-		function-set terminal-set]} run-config
+		function-set terminal-set root-type]} run-config
 	orig (get-fn-body (:func ind))
 	tree (get-valid validate-tree-fn breeding-retries
-			  #(mutate orig function-set terminal-set))
+			  #(mutate function-set terminal-set 
+				   orig root-type))
 	gen (inc (:gen ind))]
     (if (not (nil? tree))
       [(make-individual tree gen arg-list)]
       [(make-individual orig gen arg-list)])))
 
 
+; The reason why we can't just assoc a new gen into the individual is that
+; other keys may have been added earlier (eg. a :fitness value) that should
+; not exist on a newly bred individual. We could explicitly unset those but
+; that would take otherwise unnecessary maintenance if more keys turn up.
 (defn reproduce-ind
   "Performs direct reproduction, ie. breeds a new individual by directly copying
   the given individual's tree. Returns seq with new individual as single

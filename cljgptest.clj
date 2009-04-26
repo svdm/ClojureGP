@@ -91,20 +91,16 @@
 (def config-mvr
      {
       :function-set [(prim `- {:type Number 
-			       :arg-type [Number Number] 
-			       :arity 2})
+			       :arg-type [Number Number]})
 
 		     (prim `+ {:type Number 
-			       :arg-type [Number Number]
-			       :arity 2})
+			       :arg-type [Number Number]})
 
 		     (prim `* {:type Number 
-			       :arg-type [Number Number]
-			       :arity 2})
+			       :arg-type [Number Number]})
 
 		     (prim `sdiv {:type Number 
-				  :arg-type [Number Number] 
-				  :arity 2})]
+				  :arg-type [Number Number]})]
 
       :terminal-set [(prim 'x {:type Number
 			       :as-arg true})
@@ -209,8 +205,6 @@
 ;     want), then randomly select idx from that
 
 ;   - todo:
-;     - generate-tree needs to take types into account
-;     - generate-tree needs to take root-type arg
 ;     - mutation needs to give satisfied type of mut.point as root-type to gen
 ;     - crossover-ind updating
 ;     - mutate-ind updating
