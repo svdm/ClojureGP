@@ -114,6 +114,8 @@
 
       :arg-list '[x y]
 
+      :root-type Number
+
       :evaluation-fn evaluate-mvr
       :end-condition (make-simple-end 50 0.0001)
 
@@ -207,11 +209,11 @@
 ;     want), then randomly select idx from that
 
 ;   - todo:
-;     - crossover needs to take types into account
 ;     - generate-tree needs to take types into account
 ;     - generate-tree needs to take root-type arg
 ;     - mutation needs to give satisfied type of mut.point as root-type to gen
-;     - some fashion of gp-isa? that always returns true if nil is parent
+;     - crossover-ind updating
+;     - mutate-ind updating
 ;     - test coverage
 
 ; - relevant metadata properties:

@@ -18,28 +18,45 @@
   up to max-depth in size. Else, 'full' method will be used, resulting in a tree
   with a depth equal to max-depth in all its branches.
   
-  For max-depth < 0, will return a tree of size 1."
-  [func-set term-set max-depth method]
+  For max-depth < 0, will return a tree of size 1.
+
+  Throws exception if no legal tree could be generated due to type constraints."
+  [func-set term-set max-depth method node-type]
   (if (or (<= max-depth 1)
 	  (and (= method :grow)
 	       (< (gp-rand) (/ (count term-set)
 			       (+ (count term-set) (count func-set))))))
-    (pick-rand term-set)
-    (let [fnode (pick-rand func-set)]
-      (cons fnode (for [i (range (:arity ^fnode))]
+    (if-let [tnode (pick-rand-typed node-type term-set)]
+      tnode
+      (throw (RuntimeException. 
+	      (str "No available terminal of type " node-type))))
+    (if-let [fnode (pick-rand-typed node-type func-set)]
+      (cons fnode (for [cur-type (:arg-type ^fnode)]
 		    (generate-tree func-set term-set 
-				   (dec max-depth) method))))))
+				   (dec max-depth) method 
+				   cur-type)))
+      (throw (RuntimeException. 
+	      (str "No available function of type " node-type))))))
 
+; FIXME: potential infinite loop for primitive sets where no valid trees can be
+;   generated
 (defn generate-ramped
   "Returns a tree generated using a version of the ramped half and half
   method. Tree will be generated from func-set and term-set, up to
-  max-depth (inclusive) if given (default 7). The 'grow' method will be used
-  half the time by default, or with the probability given as grow-chance."
-  [max-depth grow-chance func-set term-set]
-  (generate-tree func-set
-		 term-set
-		 (inc (gp-rand-int max-depth))
-		 (if (< (gp-rand) grow-chance) :grow :full)))
+  max-depth (inclusive). The 'grow' method will be used with the probability
+  given as grow-chance."
+  [max-depth grow-chance func-set term-set root-type]
+  (if-let [tree (try
+		 (generate-tree func-set
+				term-set
+				(inc (gp-rand-int max-depth))
+				(if (< (gp-rand) grow-chance) :grow :full)
+				root-type)
+		 (catch RuntimeException e
+		   #_(println e)
+		   false))]
+    tree
+    (recur max-depth grow-chance func-set term-set root-type)))
 
 (defn get-valid
   "Returns a result of 'gen-fn (which should be a tree-generating function) that
@@ -54,6 +71,7 @@
 		    (valid-tree? %))
 		 (take tries (repeatedly gen-fn)))))
 
+; FIXME: does not handle situations where valid trees are impossible to generate
 (defn- ind-generator-seq
   "Returns a lazy infinite sequence of individuals with generation 0 and
   expression trees generated from the function- and terminal-set, all as
@@ -62,10 +80,12 @@
   (let [{:keys [function-set terminal-set
 		pop-generation-fn
 		validate-tree-fn
-		arg-list]} run-config
+		arg-list
+		root-type]} run-config
 	generate (fn [] (get-valid validate-tree-fn Integer/MAX_VALUE 
 				   #(pop-generation-fn function-set 
-						       terminal-set)))]
+						       terminal-set
+						       root-type)))]
 
     (repeatedly #(make-individual (generate) 0 arg-list))))
 
@@ -114,7 +134,7 @@
 		  (first
 		   (remove nil?
 			   (map ptype
-				(next node)
+				(rest node)
 				(:arg-type ^(first node))))))))]
     (pfn tree root-type)))
 
@@ -149,7 +169,7 @@
     [(tree-replace idx-a pick-b tree-a)
      (tree-replace idx-b pick-a tree-b)]))
 
-
+; not the prettiest, could use cleanup
 (defn crossover-uniform-typed
   "Performs a subtree crossover operation on the given trees, taking node types
   into account. Returns vector of two new trees, or nil if crossover failed."

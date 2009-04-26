@@ -1,7 +1,8 @@
 
 ;;; cljgp.util.clj
 
-(ns cljgp.util)
+(ns cljgp.util
+  (:use [cljgp.random :only (pick-rand)]))
 
 (defn make-individual
   "Returns map representing an individual in the population."
@@ -35,7 +36,7 @@
 (defn divide-up
   "Divides some number up into a seq of numbers of length 'pieces, with each
   element at most (ceil (/ num pieces)) in size. Essentially tries to do the
-  equivalent of applying (partition ..) to the interval 0..num."
+  equivalent of applying (partition ..) to the numeric interval 0..num."
   [num pieces]
   (let [per (Math/ceil (/ num pieces))]
     (loop [s []
@@ -59,3 +60,10 @@
     (type (first node))
     (type node)))
 
+(defn pick-rand-typed
+  "Returns a random item from the collection that is of the given type. 
+
+  As 'pick-rand, but first filters the seq to only include items of the given
+  type 't (or a subtype of it)."
+  [t coll]
+  (pick-rand (filter #(isa? (type %) t) coll)))

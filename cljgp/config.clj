@@ -70,7 +70,7 @@
   [entry]
   (let [m (meta entry)]
     (and (symbol? entry)
-	 (number? (:arity m)))))
+	 (seq (:arg-type m)))))
 
 (defn valid-term-entry?
   "Returns true if the given terminal set entry is valid."

@@ -43,16 +43,13 @@
 
 (def config-maths
      {:function-set [(prim `- {:type Number 
-			       :arg-type [Number Number] 
-			       :arity 2})
+			       :arg-type [Number Number]})
 
 		     (prim `+ {:type Number 
-			       :arg-type [Number Number]
-			       :arity 2})
+			       :arg-type [Number Number]})
 
 		     (prim `* {:type Number 
-			       :arg-type [Number Number]
-			       :arity 2})]
+			       :arg-type [Number Number]})]
 
       :terminal-set [(prim `_1 {:type Number})
 		     (prim `_2 {:type Number})
@@ -61,6 +58,8 @@
 		     (prim `_5 {:type Number})]
       :arg-list []
 
+      :root-type Number
+      
       :evaluation-fn (fn [x] (rand))
       :selection-fn (partial tournament-select 3)
 
