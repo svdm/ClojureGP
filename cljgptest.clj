@@ -156,6 +156,101 @@
 ; END MVR
 ;
 
+;
+; STRONG TYPING PROBLEM DEF
+;
+
+; funny thing about this problem is that it really shows the effect of unlucky
+; seeds: when set to 2 threads (ie. only the first two seeds), no solution is
+; found in 50 generations as things get stuck in a local minimum. When set to 4
+; threads, the solution is found after only 4 generations.
+
+; evaluation
+(defn generate-string
+  [max-length]
+  (reduce str "" (range (gp-rand-int max-length))))
+
+(defn evaluate-concat-once
+  [func str1 str2]
+  (let [result (func str1 str2)
+	real (* (count (str str1 str1))
+		(count (str str2 str2)))]
+    (Math/pow (float (- real result)) 2)))
+
+(defn evaluate-concat
+  [func]
+  (let [str1-stimuli (take 10 (repeatedly #(generate-string 5)))
+	str2-stimuli (take 10 (repeatedly #(generate-string 5)))]
+    (reduce + (map (partial evaluate-concat-once func)
+		   str1-stimuli
+		   str2-stimuli))))
+
+; type defs
+(derive ::num ::any)
+(derive Number ::num)
+(derive ::seq ::any)
+(derive ::string ::seq)
+
+(def config-concat
+     {
+      :function-set [(prim `- {:type Number 
+			       :arg-type [Number Number]})
+
+		     (prim `+ {:type Number 
+			       :arg-type [Number Number]})
+
+		     (prim `* {:type Number 
+			       :arg-type [Number Number]})
+
+		     (prim `str 
+			   {:type ::string
+			    :arg-type [::string ::string]})
+
+		     (prim `count 
+			   {:type Number
+			    :arg-type [::seq]})]
+
+      :terminal-set [(prim 'S1 {:type ::string
+				:as-arg true})
+
+		     (prim 'S2 {:type ::string
+				:as-arg true})]
+
+      :arg-list '[S1 S2]
+
+      :root-type Number
+
+      :evaluation-fn evaluate-concat
+      :end-condition (make-simple-end 50 0.0001)
+
+      :breeders [{:prob 0.7    :breeder-fn crossover-breeder}
+		 {:prob 0.2    :breeder-fn mutation-breeder}
+		 {:prob 0.1    :breeder-fn reproduction-breeder}]
+      :breeding-retries 500
+
+      :validate-tree-fn #(< (tree-depth %) 20)
+      :selection-fn (partial tournament-select 7)
+      :pop-generation-fn (partial generate-ramped 10 0.5)
+
+      :population-size 64
+
+      :threads 4
+
+      :rand-fn-maker make-default-rand
+      :rand-seeds [21312 773290 4901 9928]
+      })
+
+(defn run-concat
+  []
+  (best-fitness
+   (last
+    (map gp-log/print-details (generate-run config-concat)))))
+
+;
+; MISC. TEST MATERIAL
+;
+
+
 (do
   (derive ::num ::any)
   (derive Number ::num)
