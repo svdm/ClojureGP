@@ -15,14 +15,26 @@
   (throw (RuntimeException. "Except! I should be reported on stdout!")))
 
 (deftest test-evaluate-ind
-  (let [given-fitness 3.33
-	ind (make-individual '(+ 1 2) 99 '[])
+  (let [ind (make-individual '(+ 1 2) 99 '[])
+	given-fitness 3.33
 	evaluator (fn [func] given-fitness)
-	eval-ind (evaluate-ind evaluator ind)]
-    (is (= (dissoc eval-ind :fitness) (dissoc ind :fitness))
-	"Apart from fitness, individuals should be identical")
-    (is (= (:fitness eval-ind) given-fitness)
-	"Fitness should be what evaluator returns")
+	eval-ind (evaluate-ind evaluator ind)
+
+	given-score 10
+	evaluator-map (fn [func] {:fitness given-fitness :raw-score 10})
+	eval-map-ind (evaluate-ind evaluator-map ind)]
+    (testing "evaluator returning numeric value"
+	     (is (= (dissoc eval-ind :fitness) (dissoc ind :fitness))
+		 "Apart from fitness, individuals should be identical")
+	     (is (= (:fitness eval-ind) given-fitness)
+		 "Fitness should be as returned by evaluator"))
+    (testing "evaluator returning map"
+	     (is (= (dissoc eval-map-ind :fitness :raw-score)
+		    (dissoc ind :fitness :raw-score))
+		 "Apart from new keys, individuals should be identical")
+	     (is (and (= (:fitness eval-map-ind) given-fitness)
+		      (= (:raw-score eval-map-ind) given-score))
+		 "Key values should be as returned by evaluator"))
     (is (thrown-with-msg? RuntimeException #"Except!.*"
 			  (with-out-str ; silence output for cleanliness
 			    (evaluate-ind excepting-evaluator ind)))

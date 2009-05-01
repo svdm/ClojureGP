@@ -24,12 +24,20 @@
 
 (defn evaluate-ind
   "Evaluate an individual using the given evaluation function. Returns
-  individual with a fitness value assigned."
+  individual with its fitness value as returned by the evaluator.
+
+  If the evaluator returns a map instead of a number, the map is merged into the
+  individual. This allows storing additional evaluation details such as \"hits\"
+  or raw score (eg. for analysis or customized selection)."
   [evaluator ind]
   (let [func (eval (:func ind))
-	fitness (try (evaluator func) 
-		     (catch Exception e (report-exception e ind)))]
-    (assoc ind :fitness fitness)))
+	result (try (evaluator func) 
+		    (catch Exception e (report-exception e ind)))]
+    (cond 
+      (map? result) (conj ind result)
+      (number? result) (assoc ind :fitness result)
+      :else (throw (IllegalArgumentException. 
+		    "Evaluator must return number or map.")))))
 
 (defn evaluate-pop
   "Takes a population (collection) of individuals and returns a new seq with all
