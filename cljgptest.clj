@@ -160,23 +160,23 @@
   (derive ::num ::any)
   (derive Number ::num)
   (derive ::seq ::any)
-  (derive ::string ::seq))
+  (derive ::string ::seq)
 
-(def test-tree-a
-     [(prim '+ {:type Number :arg-type [Number Number] :arity 2})
-      [(prim '* {:type Number :arg-type [Number Number] :arity 2})
-       (prim 'x {:type Number})
-       (prim 'y {:type Number})]
-      [(prim 'count {:type Number :arg-type [::seq] :arity 1})
-       [(prim 'concat {:type ::seq :arg-type [::seq ::seq] :arity 2})
-	(prim 'str-a {:type ::string})
-	(prim 'str-b {:type ::string})]]])
+  (def test-tree-a
+       [(prim '+ {:type Number :arg-type [Number Number] :arity 2})
+	[(prim '* {:type Number :arg-type [Number Number] :arity 2})
+	 (prim 'x {:type Number})
+	 (prim 'y {:type Number})]
+	[(prim 'count {:type Number :arg-type [::seq] :arity 1})
+	 [(prim 'concat {:type ::seq :arg-type [::seq ::seq] :arity 2})
+	  (prim 'str-a {:type ::string})
+	  (prim 'str-b {:type ::string})]]])
 
-(def test-tree-b
-     [(prim '- {:type Number :arg-type [Number Number] :arity 2})
-      [(prim 'count {:type Number :arg-type [::seq] :arity 1})
-       (prim 'str-c {:type ::string})]
-      (prim 'z {:type Number})])
+  (def test-tree-b
+       [(prim '- {:type Number :arg-type [Number Number] :arity 2})
+	[(prim 'count {:type Number :arg-type [::seq] :arity 1})
+	 (prim 'str-c {:type ::string})]
+	(prim 'z {:type Number})]))
 
 
 (comment

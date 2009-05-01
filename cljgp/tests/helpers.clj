@@ -35,27 +35,42 @@
 
 ; A config for a simple gimped experiment
 
+(derive ::num ::any)
+(derive Number ::num)
+(derive ::seq ::any)
+(derive ::string ::seq)
+
 (def _1 1)
 (def _2 2)
 (def _3 3)
 (def _4 4)
 (def _5 5)
 
+(def TEXT "foobar")
+
 (def config-maths
-     {:function-set [(prim `- {:type Number 
-			       :arg-type [Number Number]})
+     {:function-set [(prim `- 
+			   {:type Number 
+			    :arg-type [Number Number]})
 
-		     (prim `+ {:type Number 
-			       :arg-type [Number Number]})
+		     (prim `+ 
+			   {:type Number 
+			    :arg-type [Number Number]})
 
-		     (prim `* {:type Number 
-			       :arg-type [Number Number]})]
+		     (prim `* 
+			   {:type Number 
+			    :arg-type [Number Number]})
+
+		     (prim `count 
+			   {:type Number
+			    :arg-type [::seq]})]
 
       :terminal-set [(prim `_1 {:type Number})
 		     (prim `_2 {:type Number})
 		     (prim `_3 {:type Number})
 		     (prim `_4 {:type Number})
-		     (prim `_5 {:type Number})]
+		     (prim `_5 {:type Number})
+		     (prim `TEXT {:type ::string})]
       :arg-list []
 
       :root-type Number

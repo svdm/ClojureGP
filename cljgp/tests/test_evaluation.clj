@@ -48,7 +48,7 @@
 	 "Apart from fitness, individuals should be identical")))
 
 
-(deftest test-best-fitness
+#_(deftest test-best-fitness
   (let [pop (evaluate-pop (generate-pop config-maths) config-maths)
 	real-best (first (sort-by :fitness pop))]
     (is (= (best-fitness pop) real-best))))

@@ -31,10 +31,11 @@
       (throw (RuntimeException. 
 	      (str "No available terminal of type " node-type))))
     (if-let [fnode (pick-rand-typed node-type func-set)]
-      (cons fnode (for [cur-type (:arg-type ^fnode)]
-		    (generate-tree func-set term-set 
-				   (dec max-depth) method 
-				   cur-type)))
+      (cons fnode (doall     ; force seq, else it will compute outside try/catch
+		   (for [cur-type (:arg-type ^fnode)]
+		     (generate-tree func-set term-set 
+				    (dec max-depth) method 
+				    cur-type))))
       (throw (RuntimeException. 
 	      (str "No available function of type " node-type))))))
 
@@ -53,7 +54,6 @@
 				(if (< (gp-rand) grow-chance) :grow :full)
 				root-type)
 		 (catch RuntimeException e
-		   #_(println e)
 		   false))]
     tree
     (recur max-depth grow-chance func-set term-set root-type)))

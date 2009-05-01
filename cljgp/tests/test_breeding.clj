@@ -12,18 +12,51 @@
 (def func-set-maths (:function-set config-maths))
 (def term-set-maths (:terminal-set config-maths))
 
-(def my-gen (partial generate-tree func-set-maths term-set-maths))
+(defn my-gen
+  [max-depth method root-type]
+  (if-let [tree (try
+		 (generate-tree func-set-maths
+				term-set-maths
+				max-depth
+				method
+				root-type)
+		 (catch RuntimeException e
+		   false))]
+    tree
+    (recur max-depth method root-type)))
+
 
 (def rtype (:root-type config-maths))
 
 ; for this primitive set, trees should always return a number
 (def valid-result? number?)
 
-
 (defn valid-eval?
   "When evaluated, does this tree produce a valid result?"
   [tree]
   (valid-result? (eval tree)))
+
+(defn valid-types?
+  "Given a node (tree) and the type that node should satisfy (root-type),
+  returns whether it and its subtree (if any) are validly typed."
+  [node satisfies]
+  (cond
+    (nil? node) (nil? satisfies)
+    (not (coll? node)) (isa? (gp-type node) satisfies)
+    :else (and (isa? (gp-type node) satisfies)
+	       (every? true? 
+		       (map valid-types? 
+			    (next node) 
+			    (:arg-type ^(first node)))))))
+
+(defn full-tree-test
+  [tree]
+  (is (valid-tree? tree)
+      "Root must be seq or result constant")
+  (is (valid-types? tree rtype)
+      "Tree must be validly typed")
+  (is (valid-eval? tree)
+      "Result of evaluation must be valid"))
 
 ; generation function tests
 
@@ -32,25 +65,19 @@
     (let [max-depth 4
 	  tree (my-gen max-depth :grow rtype)
 	  depth (tree-depth tree)]
-      (is (valid-tree? tree)
-	  "Root must either be a seq, or a valid result constant.")
+      (full-tree-test tree)
       (is (and (> depth 0) (<= depth max-depth))
 	  "Grow-method trees must be of a valid size up to the limit.")
       (is (= (tree-depth (my-gen 0 :grow rtype)) 1) 
-	  "For max-depth 0, must return single node.")
-      (is (valid-eval? tree)
-	  "Result of evaluating tree must be valid.")))
+	  "For max-depth 0, must return single node.")))
   (testing "full method"
     (let [max-depth 4
 	  tree (my-gen max-depth :full rtype)]
-      (is (valid-tree? tree)
-	  "Root must either be a seq, or a valid result constant.")
+      (full-tree-test tree)
       (is (= (tree-depth tree) max-depth)
 	  "Full-method trees must be the given max-depth in size.")
       (is (= (tree-depth (my-gen 0 :full rtype)) 1)
-	  "For max-depth 0, must return single node.")
-      (is (valid-eval? tree)
-	  "Result of evaluating tree must be valid."))))
+	  "For max-depth 0, must return single node."))))
 
 (deftest test-generate-ramped
   (let [d 4
@@ -58,14 +85,9 @@
 	full-tree (generate-ramped d 0 func-set-maths term-set-maths rtype)
 	rand-tree (generate-ramped d 0.5 func-set-maths term-set-maths rtype)]
     (testing "generated tree validity"
-	     (testing "basic structural requirements"
-		      (is (valid-tree? grown-tree))
-		      (is (valid-tree? full-tree))
-		      (is (valid-tree? rand-tree)))
-	     (testing "evaluation requirements"
-		      (is (valid-eval? grown-tree))
-		      (is (valid-eval? full-tree))
-		      (is (valid-eval? rand-tree))))
+	     (full-tree-test grown-tree)
+	     (full-tree-test full-tree)
+	     (full-tree-test rand-tree))
     (is (<= (tree-depth full-tree) d)
 	"Ramped gen with 0% grow chance should result in a full tree.")
     (is (<= (tree-depth grown-tree) d)
@@ -107,16 +129,14 @@
 				       (my-gen 4 :grow rtype)
 				       rtype)]
     (is (= (count trees) 2))
-    (is (every? valid-tree? trees)
-	"Should result in two valid trees.")
-    (is (every? valid-eval? trees))))
+    (doseq [tree trees]
+      (full-tree-test tree))))
 
 (deftest test-mutate
   (let [tree (mutate func-set-maths term-set-maths
 		     (my-gen 4 :full rtype)
 		     rtype)]
-    (is (valid-tree? tree))
-    (is (valid-eval? tree))))
+    (full-tree-test tree)))
 
 (deftest test-get-valid
   (is (nil? (get-valid true? 2 #(vector [false false false]))))
@@ -131,10 +151,8 @@
 	"All individuals should be maps with the required keys")
     (is (every? #(= (:gen %) (inc gen-old)) inds)
 	"New individuals should have incremented :gen.")
-    (is (every? valid-tree? trees)
-	"New individuals should have valid trees.")
-    (is (every? valid-eval? trees)
-	"New inds should evaluate to valid results.")))
+    (doseq [tree trees]
+      (full-tree-test tree))))
 
 (deftest test-crossover-inds
   (let [gen-old 0
@@ -153,7 +171,9 @@
 
 (deftest test-reproduce-ind
   (let [gen-old 0
-	ind-old (make-individual `(+ _1 _2) gen-old (:arg-list config-maths))
+	ind-old (make-individual (my-gen 4 :full rtype) 
+				 gen-old 
+				 (:arg-list config-maths))
 	ind (reproduce-ind ind-old config-maths)]
     (test-inds ind gen-old 1)
     (is (= (dissoc ind-old :gen) (dissoc (first ind) :gen))
