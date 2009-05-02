@@ -33,10 +33,12 @@
   Becomes: (let [rng (Random. 123)] (fn [] (. rng nextDouble))
 
   Also useful, for easily creating several seeded PRNG-fns for a threaded
-  experiment: (map #(rand-fn nextDouble (Random. %)) [1234 8472 9000])"
- [method rng] 
- `(let [r# ~rng]
-    (fn [] (. r# ~method))))
+  experiment: (map #(rand-fn nextDouble (Random. %)) [1234 8472 9000])."
+  ([method rng] 
+     `(let [r# ~rng]
+	(fn [] (. r# ~method))))
+  ([rng]
+     `(rand-fn nextDouble rng)))
 
 (defn make-default-rand
   "Default producer function of rand functions, for use in :rand-fn-maker in

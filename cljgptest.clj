@@ -4,7 +4,8 @@
 (ns cljgptest
   (:import java.util.Random)
   (:require [cljgp.tools.logging :as gp-log]
-	    [cljgp.tools.graph :as gp-graph])
+	    [cljgp.tools.graph :as gp-graph]
+	    #_[cljgp.tools.unc-math-random :as unc-rand])
   (:use [cljgp.core :only (generate-run)]
 	[cljgp.evaluation :only (best-fitness)]
 	[cljgp.selection :only (tournament-select)]
@@ -16,7 +17,7 @@
 	cljgp.random
 	cljgp.config))
 
-;java -cp .;k:/clojure/svn-trunk/clojure.jar;k:/clojure/contrib/clojure-contrib.jar;./lib/plot.jar clojure.lang.Repl cljgptest.clj
+;java -cp .;k:/clojure/svn-trunk/clojure.jar;k:/clojure/contrib/clojure-contrib.jar;./lib/plot.jar;./lib/uncommons-maths-1.2.jar clojure.lang.Repl cljgptest.clj
 
 
 
@@ -236,6 +237,7 @@
 
       :threads 4
 
+      ;:rand-fn-maker unc-rand/make-unc-math-rand
       :rand-fn-maker make-default-rand
       :rand-seeds [21312 773290 4901 9928]
       })
