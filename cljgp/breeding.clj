@@ -195,11 +195,11 @@
 (defn mutate
   "Performs a mutation operation on the given tree. Returns the new tree. If no
   valid subtree could be generated, returns unmodified tree."
-  [func-set term-set tree root-type]
+  [func-set term-set max-depth root-type tree]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
 	pick-type (parent-arg-type idx tree root-type)
-	subtree (try (generate-tree func-set term-set 17 :grow pick-type)
+	subtree (try (generate-tree func-set term-set max-depth :grow pick-type)
 		     (catch RuntimeException e nil))]
     (if (nil? subtree)
       tree
@@ -227,13 +227,14 @@
 (defn mutate-ind
   "Performs mutation on given individual's tree. Returns seq with the new
   individual as single element (for easy compatibility with crossover-ind)."
-  [ind run-config]
+  [ind run-config max-depth]
   (let [{:keys [arg-list validate-tree-fn breeding-retries
 		function-set terminal-set root-type]} run-config
 	orig (get-fn-body (:func ind))
 	tree (get-valid validate-tree-fn breeding-retries
 			  #(mutate function-set terminal-set 
-				   orig root-type))
+				   max-depth root-type
+				   orig))
 	gen (inc (:gen ind))]
     (if (not (nil? tree))
       [(make-individual tree gen arg-list)]
@@ -269,10 +270,12 @@
   "Selects an individual from pop by applying selection-fn specified in the
   run-config to it, performs mutation and returns seq with the single resulting
   tree in it. Mutation will pull nodes from the function and terminal sets
-  specified in run-config."
-  [pop run-config]
-  (let [select (:selection-fn run-config)]
-    (mutate-ind (select pop) run-config)))
+  specified in run-config. Generated (sub)tree will be at most max-depth deep."
+  ([max-depth pop run-config]
+     (let [select (:selection-fn run-config)]
+       (mutate-ind (select pop) run-config max-depth)))
+  ([pop run-config]
+     (mutation-breeder 17 pop run-config)))
 
 (defn reproduction-breeder
   "Selects an individual from pop by applying selection-fn specified in the

@@ -116,7 +116,7 @@
     (cond
       (nil? entry) 
         (if (k config-defaults) 
-	  (do (println "Warning: key" k "missing from configuration,"
+	  (do (println "Note: key" k "missing from configuration,"
 		       "using default.")
 	      (find config-defaults k))
 	  nil)

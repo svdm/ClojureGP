@@ -134,8 +134,9 @@
 
 (deftest test-mutate
   (let [tree (mutate func-set-maths term-set-maths
-		     (my-gen 4 :full rtype)
-		     rtype)]
+		     17
+		     rtype
+		     (my-gen 4 :full rtype))]
     (full-tree-test tree)))
 
 (deftest test-get-valid
@@ -166,7 +167,8 @@
 (deftest test-mutate-ind
   (let [gen-old 0
 	ind (mutate-ind (make-individual (my-gen 4 :full rtype) gen-old [])
-			config-maths)]
+			config-maths
+			17)]
     (test-inds ind gen-old 1)))
 
 (deftest test-reproduce-ind
