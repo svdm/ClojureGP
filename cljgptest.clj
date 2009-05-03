@@ -3,7 +3,8 @@
 
 (ns cljgptest
   "Home for test-experiments etc. from the perspective of a lib user."
-  (:import java.util.Random)
+  (:import [java.util Random]
+	   [java.io BufferedWriter FileWriter])
   (:require [cljgp.tools.logging :as gp-log]
 	    [cljgp.tools.graph :as gp-graph]
 	    #_[cljgp.tools.unc-math-random :as unc-rand])
@@ -245,9 +246,15 @@
 
 (defn run-concat
   []
-  (best-fitness
-   (last
-    (map gp-log/print-details (generate-run config-concat)))))
+  (let [w (BufferedWriter. (FileWriter. "gp_concat_test.log"))
+	best (best-fitness
+	      (last
+	       (map (gp-log/log-details w)
+		    (map gp-log/print-details (generate-run config-concat)))))]
+    (.write w "\n\nBest individual:\n")
+    (.write w (str best))
+    (.close w)
+    best))
 
 ;
 ; MISC. TEST MATERIAL
