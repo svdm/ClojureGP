@@ -2,11 +2,14 @@
 ;;; cljgp.random.clj
 
 (ns cljgp.random
+  "Default random functions, and facilities for overriding them with better
+  RNGs."
   (:import java.util.Random))
 
 
 (defn gp-rand
-  "Identical to clojure.core/rand, but possibly with a different PRNG."
+  "Identical to clojure.core/rand, but can be overridden to use a different PRNG
+  without affecting clojure's rand."
   [] (. Math random))
 
 (defn gp-rand-int

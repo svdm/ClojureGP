@@ -2,9 +2,8 @@
 ;;; cljgp.tools.analyse.clj
 
 (ns cljgp.tools.analyse
+  "Basic analysis functions, see cljgp.tools.logging for example usage."
   (:use cljgp.util))
-
-; Some basic analysis functions, see cljgp.tools.logging for example of usage.
 
 ; TODO: func that returns [fit-min fit-avg fit-max] as efficiently as possible
 
@@ -70,3 +69,5 @@
   [pop]
   (pop-max-of tree-size pop))
 
+; Also see cljgp.util.tree-depth
+; TODO: add some min/max/avg functions for tree-depth

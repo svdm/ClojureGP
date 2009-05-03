@@ -2,6 +2,7 @@
 ;;; cljgp.selection.clj
 
 (ns cljgp.selection
+  "Default selection functionality."
   (:use cljgp.random
 	cljgp.evaluation))
 

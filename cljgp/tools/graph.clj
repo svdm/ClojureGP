@@ -2,18 +2,22 @@
 ;;; cljgp.tools.graph.clj
 
 (ns cljgp.tools.graph
+  "Example graphing implementation that plots data about the evolution process
+  as it's computed. Requires QN Plot library (http://quies.net/java/math/plot/),
+  tested with v1.6.
+
+  Used by mapping the fitness plotter fn over the generated run, ex:
+    (last
+      (map (create-fitness-plotter) 
+           (generate-run my-experiment-config)))
+
+  See also cljgp.tools.logging."
   (:import [javax.swing JFrame JPanel]
 	   [java.awt Color Graphics Dimension]
 	   [net.quies.math.plot Graph Function ChartStyle ChartType])
   (:use cljgp.tools.analyse))
 
-; Example of how data about the evolution process can be graphed as each
-; generation is computed.
-
-; This implementation requires QN Plot library, but any lib capable of realtime
-; plotting would work.
-
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (defn- make-style
   [#^Color c]

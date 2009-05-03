@@ -2,6 +2,7 @@
 (set! *warn-on-reflection* true)
 
 (ns cljgptest
+  "Home for test-experiments etc. from the perspective of a lib user."
   (:import java.util.Random)
   (:require [cljgp.tools.logging :as gp-log]
 	    [cljgp.tools.graph :as gp-graph]

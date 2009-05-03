@@ -3,8 +3,9 @@
 ;;; cljgp.core.clj
 
 (ns cljgp.core
-  (:use cljgp.random
-	cljgp.selection
+  "Core functions that handle a GP run, creating a population, evaluating and
+  breeding it until the end condition is reached."
+  (:use cljgp.selection
 	cljgp.breeding
 	cljgp.evaluation
 	[cljgp.config :only (prepare-config)]))
@@ -45,6 +46,9 @@
 (defn generate-run
   "Returns a lazy seq of successive generations in an evolution run whose
   parameters are defined in 'run-config.
+
+  Besides validation, some preprocessing is performed on the 'run-config,
+  currently only to create and initialize the RNGs on a per-run basis.
 
   See 'evolve-future-gens for more details on the returned lazy seq."
   [run-config]

@@ -2,10 +2,21 @@
 ;;; cljgp.tools.logging.clj
 
 (ns cljgp.tools.logging
-  (:use cljgp.tools.analyse))
+  "Examples/simple default versions of logging functions.
 
-; Examples of or simple default versions of logging functions, see bottom of
-; file for example usage.
+  Example usage:
+  (last (map log-details 
+             (map print-details 
+                  (map (create-fitness-plotter)
+                       (generate-run ...)))))
+
+  The (last ..) call forces the lazy seq of generations to realize, and each
+  realized generation gets passed through the graph plotter, 'print-details and
+  'log-details, before being discarded by 'last unless it is in fact the last
+  generation. This means that side effects will be performed as soon as each
+  generation is computed (which might be counter-intuitive at first) due to the
+  laziness of the seq of generations returned by generate-run."
+  (:use cljgp.tools.analyse))
 
 (defn print-details
   "Prints basic information to *out* about given generation (= population),
@@ -36,9 +47,3 @@
 	      (map print-details 
 		   (map graph-fitness (generate-run ...))))))
 )
-; The (last ..) call forces the lazy seq of generations to realize, and each
-; realized generation gets passed through graph-fitness, print-details and
-; log-details, before being discarded by last unless it is in fact the last
-; generation. This means that side effects will be performed as soon as each
-; generation is computed (which might be counter-intuitive at first) due to 
-; the lazy nature of the seq of generations returned by generate-run.

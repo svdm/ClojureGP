@@ -2,6 +2,8 @@
 ;;; cljgp.config.clj
 
 (ns cljgp.config
+  "Facilities for creating GP experiment (\"run\") configurations and validating
+  them."
   (:use [cljgp.breeding :only (crossover-breeder
 			       mutation-breeder
 			       reproduction-breeder

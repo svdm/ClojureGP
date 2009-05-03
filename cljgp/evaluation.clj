@@ -1,10 +1,8 @@
 
 ;;; cljgp.evaluation.clj
-;;;
-;;; Code concerning the evaluation of (populations of) individuals
-;;;
 
 (ns cljgp.evaluation
+  "Functionality concerning the evaluation of (populations of) individuals."
   (:use [cljgp.random :only (gp-rand)]
 	[cljgp.util :only (partition-full)]))
 

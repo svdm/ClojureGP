@@ -2,7 +2,8 @@
 ;;; cljgp.breeding.clj
 
 (ns cljgp.breeding
-  (:require [clojure.zip :as zip])
+  "Facilities for generating an initial population and breeding an evaluated
+  one, including some standard breeding procedures."
   (:use cljgp.random
 	cljgp.util))
 

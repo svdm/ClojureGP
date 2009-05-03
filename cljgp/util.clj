@@ -2,8 +2,10 @@
 ;;; cljgp.util.clj
 
 (ns cljgp.util
+  "Utility functions and macros."
   (:use [cljgp.random :only (pick-rand)]))
 
+; TODO: turn individuals into struct-maps?
 (defn make-individual
   "Returns map representing an individual in the population."
   [tree gen arg-list]
@@ -13,7 +15,8 @@
 
 (defn get-fn-body
   "Returns the body of a quoted function definition of the form (fn [..]
-  body). In GP terms, returns the expression tree of an individual."
+  body). In GP terms, returns the expression tree of an individual's :func
+  value."
   [quoted-fn]
   (nth quoted-fn 2 '()))
 
@@ -25,7 +28,7 @@
 (defn tree-depth
   "Returns the depth of the given tree"
   [node]
-  (if (seq? node)
+  (if (coll? node)
     (if (> (count node) 1)
       (+ 1 (apply max (map tree-depth (next node))))
       (count node))
