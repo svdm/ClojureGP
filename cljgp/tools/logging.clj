@@ -2,9 +2,10 @@
 ;;; cljgp.tools.logging.clj
 
 (ns cljgp.tools.logging
-  "Examples/simple default versions of logging functions.
+  "Facilities for printing statistics and information relating to GP runs and
+  their results. Includes examples/simple default versions of logging functions.
 
-  Example usage:
+  Example usage of showing statistics during a run:
   (last (map <file logger fn>
              (map print-details 
                   (map <graph plotter fn>
@@ -17,7 +18,44 @@
   generation is computed (which might be counter-intuitive at first) due to the
   laziness of the seq of generations returned by generate-run."
   (:use cljgp.tools.analyse)
+  (:use clojure.contrib.pprint)
   (:import [java.io Writer]))
+
+(defn print-tree
+  "Pretty-prints an evolved function/tree."
+  ([writer show-ns tree]
+     (write tree 
+	    :dispatch *code-dispatch*
+	    :suppress-namespaces (false? show-ns)
+	    :pretty true
+	    :stream writer))
+  ([show-ns tree] 
+     (print-tree true show-ns tree)))
+
+; TODO: merge -verbose in using a :print-type arg
+(defn print-individual
+  "Pretty-prints an individual as a map. Re-readable if show-ns is true (default
+  false)."
+  ([show-ns ind]
+     (print-tree show-ns ind))
+
+  ([ind] 
+     (print-individual false ind)))
+
+(defn print-individual-verbose
+  "Prints an individual in verbose human-readable form."
+  [#^Writer writer show-ns ind]
+  (let [added-data (dissoc ind :gen :fitness :func)]
+    (.write writer 
+	    (str "Data of individual:\n"
+		 " Generation: " (:gen ind) "\n"
+		 " Fitness: " (:fitness ind) "\n"
+		 (when (not (empty? added-data)) 
+		   (str " Additional data: "
+			(write added-data :stream nil) "\n"))
+		 " Function:\n")))
+  (print-tree writer show-ns (:func ind))
+  (.flush writer))
 
 ; Neither of these are particularly pretty and should probably be replaced at
 ; some point.

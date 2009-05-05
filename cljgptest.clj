@@ -6,7 +6,7 @@
   (:import [java.util Random]
 	   [java.io BufferedWriter FileWriter])
   (:require [cljgp.tools.logging :as gp-log]
-	    [cljgp.tools.graph :as gp-graph]
+	    #_[cljgp.tools.graph :as gp-graph]
 	    #_[cljgp.tools.unc-math-random :as unc-rand])
   (:use [cljgp.core :only (generate-run)]
 	[cljgp.evaluation :only (best-fitness)]
@@ -138,16 +138,17 @@
 
 (defn run-mvr
   []
-  (best-fitness
-   (last
-    (map gp-log/print-details (generate-run config-mvr)))))
+  (gp-log/print-individual-verbose *out* false
+   (best-fitness
+    (last
+     (map gp-log/print-details (generate-run config-mvr))))))
 
 (defn bench-mvr
   [threads]
   (time (dorun (generate-run (assoc config-mvr
 			       :threads threads)))))
 
-(defn run-mvr-graphed
+#_(defn run-mvr-graphed
   []
   (best-fitness
    (last
@@ -184,9 +185,10 @@
   [func]
   (let [str1-stimuli (take 10 (repeatedly #(generate-string 5)))
 	str2-stimuli (take 10 (repeatedly #(generate-string 5)))]
-    (reduce + (map (partial evaluate-concat-once func)
-		   str1-stimuli
-		   str2-stimuli))))
+    {:fitness (reduce + (map (partial evaluate-concat-once func)
+			     str1-stimuli
+			     str2-stimuli))
+     :test 33}))
 
 ; type defs
 (derive ::num ::any)
@@ -244,7 +246,7 @@
       :rand-seeds [21312 773290 4901 9928]
       })
 
-(defn run-concat
+(defn run-concat-logged
   []
   (let [w (BufferedWriter. (FileWriter. "gp_concat_test.log"))
 	best (best-fitness
@@ -255,6 +257,13 @@
     (.write w (str best))
     (.close w)
     best))
+
+(defn run-concat
+  []
+  (gp-log/print-individual-verbose *out* false
+   (best-fitness
+    (last
+     (map gp-log/print-details (generate-run config-concat))))))
 
 ;
 ; MISC. TEST MATERIAL

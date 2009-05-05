@@ -26,7 +26,7 @@
   `(tree-seq coll? next ~tree))
 
 (defn tree-depth
-  "Returns the depth of the given tree"
+  "Returns the max depth of the given (sub)tree"
   [node]
   (if (coll? node)
     (if (> (count node) 1)
@@ -34,6 +34,10 @@
       (count node))
     1))
 
+(defn tree-size
+  "Returns number of nodes in given (sub)tree."
+  [node]
+  (count (make-tree-seq node)))
 
 ; I assume there's an easier way to do this, but I can't think of any. 
 (defn divide-up
