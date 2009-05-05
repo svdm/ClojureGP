@@ -35,7 +35,8 @@
       (map? result) (conj ind result)
       (number? result) (assoc ind :fitness result)
       :else (throw (IllegalArgumentException. 
-		    "Evaluator must return number or map.")))))
+		    (str "Evaluator must return number or map. Returned: " 
+			 result))))))
 
 (defn evaluate-pop
   "Takes a population (collection) of individuals and returns a new seq with all
@@ -55,7 +56,14 @@
 	       (:rand-fns run-config))))))
 
 
+; Unoptimized version was (first (sort-by :fitness pop)), which I thought was
+; very pretty. Below is about ten times as fast though.
 (defn best-fitness
   "Returns the individual with the best (lowest) fitness in the population."
   [pop]
-  (first (sort-by :fitness pop))) ;FIXME: replace with something faster?
+  (loop [best {:fitness Float/MAX_VALUE}
+	 p pop]
+    (if-let [ind (first p)]
+      (recur (min-key :fitness ind best)
+	     (next p))
+      best)))

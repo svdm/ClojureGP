@@ -32,7 +32,7 @@
   ([show-ns tree] 
      (print-tree true show-ns tree)))
 
-; TODO: merge -verbose in using a :print-type arg
+; TODO: merge -verbose in using a :print-type arg?
 (defn print-individual
   "Pretty-prints an individual as a map. Re-readable if show-ns is true (default
   false)."
@@ -44,18 +44,21 @@
 
 (defn print-individual-verbose
   "Prints an individual in verbose human-readable form."
-  [#^Writer writer show-ns ind]
-  (let [added-data (dissoc ind :gen :fitness :func)]
-    (.write writer 
-	    (str "Data of individual:\n"
-		 " Generation: " (:gen ind) "\n"
-		 " Fitness: " (:fitness ind) "\n"
-		 (when (not (empty? added-data)) 
-		   (str " Additional data: "
-			(write added-data :stream nil) "\n"))
-		 " Function:\n")))
-  (print-tree writer show-ns (:func ind))
-  (.flush writer))
+  ([#^Writer writer show-ns ind]
+     (let [added-data (dissoc ind :gen :fitness :func)]
+       (.write writer 
+	       (str "Data of individual:\n"
+		    " Generation: " (:gen ind) "\n"
+		    " Fitness: " (:fitness ind) "\n"
+		    (when (not (empty? added-data)) 
+		      (str " Additional data: "
+			   (write added-data :stream nil) "\n"))
+		    " Function:\n")))
+     (print-tree writer show-ns (:func ind))
+     (.write writer "\n")
+     (.flush writer))
+  ([writer ind]
+     (print-individual-verbose writer false ind)))
 
 ; Neither of these are particularly pretty and should probably be replaced at
 ; some point.

@@ -186,7 +186,7 @@
   (let [str1-stimuli (take 10 (repeatedly #(generate-string 5)))
 	str2-stimuli (take 10 (repeatedly #(generate-string 5)))]
     {:fitness (reduce + (map (partial evaluate-concat-once func)
-			     str1-stimuli
+ 			     str1-stimuli
 			     str2-stimuli))
      :test 33}))
 
@@ -254,7 +254,7 @@
 	       (map (gp-log/log-details w)
 		    (map gp-log/print-details (generate-run config-concat)))))]
     (.write w "\n\nBest individual:\n")
-    (.write w (str best))
+    (gp-log/print-individual-verbose w best)
     (.close w)
     best))
 
