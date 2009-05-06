@@ -56,14 +56,9 @@
 	       (:rand-fns run-config))))))
 
 
-; Unoptimized version was (first (sort-by :fitness pop)), which I thought was
-; very pretty. Below is about ten times as fast though.
+; First iteration used a sort-by on :fitness, second was a much faster but
+; uglier manual loop-recur, this version seems to be best of both worlds.
 (defn best-fitness
   "Returns the individual with the best (lowest) fitness in the population."
   [pop]
-  (loop [best {:fitness Float/MAX_VALUE}
-	 p pop]
-    (if-let [ind (first p)]
-      (recur (min-key :fitness ind best)
-	     (next p))
-      best)))
+  (apply (partial min-key :fitness) pop))
