@@ -7,7 +7,7 @@
 
 ; TODO: func that returns [fit-min fit-avg fit-max] as efficiently as possible
 
-(defn pop-average-of
+(defn pop-avg-of
   "Returns the average of the results of mapping func over pop."
   [func pop]
   (/ (reduce + (map func pop))
@@ -45,47 +45,16 @@
   [ind]
   (tree-depth (get-fn-body (:func ind))))
 
-; What terrible macros hath I wrought..
+; These defs were macro'd, but this seemed to obfuscate things unnecessarily
+(def fitness-avg (partial pop-avg-of :fitness))
+(def fitness-min (partial pop-min-of :fitness))
+(def fitness-max (partial pop-max-of :fitness))
 
-(defmacro make-pop-stat
-  "Example:
-    (make-pop-stat my-fun my-fun-name pop-average-of \"avg\")
-  Expands to:
-    (defn my-fun-name-avg
-      \"Population avg of my-fun-name\"
-      [pop]
-      (pop-average-of my-fun pop))"
-  [fsymbol fname popfn statname]
-  `(defn ~(symbol (str fname "-" statname))
-     ~(str "Population " statname " of " fname)
-     ~['pop]
-     (~popfn ~fsymbol ~'pop)))
+(def tree-depth-avg (partial pop-avg-of tree-depth-ind))
+(def tree-depth-min (partial pop-min-of tree-depth-ind))
+(def tree-depth-max (partial pop-max-of tree-depth-ind))
 
-(defmacro make-pop-stat-all
-  "Defines population average/min/max functions. See make-pop-stat.
-
-  Basically, given eg.:
-    (make-pop-stat-all tree-size-ind \"tree-size\")
-  Produces three functions:
-    tree-size-average
-    tree-size-min
-    tree-size-max
-  That take a population as argument and apply (pop-average-of tree-size pop),
-  and the same for min and max."
-  ([fsymbol]
-     `(make-pop-stat-all ~fsymbol ~(name fsymbol)))
-  ([fsymbol fname]
-     `(do
-	(make-pop-stat ~fsymbol ~fname pop-average-of "average")
-	(make-pop-stat ~fsymbol ~fname pop-min-of "min")
-	(make-pop-stat ~fsymbol ~fname pop-max-of "max"))))
-
-; ... They let me be wonderfully lazy though:
-
-; tree-depth-average, tree-depth-minimum, tree-depth-maximum
-(make-pop-stat-all tree-depth-ind "tree-depth")
-; tree-size-average, tree-size-minimum, tree-size-maximum
-(make-pop-stat-all tree-size-ind "tree-size")
-; fitness-average, fitness-minimum, fitness-maximum
-(make-pop-stat-all :fitness)
+(def tree-size-avg (partial pop-avg-of tree-size-ind))
+(def tree-size-min (partial pop-min-of tree-size-ind))
+(def tree-size-max (partial pop-max-of tree-size-ind))
 
