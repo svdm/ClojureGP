@@ -4,7 +4,7 @@
 (ns cljgp.selection
   "Default selection functionality."
   (:use cljgp.random
-	cljgp.evaluation))
+	[cljgp.tools.analyse :only (best-fitness)]))
 
 (defn tournament-select
   "Selects tsize individuals from the given population pop and returns the one

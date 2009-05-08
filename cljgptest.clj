@@ -5,11 +5,11 @@
   "Home for test-experiments etc. from the perspective of a lib user."
   (:import [java.util Random]
 	   [java.io BufferedWriter FileWriter])
-  (:require [cljgp.tools.logging :as gp-log]
-	    #_[cljgp.tools.graph :as gp-graph]
+  (:require [cljgp.tools.logging :as log]
+	    #_[cljgp.tools.graph :as graph]
 	    #_[cljgp.tools.unc-math-random :as unc-rand])
   (:use [cljgp.core :only (generate-run)]
-	[cljgp.evaluation :only (best-fitness)]
+	[cljgp.tools.analyse :only (best-fitness)]
 	[cljgp.selection :only (tournament-select)]
 	[cljgp.breeding :only (crossover-breeder 
 			       mutation-breeder 
@@ -138,10 +138,9 @@
 
 (defn run-mvr
   []
-  (gp-log/print-individual-verbose *out* false
-   (best-fitness
-    (last
-     (map gp-log/print-details (generate-run config-mvr))))))
+  (log/print-best
+   (last
+    (map log/print-stats-basic (generate-run config-mvr)))))
 
 (defn bench-mvr
   [threads]
@@ -152,8 +151,8 @@
   []
   (best-fitness
    (last
-    (map (gp-graph/create-fitness-plotter false)
-	 (map gp-log/print-details 
+    (map (graph/create-fitness-plotter false)
+	 (map log/print-stats-basic 
 	      (generate-run config-mvr))))))
 
 ;
@@ -248,22 +247,22 @@
 
 (defn run-concat-logged
   []
-  (let [w (BufferedWriter. (FileWriter. "gp_concat_test.log"))
-	best (best-fitness
-	      (last
-	       (map (gp-log/log-details w)
-		    (map gp-log/print-details (generate-run config-concat)))))]
-    (.write w "\n\nBest individual:\n")
-    (gp-log/print-individual-verbose w best)
-    (.close w)
-    best))
+  (log/print-best   
+   (last
+    (map (log/log-stats "gp_concat_test.log")
+	 (map log/print-stats-full (generate-run config-concat))))))
 
 (defn run-concat
   []
-  (gp-log/print-individual-verbose *out* false
-   (best-fitness
-    (last
-     (map gp-log/print-details (generate-run config-concat))))))
+  (log/print-best
+   (last
+    (map log/print-stats-basic (generate-run config-concat)))))
+
+(defn run-concat-metatest
+  []
+  (last
+   (map #(do (println (meta %)) %)
+	(map #(with-meta % {:awoo true}) (generate-run config-concat)))))
 
 ;
 ; MISC. TEST MATERIAL
@@ -298,7 +297,7 @@
     []
     (best-fitness 
      (last 
-      (map (gp-graph/create-fitness-plotter true)
-	   (map gp-log/print-details (generate-run func-set-maths term-set-maths 
+      (map (graph/create-fitness-plotter true)
+	   (map log/print-details (generate-run func-set-maths term-set-maths 
 						   evaluate-maths breeders-maths 
 						   16 (make-simple-end 50))))))))

@@ -56,9 +56,3 @@
 	       (:rand-fns run-config))))))
 
 
-; First iteration used a sort-by on :fitness, second was a much faster but
-; uglier manual loop-recur, this version seems to be best of both worlds.
-(defn best-fitness
-  "Returns the individual with the best (lowest) fitness in the population."
-  [pop]
-  (apply (partial min-key :fitness) pop))

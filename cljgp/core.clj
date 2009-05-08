@@ -28,20 +28,19 @@
 	      (evolve-future-gens (breed-new-pop pop-evaluated run-config)
 				  run-config))))))
 
-; I need the below because when using take-while with a fitness-based end
-; condition predicate, it returns the sequence of generations up to and *not
-; including* the sequence for which the predicate returns false. Hence, when it
-; finds the first generation with perfect fitness, it stops there and doesn't
-; actually cons it onto the sequence. Here I define a version that is otherwise
-; identical to take-while, but includes every item in coll tested by pred.
-(defn- take-while-eager
-  "As take-while, but lazy sequence includes the item for which pred first
-  returns false."
-  [pred coll]
+(defn- take-until-end
+  "As take-while, but lazy sequence includes the item for which end? first
+  returns true. Also, items are assumed to be seqable (populations). The item
+  for which end? returns true is seq'd, and the metadata {:final true} is
+  attached. This is highly useful for functions mapped over the seq of
+  generations that need to perform some finalization when the run is complete,
+  eg. close a log file."
+  [end? coll]
   (lazy-seq
     (when-let [s (seq coll)]
-      (cons (first s) (when (pred (first s))
-			(take-while-eager pred (rest s)))))))
+      (if (end? (first s))
+	(cons (with-meta (seq (first s)) {:final true}) nil)
+	(cons (first s) (take-until-end end? (rest s)))))))
 
 (defn generate-run
   "Returns a lazy seq of successive generations in an evolution run whose
@@ -55,8 +54,8 @@
   (let [config (prepare-config run-config)
 	pop-initial (generate-pop config)
 	end? (:end-condition config)]
-    (take-while-eager (complement end?)
-		      (evolve-future-gens pop-initial config))))
+    (take-until-end end?
+		    (evolve-future-gens pop-initial config))))
 
 
 

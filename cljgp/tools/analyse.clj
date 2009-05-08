@@ -25,14 +25,12 @@
   [func pop]
   (apply max (map func pop)))
 
-(defn fitness-range
-  "Returns map with lowest (best) and highest (worst) fitnesses in population,
-  as {:lowest x, :highest y}. Bit more efficient than calling 'fitness-min and
-  'fitness-max separately if you want both."
+; First iteration used a sort-by on :fitness, second was a much faster but
+; uglier manual loop-recur, this version seems to be best of both worlds.
+(defn best-fitness
+  "Returns the individual with the best (lowest) fitness in the population."
   [pop]
-  (let [fs (map :fitness pop)]
-    {:lowest (apply min fs)
-     :highest (apply max fs)}))
+  (apply (partial min-key :fitness) pop))
 
 (defn tree-size-ind
   "Returns number of nodes (both functions and terminals) in given individual's
@@ -58,3 +56,25 @@
 (def tree-size-min (partial pop-min-of tree-size-ind))
 (def tree-size-max (partial pop-max-of tree-size-ind))
 
+(def *all-stats*
+     `[fitness-avg fitness-min fitness-max
+       tree-depth-avg tree-depth-min tree-depth-max
+       tree-size-avg tree-size-min tree-size-max
+       best-fitness])
+
+(defmacro make-stats-map
+  "Build a map of stat function names to delayed applications of those functions
+  to the given population.
+
+  By storing this map in metadata, we can avoid re-calculating the statistics
+  for different logging/output functions that report on the same seq."
+  [pop]
+  (reduce (fn [m func] 
+	     (conj m [(keyword (name func)) `(delay (~func ~pop))])) 
+	   {} 
+	   *all-stats*))
+
+(defn get-stat
+  "Gets a key from the stats map, which consists of delays that need forcing."
+  [stats-map stat-key]
+  (force (stat-key stats-map)))
