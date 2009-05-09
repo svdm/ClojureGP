@@ -5,13 +5,20 @@
   "Utility functions and macros."
   (:use [cljgp.random :only (pick-rand)]))
 
-; TODO: turn individuals into struct-maps?
+
+(defstruct individual :func :gen :fitness)
+
+(def get-func (accessor individual :func))
+(def get-gen (accessor individual :gen))
+(def get-fitness (accessor individual :fitness))
+
 (defn make-individual
-  "Returns map representing an individual in the population."
+  "Returns structmap representing an individual in the population."
   [tree gen arg-list]
-  {:func `(fn ~arg-list ~tree)
-   :gen gen
-   :fitness nil})
+  (struct-map individual
+      :func `(fn ~arg-list ~tree)
+      :gen gen
+      :fitness nil))
 
 (defn get-fn-body
   "Returns the body of a quoted function definition of the form (fn [..]

@@ -140,7 +140,7 @@
   []
   (log/print-best
    (last
-    (map log/print-stats-basic (generate-run config-mvr)))))
+    (map log/print-stats (generate-run config-mvr)))))
 
 (defn bench-mvr
   [threads]
@@ -152,7 +152,7 @@
   (best-fitness
    (last
     (map (graph/create-fitness-plotter false)
-	 (map log/print-stats-basic 
+	 (map log/print-stats 
 	      (generate-run config-mvr))))))
 
 ;
@@ -249,14 +249,15 @@
   []
   (log/print-best   
    (last
-    (map (log/log-stats "gp_concat_test.log")
-	 (map log/print-stats-full (generate-run config-concat))))))
+    (map (log/log-stats "gp_concat_test.log" :verbose)
+	 (map (partial log/print-stats :verbose)
+	      (generate-run config-concat))))))
 
 (defn run-concat
   []
   (log/print-best
    (last
-    (map log/print-stats-basic (generate-run config-concat)))))
+    (map log/print-stats (generate-run config-concat)))))
 
 (defn run-concat-metatest
   []

@@ -233,9 +233,9 @@
 		function-set terminal-set root-type]} run-config
 	orig (get-fn-body (:func ind))
 	tree (get-valid validate-tree-fn breeding-retries
-			  #(mutate function-set terminal-set 
-				   max-depth root-type
-				   orig))
+			#(mutate function-set terminal-set 
+				 max-depth root-type
+				 orig))
 	gen (inc (:gen ind))]
     (if (not (nil? tree))
       [(make-individual tree gen arg-list)]

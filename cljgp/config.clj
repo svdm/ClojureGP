@@ -9,7 +9,8 @@
 			       reproduction-breeder
 			       generate-ramped)]
 	[cljgp.selection :only (tournament-select)]
-	cljgp.random))
+	cljgp.random
+	cljgp.util))
 
 ;
 ; Helper fns for config creation
@@ -33,7 +34,7 @@
      (fn [pop]
        (let [ind (first pop)]
 	 (or (>= (:gen ind) max-generations)
-	     (some #(>= fit-tolerance (:fitness %)) pop)))))
+	     (some #(>= fit-tolerance (get-fitness %)) pop)))))
   ([max-generations] (make-simple-end max-generations 0.0001)))
 
 (defn seeds-from-time
