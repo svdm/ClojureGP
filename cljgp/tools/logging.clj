@@ -17,7 +17,8 @@
   generation. This means that side effects will be performed as soon as each
   generation is computed (which might be counter-intuitive at first) due to the
   laziness of the seq of generations returned by generate-run."
-  (:use cljgp.tools.analyse)
+  (:use cljgp.tools.analyse
+	cljgp.util)
   (:use clojure.contrib.pprint)
   (:import [java.io Writer BufferedWriter FileWriter]))
 
@@ -40,12 +41,12 @@
   (let [added-data (dissoc (merge {} ind) ; copy into normal map for dissoc
 			   :gen :fitness :func)]
     (str "Data of individual:\n"
-	 " Generation: " (:gen ind) "\n"
-	 " Fitness: " (:fitness ind) "\n"
+	 "  Generation: " (:gen ind) "\n"
+	 "  Fitness: " (:fitness ind) "\n"
 	 (when (not (empty? added-data)) 
-	   (str " Additional data: "
+	   (str "  Additional data: "
 		(write added-data :stream nil) "\n"))
-	 " Function:\n"
+	 "  Function:\n"
 	 (print-code nil show-ns (:func ind))
 	 "\n")))
 
@@ -114,29 +115,28 @@
     (let [gen-num (:gen (first gen-seq))
 	  stats (:stats-map ^gen-seq)
 	  {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
-      (str 
-       (format (str 
-		"=================\n"
-		"Generation %1$03d\n"
-		"=================\n"
-		"Trees:\n"
-		"  Avg size: \t%2$.4f\n"
-		"  Avg depth:\t%3$.4f\n"
-		"\n"
-		"Fitness:\n"
-		"  Best:  \t%4$.4f\n"
-		"  Worst: \t%5$.4f\n"
-		"  Avg:   \t%6$.4f\n"
-		"\n"
-		"Best individual of generation:\n")
-	       gen-num 
-	       (float (get-stat stats :tree-size-avg)) 
-	       (float (get-stat stats :tree-depth-avg))
-	       fit-min
-	       fit-max
-	       fit-avg)
-       (stringify-ind-verbose false (get-stat stats :best-fitness))
-       "\n\n"))
+      (format (str 
+	       "=================\n"
+	       "Generation %1$03d\n"
+	       "=================\n"
+	       "Trees:\n"
+	       "  Avg size: \t%2$.4f\n"
+	       "  Avg depth:\t%3$.4f\n"
+	       "\n"
+	       "Fitness:\n"
+	       "  Best:  \t%4$.4f\n"
+	       "  Worst: \t%5$.4f\n"
+	       "  Avg:   \t%6$.4f\n"
+	       "\n"
+	       "Best individual of generation:\n"
+	       (stringify-ind-verbose false (get-stat stats :best-fitness))
+	       "=================\n\n")
+	      gen-num 
+	      (float (get-stat stats :tree-size-avg)) 
+	      (float (get-stat stats :tree-depth-avg))
+	      fit-min
+	      fit-max
+	      fit-avg))
     ""))
 
 (defn print-stats
@@ -201,4 +201,105 @@
 		    :verbose stat-string-verbose)]
        (log-stats-writer filename statfn flush-every?))))
 
+;
+; RUN SUMMARY
+;
 
+(defn- summarizer
+  "Internal function used by consume-and-summarize. Meant for reducing over
+  run-seq."
+  [summary generation]
+  (if-let [gen (setup-stats-map generation)]
+    (let [{:keys [best-ind, total-inds]} summary
+	  stats (:stats-map ^gen)
+	  best-gen (get-stat stats :best-fitness)
+	  best-new (if best-ind		; will be nil in first cycle
+		     (min-key :fitness best-ind best-gen)
+		     best-gen)]
+      (assoc summary 
+	:best-ind best-new
+	:total-inds (+ total-inds (count gen))))
+    summary))
+
+(defn- stringify-summary
+  [summary]
+  (let [{:keys [best-ind total-inds running-time]} summary]
+    (format (str "\n"
+	         "#################\n"
+		 "  Run complete   \n"
+		 "#################\n"
+		 "Best individual of entire run:\n"
+		 (when best-ind (stringify-ind-verbose false best-ind))
+		 "\nRun statistics:\n"
+		 "  Total time:      %1$.2f msecs\n"
+		 "  Inds. evaluated: %2$d\n"
+		 "#################\n\n")
+	    running-time
+	    total-inds)))
+
+(defn- print-and-log
+  "Appends given 'text to file designated by 'filename, and prints it to
+  *out*. If filename is nil, only prints to *out*."
+  [filename #^String text]
+  (print text)
+  (flush)
+  (when (not (nil? filename))
+    (with-open [writer (BufferedWriter. (FileWriter. (str filename) true))]
+      (.write writer text))))
+
+
+#_(defn reduce-to-summary-old
+  "Consumes a sequence of generations of a run, tracking some statistics along
+  the way. When the run is complete, prints summary including the best
+  individual of the entire run to *out*. If a filename is given, also appends
+  the summary to that file (which can be the same file written to by
+  'log-stats)."
+  ([filename run-seq]
+     (print-and-log filename
+      (stringify-summary
+       (let [start-time (System/nanoTime)
+	     summary (reduce summarizer
+			     {:best-ind nil
+			      :total-inds 0}
+			     run-seq)]
+	 (assoc summary :running-time (/ (double (- (System/nanoTime) 
+						    start-time))
+					 1000000.0))))))
+  ([run-seq]
+     (reduce-to-summary nil run-seq)))
+
+; TODO: print/log of summary without holding onto head
+
+(defn reduce-to-summary
+  ([run-seq summary]
+     (if-let [gen (setup-stats-map (first run-seq))]
+       (let [{:keys [best-ind, total-inds, start-time]} summary
+	     stats (:stats-map ^gen)
+	     best-gen (get-stat stats :best-fitness)
+	     best-new (if best-ind	; will be nil in first cycle
+			(min-key :fitness best-ind best-gen)
+			best-gen)
+	     summary-new (assoc summary
+			   :best-ind best-new
+			   :total-inds (+ total-inds (count gen)))]
+	 (if (next run-seq)
+	   (recur (next run-seq) summary-new)
+	   (assoc summary-new
+	     :running-time (/ (double (- (System/nanoTime) 
+					 start-time))
+			      1000000.0))))))
+  ([run-seq]
+     (reduce-to-summary run-seq {:start-time (System/nanoTime)
+				 :best-ind nil
+				 :total-inds 0})))
+
+(defn test-head-hold
+  [num]
+  (reduce-to-summary
+   (take num
+	 (repeatedly 
+	  #(take 512 
+		 (repeatedly 
+		  (fn [] (struct-map individual 
+			   :fitness 
+			   (rand)))))))))

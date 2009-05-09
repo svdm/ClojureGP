@@ -5,7 +5,7 @@
   "Home for test-experiments etc. from the perspective of a lib user."
   (:import [java.util Random]
 	   [java.io BufferedWriter FileWriter])
-  (:require [cljgp.tools.logging :as log]
+  #_(:require 
 	    #_[cljgp.tools.graph :as graph]
 	    #_[cljgp.tools.unc-math-random :as unc-rand])
   (:use [cljgp.core :only (generate-run)]
@@ -15,6 +15,7 @@
 			       mutation-breeder 
 			       reproduction-breeder
 			       generate-ramped)]
+	cljgp.tools.logging
 	cljgp.util
 	cljgp.random
 	cljgp.config))
@@ -138,9 +139,9 @@
 
 (defn run-mvr
   []
-  (log/print-best
+  (print-best
    (last
-    (map log/print-stats (generate-run config-mvr)))))
+    (map print-stats (generate-run config-mvr)))))
 
 (defn bench-mvr
   [threads]
@@ -152,7 +153,7 @@
   (best-fitness
    (last
     (map (graph/create-fitness-plotter false)
-	 (map log/print-stats 
+	 (map print-stats 
 	      (generate-run config-mvr))))))
 
 ;
@@ -247,17 +248,16 @@
 
 (defn run-concat-logged
   []
-  (log/print-best   
-   (last
-    (map (log/log-stats "gp_concat_test.log" :verbose)
-	 (map (partial log/print-stats :verbose)
-	      (generate-run config-concat))))))
+  (let [logfile "gp_concat_test.log"]
+    (reduce-to-summary logfile
+     (map (log-stats logfile :verbose)
+	  (map (partial print-stats :verbose)
+	       (generate-run config-concat))))))
 
 (defn run-concat
   []
-  (log/print-best
-   (last
-    (map log/print-stats (generate-run config-concat)))))
+  (reduce-to-summary
+   (map print-stats (generate-run config-concat))))
 
 (defn run-concat-metatest
   []
@@ -299,6 +299,6 @@
     (best-fitness 
      (last 
       (map (graph/create-fitness-plotter true)
-	   (map log/print-details (generate-run func-set-maths term-set-maths 
+	   (map print-details (generate-run func-set-maths term-set-maths 
 						   evaluate-maths breeders-maths 
 						   16 (make-simple-end 50))))))))
