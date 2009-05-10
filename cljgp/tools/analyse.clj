@@ -5,9 +5,32 @@
   "Basic analysis functions, see cljgp.tools.logging for example usage."
   (:use cljgp.util))
 
+(defn find-best-of-run
+  "Helper fn meant for use in reduce, eg:
+    (reduce find-best-of-run (map print-stats (generate-run ...)
 
+  Given an individual 'best-yet and a 'generation, returns individual with the
+  best fitness of both the generation and 'best-yet. In the reduce context, this
+  is the new best-yet.
 
-
+  Given two generations, returns the best individual of both. Hence, when used
+  in a reduce it does not need to be given a starting val (but you can use 'nil
+  if you want)."
+  [best-yet generation]
+  (if (not (or (map? best-yet) (nil? best-yet)))
+    ; handle reduce with no start val, ie. initially both params are generations
+    (let [gen (setup-stats-map best-yet)
+	  stats (:stats-map ^gen)
+	  best-gen (get-stat stats :best-fitness)]
+      (find-best-of-run best-gen generation))
+    ; handle standard case
+    (let [gen (setup-stats-map generation)
+	  stats (:stats-map ^gen)
+	  best-gen (get-stat stats :best-fitness)
+	  best-new (if best-yet
+		     (min-key :fitness best-yet best-gen)
+		     best-gen)]
+      best-new)))
 
 (defn pop-avg-of
   "Returns the average of the results of mapping func over pop."
@@ -102,3 +125,7 @@
   "Gets a key from the stats map, which consists of delays that need forcing."
   [stats-map stat-key]
   (force (stat-key stats-map)))
+
+
+
+

@@ -205,22 +205,6 @@
 ; RUN SUMMARY
 ;
 
-(defn- summarizer
-  "Internal function used by consume-and-summarize. Meant for reducing over
-  run-seq."
-  [summary generation]
-  (if-let [gen (setup-stats-map generation)]
-    (let [{:keys [best-ind, total-inds]} summary
-	  stats (:stats-map ^gen)
-	  best-gen (get-stat stats :best-fitness)
-	  best-new (if best-ind		; will be nil in first cycle
-		     (min-key :fitness best-ind best-gen)
-		     best-gen)]
-      (assoc summary 
-	:best-ind best-new
-	:total-inds (+ total-inds (count gen))))
-    summary))
-
 (defn- stringify-summary
   [summary]
   (let [{:keys [best-ind total-inds running-time]} summary]
@@ -247,59 +231,98 @@
     (with-open [writer (BufferedWriter. (FileWriter. (str filename) true))]
       (.write writer text))))
 
+; There are gotchas involved in working with potentially large lazy
+; sequences. If the summary printing was simply done as follows:
+;  (defn bad-summary [run-seq] (print-summary-etc (reduce summarizer run-seq)))
 
-#_(defn reduce-to-summary-old
-  "Consumes a sequence of generations of a run, tracking some statistics along
-  the way. When the run is complete, prints summary including the best
-  individual of the entire run to *out*. If a filename is given, also appends
-  the summary to that file (which can be the same file written to by
-  'log-stats)."
-  ([filename run-seq]
-     (print-and-log filename
-      (stringify-summary
-       (let [start-time (System/nanoTime)
-	     summary (reduce summarizer
-			     {:best-ind nil
-			      :total-inds 0}
-			     run-seq)]
-	 (assoc summary :running-time (/ (double (- (System/nanoTime) 
+; ... then the reduce would not be a tail call and the fn would hold on to the
+; head of run-seq, preventing gc and causing out of memory errors for very large
+; sequences. I have not yet found a way of forcibly clearing that reference to
+; the run-seq, even though the printing functions only ever use the summary that
+; returned by the reduce. Forcing delays or wrapping in lazy-seq did not work.
+
+; Hence I've settled on a scheme where the summarizer function uses the :final
+; metadata key provided by cljgp.core.take-until-end to detect the end of the
+; run-seq and perform the printing side effects itself. This way, the reduce can
+; be a proper tail call and OoM misery is avoided.
+
+(defn- create-summarizer
+  "Internal function used by 'reduce-to-summary. Creates function meant for
+  reducing over a run-seq, which gathers some statistics and reports on them
+  after the final generation."
+  [log-filename returned-key]
+  (let [finalize (fn [smry]
+		   (do 
+		     (print-and-log log-filename
+				    (stringify-summary smry))
+		     (if (= returned-key :summary-map)
+		       smry
+		       (get smry returned-key))))]
+    (fn [summary generation]
+      (if-let [gen (setup-stats-map generation)]
+	(let [{:keys [best-ind, total-inds, start-time]} summary
+	      stats (:stats-map ^gen)
+	      best-gen (get-stat stats :best-fitness)
+	      best-new (if best-ind
+			 (min-key :fitness best-ind best-gen)
+			 best-gen)
+	      summary-new (assoc summary 
+			    :best-ind best-new
+			    :total-inds (+ total-inds (count gen)))]
+	  (if (:final ^gen)		; if end of run, print summary
+	    (finalize (assoc summary-new
+			:running-time (/ (double (- (System/nanoTime) 
 						    start-time))
-					 1000000.0))))))
-  ([run-seq]
-     (reduce-to-summary nil run-seq)))
+					 1000000.0)))
+	    summary-new))
+	(throw (Exception. "Summarizer got invalid generation."))))))
 
-; TODO: print/log of summary without holding onto head
+(defn find-best-of-run
+  "Helper fn meant for use in reduce, eg:
+    (reduce find-best-of-run (map print-stats (generate-run ...)
+
+  Given an individual 'best-yet and a 'generation, returns individual with the
+  best fitness of both the generation and 'best-yet. In the reduce context, this
+  is the new best-yet.
+
+  Given two generations, returns the best individual of both. Hence, when used
+  in a reduce it does not need to be given a starting val (but you can use 'nil
+  if you want)."
+  [best-yet generation]
+  (if (not (or (map? best-yet) (nil? best-yet)))
+    ; handle reduce with no start val, ie. initially both params are generations
+    (let [gen (setup-stats-map best-yet)
+	  stats (:stats-map ^gen)
+	  best-gen (get-stat stats :best-fitness)]
+      (find-best-of-run best-gen generation))
+    ; handle standard case
+    (let [gen (setup-stats-map generation)
+	  stats (:stats-map ^gen)
+	  best-gen (get-stat stats :best-fitness)
+	  best-new (if best-yet
+		     (min-key :fitness best-yet best-gen)
+		     best-gen)]
+      best-new)))
 
 (defn reduce-to-summary
-  ([run-seq summary]
-     (if-let [gen (setup-stats-map (first run-seq))]
-       (let [{:keys [best-ind, total-inds, start-time]} summary
-	     stats (:stats-map ^gen)
-	     best-gen (get-stat stats :best-fitness)
-	     best-new (if best-ind	; will be nil in first cycle
-			(min-key :fitness best-ind best-gen)
-			best-gen)
-	     summary-new (assoc summary
-			   :best-ind best-new
-			   :total-inds (+ total-inds (count gen)))]
-	 (if (next run-seq)
-	   (recur (next run-seq) summary-new)
-	   (assoc summary-new
-	     :running-time (/ (double (- (System/nanoTime) 
-					 start-time))
-			      1000000.0))))))
-  ([run-seq]
-     (reduce-to-summary run-seq {:start-time (System/nanoTime)
-				 :best-ind nil
-				 :total-inds 0})))
+  "Consumes a run-sequence of generations, gathers data and prints a report at
+  the end of the run. If 'log-filename is given, also appends the summary to
+  that file. If 'returned-key is given, returns that key from the summary
+  map. Else returns nil.
 
-(defn test-head-hold
-  [num]
-  (reduce-to-summary
-   (take num
-	 (repeatedly 
-	  #(take 512 
-		 (repeatedly 
-		  (fn [] (struct-map individual 
-			   :fitness 
-			   (rand)))))))))
+  Available 'returned-key keywords are:
+    :best-ind      -> Best individual of run (structmap).
+    :running-time  -> Total wall clock time taken by run.
+    :total-inds    -> Number of individuals that existed in the run.
+
+    :summary-map   -> The summary map itself instead of a value from it."
+  ([log-filename returned-key run-seq]
+     (reduce (create-summarizer log-filename returned-key) 
+	     {:start-time (System/nanoTime)
+	      :best-ind nil
+	      :total-inds 0}
+	     run-seq))
+  ([log-filename run-seq]
+     (reduce-to-summary log-filename nil run-seq))
+  ([run-seq]
+     (reduce-to-summary nil nil run-seq)))
