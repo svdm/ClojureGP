@@ -15,7 +15,9 @@
 
   Given two generations, returns the best individual of both. Hence, when used
   in a reduce it does not need to be given a starting val (but you can use 'nil
-  if you want)."
+  if you want).
+
+  Also see cljgp.tools.logging/reduce-to-summary."
   [best-yet generation]
   (if (not (or (map? best-yet) (nil? best-yet)))
     ; handle reduce with no start val, ie. initially both params are generations

@@ -277,33 +277,6 @@
 	    summary-new))
 	(throw (Exception. "Summarizer got invalid generation."))))))
 
-(defn find-best-of-run
-  "Helper fn meant for use in reduce, eg:
-    (reduce find-best-of-run (map print-stats (generate-run ...)
-
-  Given an individual 'best-yet and a 'generation, returns individual with the
-  best fitness of both the generation and 'best-yet. In the reduce context, this
-  is the new best-yet.
-
-  Given two generations, returns the best individual of both. Hence, when used
-  in a reduce it does not need to be given a starting val (but you can use 'nil
-  if you want)."
-  [best-yet generation]
-  (if (not (or (map? best-yet) (nil? best-yet)))
-    ; handle reduce with no start val, ie. initially both params are generations
-    (let [gen (setup-stats-map best-yet)
-	  stats (:stats-map ^gen)
-	  best-gen (get-stat stats :best-fitness)]
-      (find-best-of-run best-gen generation))
-    ; handle standard case
-    (let [gen (setup-stats-map generation)
-	  stats (:stats-map ^gen)
-	  best-gen (get-stat stats :best-fitness)
-	  best-new (if best-yet
-		     (min-key :fitness best-yet best-gen)
-		     best-gen)]
-      best-new)))
-
 (defn reduce-to-summary
   "Consumes a run-sequence of generations, gathers data and prints a report at
   the end of the run. If 'log-filename is given, also appends the summary to
