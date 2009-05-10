@@ -50,13 +50,36 @@
 	(repeatedly #(System/currentTimeMillis))))
   ([] (seeds-from-time false)))
 
+(defn standard-func-template
+  "In short, returns a fn as is expected by the :func-template-fn key in the
+  run-config. Specifically, returns a function that inserts an evolved
+  expression tree in a quoted fn form like:
+    (fn my-name [] evolved-tree)
+
+  With the argument vector as 'arg-list is given (else []). And with the name as
+  'func-name if given (which may be useful for evolving recursive functions, as
+  this func-name could be added to the function/terminal set).
+
+  This fn form is stored in evolved individuals under the :func key, and eval'd
+  during the evaluation phase."
+  ([func-name arg-list]
+     (assert (or (symbol? func-name) (nil? func-name)))
+     (assert (vector? arg-list))
+     (if (nil? func-name)		; can't just put nil in fn def
+       (fn standard-template [tree] (list `fn arg-list tree))
+       (fn standard-template [tree] (list `fn func-name arg-list tree))))
+  ([arg-list]
+     (standard-func-template nil arg-list))
+  ([]
+     (standard-func-template nil [])))
+
 ;
 ; Configuration validation
 ;
 
 ; Values used as defaults in run config when no user-defined value is present.
 (def config-defaults
-     {:arg-list []
+     {:func-template-fn (standard-func-template)
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
 		 {:prob 0.1  :breeder-fn mutation-breeder}
 		 {:prob 0.1  :breeder-fn reproduction-breeder}]
@@ -97,7 +120,6 @@
 (def config-spec
      {:function-set #(strict-every? valid-func-entry? %)
       :terminal-set #(strict-every? valid-term-entry? %)
-      :arg-list #(every? symbol? %) ; empty = allowed
       :evaluation-fn fn?
       :end-condition fn?
       :breeders #(strict-every? valid-breeder-entry? %)
@@ -108,13 +130,14 @@
       :threads integer?
       :rand-fn-maker fn?
       :validate-tree-fn fn?
+      :func-template-fn fn?
       })
 
 (defn check-key
   "If k does not exist in config, returns (k config-defaults) if any, else
   returns nil. If the value in (k config) fails the given test, returns
   nil. Else, returns (k config)."
-  [k test config]
+  [k val-test config]
   (let [entry (find config k)]
     (cond
       (nil? entry) 
@@ -123,7 +146,7 @@
 		       "using default.")
 	      (find config-defaults k))
 	  nil)
-      (not (test (val entry))) nil
+      (not (val-test (val entry))) nil
       :else entry)))
 
 (defmacro throw-config
@@ -164,14 +187,31 @@
 		"Insufficient seeds for the number of threads."))
   run-config)
 
+(defn preproc-config
+  "Performs some convenient preprocessing that generates values for more complex
+  config values that non-experts may not want to specify directly. If these
+  values are already present they will not be modified here."
+  [run-config]
+  (let [rand-fns {:rand-fns 
+		  (get run-config :rand-fns
+		       (map (get run-config :rand-fn-maker
+				 (:rand-fn-maker config-defaults)) 
+			    (get run-config :rand-seeds
+				 (:rand-seeds config-defaults))))}
+	tpl-fn   {:func-template-fn 
+		  (get run-config :func-template-fn
+		       (standard-func-template (get run-config :arg-list [])))}]
+    (println rand-fns)
+    (merge run-config
+	   rand-fns
+	   tpl-fn)))
+
 (defn prepare-config
   "First calls check-config on given run-config, then performs both
   preprocessing and checks involving multiple keys."
   [run-config]
-  (let [checked (assert-constraints (check-config run-config))
-	rand-fns {:rand-fns (map (:rand-fn-maker checked) 
-				 (:rand-seeds checked))}]
-    (merge run-config 
-	   checked	 ; keys changed in check-config will override run-config
-	   rand-fns)))
+  (let [preprocessed (preproc-config run-config)
+	checked (assert-constraints (check-config preprocessed))]
+    (merge preprocessed
+	   checked))) ; keys changed in check-config will override run-config
 

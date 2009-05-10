@@ -66,20 +66,6 @@
   ([ind]
      (print-individual :verbose false ind)))
 
-(defn setup-stats-map
-  "Checks if generation has stats-map in metadata, if yes returns it. If no
-  creates and adds one and returns the generation with new metadata.
-
-  Calls seq on generation and returns this seq'd generation, meaning it can be
-  used directly in when-let/if-let."
-  [generation]
-  (when-let [gen (seq generation)]
-    (let [gen-meta ^gen]
-      (if (contains? gen-meta :stats-map)
-	gen
-	(with-meta gen (conj {:stats-map (make-stats-map gen)} 
-			     gen-meta))))))
-
 (defn print-best
   "Prints best individual verbosely."
   [generation]

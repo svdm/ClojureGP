@@ -5,6 +5,8 @@
   "Basic analysis functions, see cljgp.tools.logging for example usage."
   (:use cljgp.util))
 
+(declare setup-stats-map get-stat)
+
 (defn find-best-of-run
   "Helper fn meant for use in reduce, eg:
     (reduce find-best-of-run (map print-stats (generate-run ...)
@@ -127,6 +129,20 @@
   "Gets a key from the stats map, which consists of delays that need forcing."
   [stats-map stat-key]
   (force (stat-key stats-map)))
+
+(defn setup-stats-map
+  "Checks if generation has stats-map in metadata, if yes returns it. If no
+  creates and adds one and returns the generation with new metadata.
+
+  Calls seq on generation and returns this seq'd generation, meaning it can be
+  used directly in when-let/if-let."
+  [generation]
+  (when-let [gen (seq generation)]
+    (let [gen-meta ^gen]
+      (if (contains? gen-meta :stats-map)
+	gen
+	(with-meta gen (conj {:stats-map (make-stats-map gen)} 
+			     gen-meta))))))
 
 
 
