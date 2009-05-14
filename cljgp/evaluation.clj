@@ -22,7 +22,7 @@
 
 (defn evaluate-ind
   "Evaluate an individual using the given evaluation function. Returns
-  individual with its fitness value as returned by the evaluator.
+  individual with its fitness value as returned by the 'evaluator.
 
   If the evaluator returns a map instead of a number, the map is merged into the
   individual. This allows storing additional evaluation details such as \"hits\"
@@ -40,7 +40,7 @@
 
 (defn evaluate-pop
   "Takes a population (collection) of individuals and returns a new seq with all
-  individuals evaluated using the evaluator fn defined in run-config. Work is
+  individuals evaluated using the evaluator fn defined in 'run-config. Work is
   divided over worker threads."
   [pop run-config]
   (let [num-futures (:threads run-config)

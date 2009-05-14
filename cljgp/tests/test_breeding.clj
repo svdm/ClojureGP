@@ -160,10 +160,10 @@
 (deftest test-crossover-inds
   (let [gen-old 0
 	inds (crossover-inds crossover-uniform-typed
-			     (make-individual (my-tpl (my-gen 4 :full rtype)) 
-					      gen-old)
-			     (make-individual (my-tpl (my-gen 4 :grow rtype)) 
-					      gen-old)
+			     [(make-individual (my-tpl (my-gen 4 :full rtype)) 
+					       gen-old)
+			      (make-individual (my-tpl (my-gen 4 :grow rtype)) 
+					       gen-old)]
 			     config-maths)]
     (test-inds inds gen-old 2)))
 
@@ -176,11 +176,12 @@
 
 (deftest test-reproduce-ind
   (let [gen-old 0
-	ind-old (into {} (make-individual (my-tpl (my-gen 4 :full rtype)) 
-					  gen-old))
+	ind-old (make-individual (my-tpl (my-gen 4 :full rtype)) 
+				 gen-old)
 	ind (reproduce-ind ind-old config-maths)]
     (test-inds ind gen-old 1)
-    (is (= (dissoc ind-old :gen) (dissoc (into {} (first ind)) :gen))
+    (is (= (dissoc (into {} ind-old) :gen) 
+	   (dissoc (into {} (first ind)) :gen))
 	"Reproduced individuals should be identical apart from :gen")))
 
 ; *-breeder functions not tested currently as they are very basic compositions

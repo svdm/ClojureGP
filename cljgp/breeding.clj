@@ -202,14 +202,13 @@
   'crossover-fn. Returns vector of two new individuals. If crossover-fn returns
   nil after the number of breeding retries configured in the 'run-config, then
   the given individuals are reproduced directly."
-  [crossover-fn ind-a ind-b run-config]
+  [crossover-fn inds run-config]
   (let [{:keys [validate-tree-fn func-template-fn
 		breeding-retries root-type]} run-config
-	orig-a (get-fn-body (:func ind-a))
-	orig-b (get-fn-body (:func ind-b))
+	[orig-a orig-b] (map (comp get-fn-body get-func) inds)
 	[tree-a tree-b] (get-valid validate-tree-fn breeding-retries
 				   #(crossover-fn orig-a orig-b root-type))
-	gen (inc (:gen ind-a))]
+	gen (inc (get-gen (first inds)))]
     (if (not (nil? tree-a))
       [(make-individual (func-template-fn tree-a) gen) ; crossover succeeded
        (make-individual (func-template-fn tree-b) gen)]
@@ -224,12 +223,12 @@
   (let [{:keys [validate-tree-fn breeding-retries
 		func-template-fn
 		function-set terminal-set root-type]} run-config
-	orig (get-fn-body (:func ind))
+	orig (get-fn-body (get-func ind))
 	tree (get-valid validate-tree-fn breeding-retries
 			#(mutate function-set terminal-set 
 				 max-depth root-type
 				 orig))
-	gen (inc (:gen ind))]
+	gen (inc (get-gen ind))]
     (if (not (nil? tree))
       [(make-individual (func-template-fn tree) gen)]
       [(make-individual (func-template-fn orig) gen)])))
@@ -245,8 +244,8 @@
   element."
   [ind run-config]
   (let [func-tpl (:func-template-fn run-config)
-	tree (get-fn-body (:func ind))
-	gen (inc (:gen ind))]
+	tree (get-fn-body (get-func ind))
+	gen (inc (get-gen ind))]
     [(make-individual (func-tpl tree) gen)]))
 
 
@@ -257,7 +256,7 @@
   [pop run-config]
   (let [select (:selection-fn run-config)]
     (crossover-inds crossover-uniform-typed
-		    (select pop) (select pop)
+		    [(select pop) (select pop)]
 		    run-config)))
 
 (defn mutation-breeder
@@ -286,12 +285,11 @@
   have to add up to 1.0."
   [breeders] 
   (let [pr (fn process [bs p]
-	     (lazy-seq
-	       (when-let [s (seq bs)]
-		 (let [b (first bs)
-		       p-new (+ p (:prob b))]
-		   (cons (assoc b :prob p-new)
-			 (process (rest s) p-new))))))]
+	     (when-let [s (seq bs)]
+	       (let [b (first bs)
+		     p-new (+ p (:prob b))]
+		 (cons (assoc b :prob p-new)
+		       (process (rest s) p-new)))))]
     (pr breeders 0)))
 
 (defn- select-breeder

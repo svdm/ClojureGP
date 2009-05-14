@@ -7,12 +7,12 @@
 
   Example usage of showing statistics during a run:
   (last (map <file logger fn>
-             (map print-details 
+             (map print-stats 
                   (map <graph plotter fn>
                        (generate-run ...)))))
 
   The (last ..) call forces the lazy seq of generations to realize, and each
-  realized generation gets passed through a graph plotter, 'print-details and
+  realized generation gets passed through a graph plotter, 'print-stats and
   a file logger, before being discarded by 'last unless it is in fact the last
   generation. This means that side effects will be performed as soon as each
   generation is computed (which might be counter-intuitive at first) due to the
@@ -35,10 +35,10 @@
      (print-code true show-ns code)))
 
 (defn #^String stringify-ind-verbose
-  "Prints data on given individual to a string. If show-ns is true, namespace
+  "Prints data on given individual to a string. If 'show-ns is true, namespace
   info will be included in the printed tree."
   [show-ns ind]
-  (let [added-data (dissoc (merge {} ind) ; copy into normal map for dissoc
+  (let [added-data (dissoc (into {} ind) ; copy into normal map for dissoc
 			   :gen :fitness :func)]
     (str "Data of individual:\n"
 	 "  Generation: " (:gen ind) "\n"

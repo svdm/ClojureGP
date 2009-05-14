@@ -37,7 +37,7 @@
       best-new)))
 
 (defn pop-avg-of
-  "Returns the average of the results of mapping func over pop."
+  "Returns the average of the results of mapping 'func over 'pop."
   [func pop]
   (/ (reduce + (map func pop))
      (count pop)))
@@ -45,12 +45,12 @@
 ; pop-min-of and max-of are not very efficient, but will likely suffice for
 ; basic stat gathering
 (defn pop-min-of
-  "Returns the minimum of the results of mapping func over pop."
+  "Returns the minimum of the results of mapping 'func over 'pop."
   [func pop]
   (apply min (map func pop)))
 
 (defn pop-max-of
-  "Returns the maximum of the results of mapping func over pop."
+  "Returns the maximum of the results of mapping 'func over 'pop."
   [func pop]
   (apply max (map func pop)))
 
@@ -75,7 +75,7 @@
 (defn fitness-all
   "Returns minimum, maximum and average fitness in a single loop over the
   population. This is much faster than calling fitness-min, fitness-max, and
-  fitness-avg separately."		; of course, fast is not pretty
+  fitness-avg separately."		; of course, fast is not always pretty
   [pop]
   (loop [fit-ind (float (get-fitness (first pop)))
 	 poprest (rest pop)

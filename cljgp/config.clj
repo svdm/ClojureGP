@@ -28,7 +28,7 @@
 (defn make-simple-end
   "Returns a simple end condition predicate that stops the evolution when the
   given max number of generations is reached, or the fitness of any individual
-  in a generation is lower than (+ 0 fit-tolerance), where fit-tolerance is
+  in a generation is lower than (+ 0 fit-tolerance), where 'fit-tolerance is
   0.0001 by default."
   ([max-generations fit-tolerance]
      (fn [pop]
@@ -42,8 +42,8 @@
   can be used as PRNG seeds. Takes optional argument that when true enables
   reporting of the seeds used to stdout. This is meant as a very basic way of
   logging seeds in case the results need to be reproduced."
-  ([report?]
-      (if report?
+  ([report]
+      (if report
 	(repeatedly #(let [t (System/currentTimeMillis)]
 		       (println "Used seed:" t)
 		       t))
@@ -134,7 +134,7 @@
       })
 
 (defn check-key
-  "If k does not exist in config, returns (k config-defaults) if any, else
+  "If 'k does not exist in 'config, returns (k config-defaults) if any, else
   returns nil. If the value in (k config) fails the given test, returns
   nil. Else, returns (k config)."
   [k val-test config]
@@ -180,7 +180,7 @@
 
 (defn assert-constraints
   "Checks constraints between keys (ie. 'global' constraints) and throws
-  exception if a test fails. Returns run-config unmodified."
+  exception if a test fails. Returns 'run-config unmodified."
   [run-config]
   (let [{:keys [threads rand-seeds]} run-config]
     (assert-msg (<= threads (count (take threads rand-seeds)))
