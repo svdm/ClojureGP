@@ -20,7 +20,7 @@
      (println "\tCaused by:" ~ind)
      (throw ~e)))
 
-(defn evaluate-ind
+(defn evaluate-individual
   "Evaluate an individual using the given evaluation function. Returns
   individual with its fitness value as returned by the 'evaluator.
 
@@ -51,7 +51,7 @@
 	  (map #(future
 		  (binding [cljgp.random/gp-rand %2]
 		    (doall	    ; force actual evaluation to occur in future
-		     (map (partial evaluate-ind e-fn) %1))))
+		     (map (partial evaluate-individual e-fn) %1))))
 	       (partition-full per-future pop)
 	       (:rand-fns run-config))))))
 

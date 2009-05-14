@@ -19,7 +19,9 @@
 (defn prim
   "Given a symbol and a map of its properties, returns a GP primitive for use in
   the function or terminal sets. This is simply the symbol with the properties
-  as its metadata."
+  as its metadata.
+
+  Essentially a shorthand for clojure.core/with-meta with some extra checks."
   [sym properties]
   (assert (or (map? properties) (nil? properties)))
   (assert (symbol? sym))

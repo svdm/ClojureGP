@@ -130,7 +130,7 @@
   (let [trees (crossover-uniform-typed (my-gen 4 :full rtype)
 				       (my-gen 4 :grow rtype)
 				       rtype)]
-    (is (= (count trees) 2))
+    (is (or (= (count trees) 2) (= trees nil)))
     (doseq [tree trees]
       (full-tree-test tree))))
 
@@ -157,28 +157,30 @@
     (doseq [tree trees]
       (full-tree-test tree))))
 
-(deftest test-crossover-inds
+(deftest test-crossover-individuals
   (let [gen-old 0
-	inds (crossover-inds crossover-uniform-typed
-			     [(make-individual (my-tpl (my-gen 4 :full rtype)) 
-					       gen-old)
-			      (make-individual (my-tpl (my-gen 4 :grow rtype)) 
-					       gen-old)]
-			     config-maths)]
+	inds (crossover-individuals 
+	      crossover-uniform-typed
+	      [(make-individual (my-tpl (my-gen 4 :full rtype)) 
+				gen-old)
+	       (make-individual (my-tpl (my-gen 4 :grow rtype)) 
+				gen-old)]
+	      config-maths)]
     (test-inds inds gen-old 2)))
 
 (deftest test-mutate-ind
   (let [gen-old 0
-	ind (mutate-ind (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
-			config-maths
-			17)]
+	ind (mutate-individual 
+	     (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
+	     config-maths
+	     17)]
     (test-inds ind gen-old 1)))
 
 (deftest test-reproduce-ind
   (let [gen-old 0
 	ind-old (make-individual (my-tpl (my-gen 4 :full rtype)) 
 				 gen-old)
-	ind (reproduce-ind ind-old config-maths)]
+	ind (reproduce-individual ind-old config-maths)]
     (test-inds ind gen-old 1)
     (is (= (dissoc (into {} ind-old) :gen) 
 	   (dissoc (into {} (first ind)) :gen))

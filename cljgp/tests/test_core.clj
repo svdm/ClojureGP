@@ -6,10 +6,10 @@
 	cljgp.core
 	[cljgp.breeding :only (generate-pop)]))
 
-(deftest test-evolve-future-gens
+(deftest test-evolve-future-generations
   (let [pop-size (:population-size config-maths)
 	pop (generate-pop config-maths)
-	run (take 5 (evolve-future-gens pop config-maths))]
+	run (take 5 (evolve-future-generations pop config-maths))]
     (is (seq run))
     (is (every? #(every? valid-ind? %) run)
 	"Each generation should consist only of valid individuals")

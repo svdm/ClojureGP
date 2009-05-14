@@ -11,7 +11,7 @@
 	[cljgp.config :only (prepare-config)]))
 
 
-(defn evolve-future-gens
+(defn evolve-future-generations
   "Returns lazy infinite sequence of generations (ie. consecutively evaluated
   and bred populations). See 'evaluate-pop and 'breed-new-pop for evaluation and
   breeding info.
@@ -24,8 +24,9 @@
     (when-let [pop-seq (seq pop)]
       (let [pop-evaluated (evaluate-pop pop-seq run-config)]
 	(cons pop-evaluated
-	      (evolve-future-gens (breed-new-pop pop-evaluated run-config)
-				  run-config))))))
+	      (evolve-future-generations (breed-new-pop pop-evaluated 
+							run-config)
+					 run-config))))))
 
 (defn- take-until-end
   "As take-while, but lazy sequence includes the item for which end? first
@@ -55,7 +56,7 @@
 	pop-initial (generate-pop config)
 	end? (:end-condition config)]
     (take-until-end end?
-		    (evolve-future-gens pop-initial config))))
+		    (evolve-future-generations pop-initial config))))
 
 
 

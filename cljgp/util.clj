@@ -34,6 +34,8 @@
   [quoted-fn]
   (nth quoted-fn 2 '()))
 
+; TODO: add (comp get-fn-body get-fn) ?
+
 (defmacro make-tree-seq
   "Returns a seq of a given S-exp-based tree using (tree-seq coll? next tree)."
   [tree]

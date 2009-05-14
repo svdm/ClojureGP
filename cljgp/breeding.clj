@@ -197,7 +197,7 @@
       (tree-replace idx subtree tree))))
 
 
-(defn crossover-inds
+(defn crossover-individuals
   "Performs a crossover operation on the given individuals using given
   'crossover-fn. Returns vector of two new individuals. If crossover-fn returns
   nil after the number of breeding retries configured in the 'run-config, then
@@ -216,7 +216,7 @@
       [(make-individual (func-template-fn orig-a) gen) ; failed, plain copy
        (make-individual (func-template-fn orig-b) gen)])))
 
-(defn mutate-ind
+(defn mutate-individual
   "Performs mutation on given individual's tree. Returns seq with the new
   individual as single element (for easy compatibility with crossover-ind)."
   [ind run-config max-depth]
@@ -238,7 +238,7 @@
 ; other keys may have been added earlier (eg. a :fitness value) that should
 ; not exist on a newly bred individual. We could explicitly unset those but
 ; that would take otherwise unnecessary maintenance if more keys turn up.
-(defn reproduce-ind
+(defn reproduce-individual
   "Performs direct reproduction, ie. breeds a new individual by directly copying
   the given individual's tree. Returns seq with new individual as single
   element."
@@ -255,9 +255,9 @@
    new trees."
   [pop run-config]
   (let [select (:selection-fn run-config)]
-    (crossover-inds crossover-uniform-typed
-		    [(select pop) (select pop)]
-		    run-config)))
+    (crossover-individuals crossover-uniform-typed
+			   [(select pop) (select pop)]
+			   run-config)))
 
 (defn mutation-breeder
   "Selects an individual from pop by applying selection-fn specified in the
@@ -266,7 +266,7 @@
   specified in run-config. Generated (sub)tree will be at most max-depth deep."
   ([max-depth pop run-config]
      (let [select (:selection-fn run-config)]
-       (mutate-ind (select pop) run-config max-depth)))
+       (mutate-individual (select pop) run-config max-depth)))
   ([pop run-config]
      (mutation-breeder 17 pop run-config)))
 
@@ -276,7 +276,7 @@
   the selected individual."
   [pop run-config]
   (let [select (:selection-fn run-config)]
-    (reproduce-ind (select pop) run-config)))
+    (reproduce-individual (select pop) run-config)))
 
 (defn- setup-breeders
   "Sets up (lazy-)seq of breeders (maps with a :prob key) in a seq in
