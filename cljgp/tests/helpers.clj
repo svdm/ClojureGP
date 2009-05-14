@@ -73,6 +73,8 @@
 		     (prim `TEXT {:type ::string})]
       :arg-list []
 
+      :func-template-fn (standard-func-template)
+
       :root-type Number
       
       :evaluation-fn (fn [x] (rand))

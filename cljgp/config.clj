@@ -201,7 +201,6 @@
 	tpl-fn   {:func-template-fn 
 		  (get run-config :func-template-fn
 		       (standard-func-template (get run-config :arg-list [])))}]
-    (println rand-fns)
     (merge run-config
 	   rand-fns
 	   tpl-fn)))

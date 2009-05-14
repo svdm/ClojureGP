@@ -4,6 +4,7 @@
   (:use clojure.contrib.test-is
 	cljgp.config
 	cljgp.tests.helpers
+	cljgp.util
 	cljgp.core))
 
 (deftest test-prim
@@ -12,7 +13,8 @@
 	   (meta (prim 'x m))))))
 
 (deftest test-make-simple-end
-  (let [pop [{:gen 10 :fitness 5} {:gen 10 :fitness 4.9999}]]
+  (let [pop [(assoc (make-individual '() 10) :fitness 5) 
+	     (assoc (make-individual '() 10) :fitness 4.9999)]]
     (testing "generation limit"
 	     (is ((make-simple-end 9) pop))
 	     (is ((make-simple-end 10) pop))
@@ -68,7 +70,7 @@
 	     (is (not (vbe {:prob 1 :breeder-fn 'foo}))))))
 
 (deftest test-check-key
-  (let [conf (dissoc config-maths :arg-list)]
+  (let [conf (dissoc config-maths :func-template-fn)]
     (is (nil? (check-key :foo true? conf))
 	"If a key does not exist and there is no default, fail.")
     (is (nil? (check-key :breeders (constantly false) conf))
@@ -76,15 +78,15 @@
     (is (= (check-key :population-size number? conf) 
 	   [:population-size (:population-size conf)])
 	"If key exists and val passes test, return map entry.")
-    (is (= (quiet (check-key :arg-list true? conf)) 
-	   (find config-defaults :arg-list))
+    (is (= (quiet (check-key :func-template-fn true? conf)) 
+	   (find config-defaults :func-template-fn))
 	"If key does not exist and default does, return default entry.")))
 
 (deftest test-check-config
-  (let [conf (dissoc config-maths :arg-list)
+  (let [conf (dissoc config-maths :func-template-fn)
 	conf-broken (dissoc config-maths :function-set)]
     (is (= (quiet (check-config conf)) 
-	   (assoc conf :arg-list (:arg-list config-defaults)))
+	   (assoc conf :func-template-fn (:func-template-fn config-defaults)))
 	"Missing key should be replaced by default if one exists.")
     (is (thrown? Exception (check-config conf-broken))
 	"Missing key with no default should result in exception.")
