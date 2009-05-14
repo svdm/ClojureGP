@@ -32,7 +32,7 @@
       (throw (RuntimeException. 
 	      (str "No available terminal of type " node-type))))
     (if-let [fnode (pick-rand-typed node-type func-set)]
-      (cons fnode (doall     ; force seq, else it will compute outside try/catch
+      (cons fnode (doall     ; force seq to realize inside try/catch
 		   (for [cur-type (:arg-type ^fnode)]
 		     (generate-tree func-set term-set 
 				    (dec max-depth) method 
@@ -81,14 +81,14 @@
   (let [{:keys [function-set terminal-set
 		pop-generation-fn
 		validate-tree-fn
-		arg-list
+		func-template-fn
 		root-type]} run-config
 	generate (fn [] (get-valid validate-tree-fn Integer/MAX_VALUE 
 				   #(pop-generation-fn function-set 
 						       terminal-set
 						       root-type)))]
 
-    (repeatedly #(make-individual (generate) 0 arg-list))))
+    (repeatedly #(make-individual (func-template-fn (generate)) 0))))
 
 ; Note that it is intentional that (ind-generator-seq ..) is called inside each
 ; future, even though one might think it's just a producer function that is
@@ -209,9 +209,11 @@
 
 (defn crossover-inds
   "Performs a crossover operation on the given individuals using given
-  'crossover-fn. Returns vector of two new individuals."
+  'crossover-fn. Returns vector of two new individuals. If crossover-fn returns
+  nil after the number of breeding retries configured in the run-config, then
+  the given individuals are reproduced directly."
   [crossover-fn ind-a ind-b run-config]
-  (let [{:keys [arg-list validate-tree-fn 
+  (let [{:keys [validate-tree-fn func-template-fn
 		breeding-retries root-type]} run-config
 	orig-a (get-fn-body (:func ind-a))
 	orig-b (get-fn-body (:func ind-a))
@@ -219,17 +221,18 @@
 				   #(crossover-fn orig-a orig-b root-type))
 	gen (inc (:gen ind-a))]
     (if (not (nil? tree-a))
-      [(make-individual tree-a gen arg-list) ; crossover succeeded
-       (make-individual tree-b gen arg-list)]
+      [(make-individual (func-template-fn tree-a) gen) ; crossover succeeded
+       (make-individual (func-template-fn tree-b) gen)]
 
-      [(make-individual orig-a gen arg-list) ; failed, reproduce instead
-       (make-individual orig-b gen arg-list)])))
+      [(make-individual (func-template-fn orig-a) gen) ; failed, plain copy
+       (make-individual (func-template-fn orig-b) gen)])))
 
 (defn mutate-ind
   "Performs mutation on given individual's tree. Returns seq with the new
   individual as single element (for easy compatibility with crossover-ind)."
   [ind run-config max-depth]
-  (let [{:keys [arg-list validate-tree-fn breeding-retries
+  (let [{:keys [validate-tree-fn breeding-retries
+		func-template-fn
 		function-set terminal-set root-type]} run-config
 	orig (get-fn-body (:func ind))
 	tree (get-valid validate-tree-fn breeding-retries
@@ -238,8 +241,8 @@
 				 orig))
 	gen (inc (:gen ind))]
     (if (not (nil? tree))
-      [(make-individual tree gen arg-list)]
-      [(make-individual orig gen arg-list)])))
+      [(make-individual (func-template-fn tree) gen)]
+      [(make-individual (func-template-fn orig) gen)])))
 
 
 ; The reason why we can't just assoc a new gen into the individual is that
@@ -251,10 +254,10 @@
   the given individual's tree. Returns seq with new individual as single
   element."
   [ind run-config]
-  (let [arg-list (:arg-list run-config)
+  (let [func-tpl (:func-template-fn run-config)
 	tree (get-fn-body (:func ind))
 	gen (inc (:gen ind))]
-    [(make-individual tree gen arg-list)]))
+    [(make-individual (func-tpl tree) gen)]))
 
 
 (defn crossover-breeder

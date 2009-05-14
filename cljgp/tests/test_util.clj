@@ -9,18 +9,19 @@
 ; things
 (def valid-tree '(+ 1 (* 3 4) (- 2 2)))
 
+(defn my-tpl [tree] (list `fn [] tree))
+
 (deftest test-make-individual
-  (let [given-args '[foo bar]
-	given-gen 99
-	ind (make-individual valid-tree given-gen given-args)]
+  (let [given-gen 99
+	ind (make-individual (my-tpl valid-tree) given-gen)]
     (are _
 	 (map? ind)
-	 (= (:func ind) `(fn ~given-args ~valid-tree))
+	 (= (:func ind) (my-tpl valid-tree))
 	 (= (:gen ind) given-gen)
 	 (= (:fitness ind 'not-found) nil))))
 
 (deftest test-get-fn-body
-  (is (= (get-fn-body (:func (make-individual valid-tree 0 '[a b])))
+  (is (= (get-fn-body (my-tpl valid-tree))
 	 valid-tree))
   (is (= (get-fn-body '()) 
 	 '())))

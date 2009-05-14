@@ -14,8 +14,10 @@
   (println "Throwing test exception...")
   (throw (RuntimeException. "Except! I should be reported on stdout!")))
 
+(defn my-tpl [tree] (list `fn [] tree))
+
 (deftest test-evaluate-ind
-  (let [ind (make-individual '(+ 1 2) 99 '[])
+  (let [ind (make-individual (my-tpl '(+ 1 2)) 99)
 	given-fitness 3.33
 	evaluator (fn [func] given-fitness)
 	eval-ind (evaluate-ind evaluator ind)
@@ -47,7 +49,7 @@
 					      (new java.util.Random))))})
 
 (deftest test-evaluate-pop
-  (let [old-pop (take 5 (repeatedly #(make-individual '(+ 1 2) 99 '[])))
+  (let [old-pop (take 5 (repeatedly #(make-individual (my-tpl '(+ 1 2)) 99)))
 	new-pop (evaluate-pop old-pop mini-config)]
     (is (seq? new-pop) 
 	"Pop should be a sequence")

@@ -13,12 +13,19 @@
 (def get-fitness (accessor individual :fitness))
 
 (defn make-individual
-  "Returns structmap representing an individual in the population."
-  [tree gen arg-list]
-  (struct-map individual
-      :func `(fn ~arg-list ~tree)
-      :gen gen
-      :fitness nil))
+  "Returns structmap representing an individual in the population. Takes the
+  individual's generation and a 'fn-form that is the individual's :func. The
+  fn-form should be an s-expression that evals into a function, and will
+  typically look like (fn NAME [ARGS] ...). See
+  cljgp.config/standard-func-template."
+  ([fn-form gen]
+     (assert (list? fn-form))
+     (struct-map individual
+       :func fn-form
+       :gen gen
+       :fitness nil))
+  ([fn-form]
+     (make-individual fn-form 0)))
 
 (defn get-fn-body
   "Returns the body of a quoted function definition of the form (fn [..]
