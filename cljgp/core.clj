@@ -17,8 +17,8 @@
   breeding info.
 
   Take care when consuming this sequence: besides being infinite, large
-  populations (ie. the seq's elements) may quickly eat up your heap space even
-  for shorter seqs."
+  populations/generations (ie. the seq's elements) may quickly eat up your heap
+  space even for shorter seqs."
   [pop run-config]
   (lazy-seq
     (when-let [pop-seq (seq pop)]
@@ -42,13 +42,14 @@
 	(cons (first s) (take-until-end end? (rest s)))))))
 
 (defn generate-run
-  "Returns a lazy seq of successive generations in an evolution run whose
-  parameters are defined in 'run-config.
+  "Returns a lazy seq of successive generations (= populations = collections of
+  individuals) in an evolution run whose parameters are defined in 'run-config.
 
-  Besides validation, some preprocessing is performed on the 'run-config,
-  currently only to create and initialize the RNGs on a per-run basis.
+  Besides validation, some preprocessing is performed on the 'run-config, for
+  example to create and initialize the RNGs on a per-run basis. See
+  cljgp.config/prepare-config for details.
 
-  See 'evolve-future-gens for more details on the returned lazy seq."
+  See cljgp.core/evolve-future-gens for more details on the returned lazy seq."
   [run-config]
   (let [config (prepare-config run-config)
 	pop-initial (generate-pop config)

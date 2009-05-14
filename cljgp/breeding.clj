@@ -14,12 +14,12 @@
 ;;
 
 (defn generate-tree
-  "Returns a tree generated from given func-set and term-set, which have to be
+  "Returns a tree generated from given 'func-set and 'term-set, which have to be
   nth-able. If 'method is :grow, grow method will be used to generate the tree
   up to max-depth in size. Else, 'full' method will be used, resulting in a tree
   with a depth equal to max-depth in all its branches.
   
-  For max-depth < 0, will return a tree of size 1.
+  For 'max-depth < 0, will return a tree of size 1.
 
   Throws exception if no legal tree could be generated due to type constraints."
   [func-set term-set max-depth method node-type]
@@ -44,9 +44,9 @@
 ;   generated
 (defn generate-ramped
   "Returns a tree generated using a version of the ramped half and half
-  method. Tree will be generated from func-set and term-set, up to
-  max-depth (inclusive). The 'grow' method will be used with the probability
-  given as grow-chance."
+  method. Tree will be generated from 'func-set and 'term-set, up to
+  'max-depth (inclusive). The 'grow' method will be used with the probability
+  given as 'grow-chance."
   [max-depth grow-chance func-set term-set root-type]
   (if-let [tree (try
 		 (generate-tree func-set
@@ -76,7 +76,8 @@
 (defn- ind-generator-seq
   "Returns a lazy infinite sequence of individuals with generation 0 and
   expression trees generated from the function- and terminal-set, all as
-  specified in the given run-config. Used internally by generate-pop."
+  specified in the given 'run-config. Used internally by
+  cljgp.breeding/generate-pop."
   [run-config]
   (let [{:keys [function-set terminal-set
 		pop-generation-fn
@@ -94,12 +95,12 @@
 ; future, even though one might think it's just a producer function that is
 ; identical between futures. The reason is that the closure appears to inherit
 ; the bindings as they are at the point where it is created, as opposed to that
-; where it is called. Bindings are nefarious things.
+; where it is called. Dynamic bindings are nefarious things.
 (defn generate-pop
   "Returns a population of individuals generated from scratch out of the nodes
   in the function set and terminal set, using the tree producer function also
-  specified in the run-config (typically ramped half and half). The work is
-  divided over worker threads."
+  specified in the 'run-config (typically ramped half and half). The work is
+  divided over worker threads, each with their own RNG."
   [run-config]
   (let [{:keys [population-size threads rand-fns]} run-config
 	per-future (divide-up population-size threads)]
@@ -125,11 +126,10 @@
   satisfies. In other words: returns the type that a node at the index must
   satisfy in order to be valid. This type is retrieved from the parent
   node's :arg-type metadata. For index 0, returns given 'root-type."
-  [idx tree root-type]
+  [index tree root-type]
   (let [i (atom -1)
 	pfn (fn ptype [node type]
-	      (swap! i inc)
-	      (if (>= @i idx)
+	      (if (>= (swap! i inc) index)
 		type
 		(when (coll? node) 
 		  (first
@@ -153,29 +153,14 @@
 		 :else node))]
     (r-fn tree)))
 
-
-;FIXME: remove, deprecated
-#_(defn crossover-uniform
-  "Performs a subtree crossover operation on the given trees. Returns vector of
-  two new trees."  
-  [tree-a tree-b]
-  (let [seq-a (make-tree-seq tree-a)
-	seq-b (make-tree-seq tree-b)
-	idx-a (gp-rand-int (count seq-a))
-	idx-b (gp-rand-int (count seq-b))
-	pick-a (nth seq-a idx-a)
-	pick-b (nth seq-b idx-b)]
-    [(tree-replace idx-a pick-b tree-a)
-     (tree-replace idx-b pick-a tree-b)]))
-
-
 ;TODO/FIXME: crossover point selection is uniform instead of the traditional
 ;  90/10 split between nodes and leaves respectively
 
 ; not the prettiest, could use cleanup
 (defn crossover-uniform-typed
   "Performs a subtree crossover operation on the given trees, taking node types
-  into account. Returns vector of two new trees, or nil if crossover failed."
+  into account. The 'root-type is the type satisfied by the root nodes of both
+  trees. Returns vector of two new trees, or nil if crossover failed."
   [tree-a tree-b root-type]
   (let [seq-a (make-tree-seq tree-a)
 	idx-a (gp-rand-int (count seq-a))
@@ -194,8 +179,13 @@
       nil)))
 
 (defn mutate
-  "Performs a mutation operation on the given tree. Returns the new tree. If no
-  valid subtree could be generated, returns unmodified tree."
+  "Performs a mutation operation on the given tree, selecting a mutation point
+  uniformly and generating a new subtree to replace it (from the given 'func-set
+  and 'term-set, up to 'max-depth). Also requires the 'root-type as the mutation
+  point may be the root.
+
+  Returns the new tree. If no valid subtree could be generated, returns
+  unmodified tree."
   [func-set term-set max-depth root-type tree]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
@@ -210,13 +200,13 @@
 (defn crossover-inds
   "Performs a crossover operation on the given individuals using given
   'crossover-fn. Returns vector of two new individuals. If crossover-fn returns
-  nil after the number of breeding retries configured in the run-config, then
+  nil after the number of breeding retries configured in the 'run-config, then
   the given individuals are reproduced directly."
   [crossover-fn ind-a ind-b run-config]
   (let [{:keys [validate-tree-fn func-template-fn
 		breeding-retries root-type]} run-config
 	orig-a (get-fn-body (:func ind-a))
-	orig-b (get-fn-body (:func ind-a))
+	orig-b (get-fn-body (:func ind-b))
 	[tree-a tree-b] (get-valid validate-tree-fn breeding-retries
 				   #(crossover-fn orig-a orig-b root-type))
 	gen (inc (:gen ind-a))]
