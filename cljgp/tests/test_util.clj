@@ -16,6 +16,7 @@
 	ind (make-individual (my-tpl valid-tree) given-gen)]
     (are _
 	 (map? ind)
+	 (= (type ind) clojure.lang.PersistentStructMap)
 	 (= (:func ind) (my-tpl valid-tree))
 	 (= (:gen ind) given-gen)
 	 (= (:fitness ind 'not-found) nil))))
