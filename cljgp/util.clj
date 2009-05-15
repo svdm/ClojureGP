@@ -3,14 +3,21 @@
 
 (ns cljgp.util
   "Utility functions and macros."
+  (:use [clojure.contrib.def :only (defvar defalias)])
+  (:require clojure.contrib.seq-utils)
   (:use [cljgp.random :only (pick-rand)]))
 
 
 (defstruct individual :func :gen :fitness)
 
-(def get-func (accessor individual :func))
-(def get-gen (accessor individual :gen))
-(def get-fitness (accessor individual :fitness))
+(defvar get-func (accessor individual :func)
+  "Accessor for an individual's :func")
+
+(defvar get-gen (accessor individual :gen)
+  "Accessor for an individual's :gen")
+
+(defvar get-fitness (accessor individual :fitness)
+  "Accessor for an individual's :fitness")
 
 (defn make-individual
   "Returns structmap representing an individual in the population. Takes the
@@ -68,12 +75,10 @@
 	s
 	(recur (conj s (min per n)) (- n per))))))
 
-(defn partition-full
-  "As (partition ..) but includes last partition if smaller than n."
-  [n coll]
-  (lazy-seq
-    (when-let [s (seq coll)]
-      (cons (take n s) (partition-full n (drop n s))))))
+; Had custom partition-full fn before decision to depend on contrib was made.
+; Now interning partition-all here in an attempt to isolate dependency to 
+; cljgp.util and cljgp.tools.*, for now.
+(defalias partition-all clojure.contrib.seq-utils/partition-all)
 
 (defn gp-type
   "Returns type of given node, which is identical to (type (first node)) if it

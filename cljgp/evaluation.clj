@@ -52,7 +52,7 @@
 		  (binding [cljgp.random/gp-rand %2]
 		    (doall	    ; force actual evaluation to occur in future
 		     (map (partial evaluate-individual e-fn) %1))))
-	       (partition-full per-future pop)
+	       (partition-all per-future pop)
 	       (:rand-fns run-config))))))
 
 

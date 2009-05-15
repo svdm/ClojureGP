@@ -1,5 +1,5 @@
 
-(set! *warn-on-reflection* true)
+;(set! *warn-on-reflection* true)
 
 (ns cljgptest
   "Home for test-experiments etc. from the perspective of a lib user."
