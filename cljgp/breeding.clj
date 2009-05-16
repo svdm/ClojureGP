@@ -22,7 +22,7 @@
   For 'max-depth < 0, will return a tree of size 1.
 
   Throws exception if no legal tree could be generated due to type constraints."
-  [func-set term-set max-depth method node-type]
+  [max-depth method func-set term-set node-type]
   (if (or (<= max-depth 1)
 	  (and (= method :grow)
 	       (< (gp-rand) (/ (count term-set)
@@ -34,8 +34,8 @@
     (if-let [fnode (pick-rand-typed node-type func-set)]
       (cons fnode (doall     ; force seq to realize inside try/catch
 		   (for [cur-type (:arg-type ^fnode)]
-		     (generate-tree func-set term-set 
-				    (dec max-depth) method 
+		     (generate-tree (dec max-depth) method 
+				    func-set term-set 
 				    cur-type))))
       (throw (RuntimeException. 
 	      (str "No available function of type " node-type))))))
@@ -49,10 +49,10 @@
   given as 'grow-chance."
   [max-depth grow-chance func-set term-set root-type]
   (if-let [tree (try
-		 (generate-tree func-set
-				term-set
-				(inc (gp-rand-int max-depth))
+		 (generate-tree (inc (gp-rand-int max-depth))
 				(if (< (gp-rand) grow-chance) :grow :full)
+				func-set
+				term-set
 				root-type)
 		 (catch RuntimeException e
 		   false))]
@@ -126,7 +126,7 @@
   satisfies. In other words: returns the type that a node at the index must
   satisfy in order to be valid. This type is retrieved from the parent
   node's :arg-type metadata. For index 0, returns given 'root-type."
-  [index tree root-type]
+  [index root-type tree]
   (let [i (atom -1)
 	pfn (fn ptype [node type]
 	      (if (>= (swap! i inc) index)
@@ -165,7 +165,7 @@
   (let [seq-a (make-tree-seq tree-a)
 	idx-a (gp-rand-int (count seq-a))
 	pick-a (nth seq-a idx-a)
-	type-a (parent-arg-type idx-a tree-a root-type)
+	type-a (parent-arg-type idx-a root-type tree-a)
 	
 	seq-b (vec (make-tree-seq tree-b)) ; vec for faster nth
 	valid-indices (filter #(isa? (gp-type (nth seq-b %)) type-a) 
@@ -186,11 +186,11 @@
 
   Returns the new tree. If no valid subtree could be generated, returns
   unmodified tree."
-  [func-set term-set max-depth root-type tree]
+  [max-depth tree func-set term-set root-type]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
-	pick-type (parent-arg-type idx tree root-type)
-	subtree (try (generate-tree func-set term-set max-depth :grow pick-type)
+	pick-type (parent-arg-type idx root-type tree)
+	subtree (try (generate-tree max-depth :grow func-set term-set pick-type)
 		     (catch RuntimeException e nil))]
     (if (nil? subtree)
       tree
@@ -219,15 +219,16 @@
 (defn mutate-individual
   "Performs mutation on given individual's tree. Returns seq with the new
   individual as single element (for easy compatibility with crossover-ind)."
-  [ind run-config max-depth]
+  [max-depth ind run-config]
   (let [{:keys [validate-tree-fn breeding-retries
 		func-template-fn
 		function-set terminal-set root-type]} run-config
 	orig (get-fn-body (get-func ind))
 	tree (get-valid validate-tree-fn breeding-retries
-			#(mutate function-set terminal-set 
-				 max-depth root-type
-				 orig))
+			#(mutate max-depth 
+				 orig
+				 function-set terminal-set
+				 root-type))
 	gen (inc (get-gen ind))]
     (if (not (nil? tree))
       [(make-individual (func-template-fn tree) gen)]
@@ -266,7 +267,7 @@
   specified in run-config. Generated (sub)tree will be at most max-depth deep."
   ([max-depth pop run-config]
      (let [select (:selection-fn run-config)]
-       (mutate-individual (select pop) run-config max-depth)))
+       (mutate-individual max-depth (select pop) run-config)))
   ([pop run-config]
      (mutation-breeder 17 pop run-config)))
 

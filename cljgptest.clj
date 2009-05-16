@@ -20,8 +20,7 @@
 	cljgp.random
 	cljgp.config))
 
-;java -cp .;k:/clojure/svn-trunk/clojure.jar;k:/clojure/contrib/clojure-contrib.jar;./lib/plot.jar;./lib/uncommons-maths-1.2.jar clojure.lang.Repl cljgptest.clj
-
+;java -cp .;k:/clojure/svn-trunk/clojure.jar;k:/clojure/contrib/clojure-contrib.jar;./lib/* clojure.lang.Repl cljgptest.clj
 
 
 
@@ -112,12 +111,12 @@
 		     (prim 'y {:type Number
 			       :as-arg true})]
 
-      :arg-list '[x y]
-
       :root-type Number
 
+      :func-template-fn (make-func-template '[x y])
+
       :evaluation-fn evaluate-mvr
-      :end-condition (make-simple-end 50 0.0001)
+      :end-condition-fn (make-simple-end 50 0.0001)
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
 		 {:prob 0.1    :breeder-fn mutation-breeder}
@@ -226,7 +225,7 @@
       :root-type Number
 
       :evaluation-fn evaluate-concat
-      :end-condition (make-simple-end 50 0.0001)
+      :end-condition-fn (make-simple-end 50 0.0001)
 
       :breeders [{:prob 0.7    :breeder-fn crossover-breeder}
 		 {:prob 0.2    :breeder-fn mutation-breeder}

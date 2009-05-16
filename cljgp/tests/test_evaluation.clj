@@ -23,11 +23,11 @@
 	ind (into {} struct-ind)
 	given-fitness 3.33
 	evaluator (fn [func] given-fitness)
-	eval-ind (into {} (evaluate-individual evaluator struct-ind))
+	eval-ind (into {} (evaluate-individual struct-ind evaluator))
 
 	given-score 10
 	evaluator-map (fn [func] {:fitness given-fitness :raw-score 10})
-	eval-map-ind (into {} (evaluate-individual evaluator-map struct-ind))]
+	eval-map-ind (into {} (evaluate-individual struct-ind evaluator-map))]
     (testing "evaluator returning numeric value"
 	     (is (= (dissoc eval-ind :fitness) (dissoc ind :fitness))
 		 "Apart from fitness, individuals should be identical")
@@ -42,8 +42,8 @@
 		 "Key values should be as returned by evaluator"))
     (is (thrown-with-msg? RuntimeException #"Except!.*"
 			  (with-out-str ; silence output for cleanliness
-			    (evaluate-individual excepting-evaluator 
-						 struct-ind)))
+			    (evaluate-individual struct-ind 
+						 excepting-evaluator)))
 	"Exceptions not caught by evaluator should be reported and re-thrown")))
 
 (def mini-config

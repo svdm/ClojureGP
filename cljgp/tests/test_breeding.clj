@@ -17,10 +17,10 @@
 (defn my-gen
   [max-depth method root-type]
   (if-let [tree (try
-		 (generate-tree func-set-maths
-				term-set-maths
-				max-depth
+		 (generate-tree max-depth
 				method
+				func-set-maths
+				term-set-maths
 				root-type)
 		 (catch RuntimeException e
 		   false))]
@@ -116,7 +116,7 @@
 		    [(p 'div [:div1 :div2]) (p 'a []) (p 'b [])]
 		    (p 'c [])]]]
     (is (= [:root :+1 :*1 :*2 :+2 :-1 :div1 :div2 :-2]
-	   (map #(parent-arg-type % tree-orig :root)
+	   (map #(parent-arg-type % :root tree-orig)
 		(range (count (make-tree-seq tree-orig))))))))
 
 (deftest test-tree-replace
@@ -135,10 +135,10 @@
       (full-tree-test tree))))
 
 (deftest test-mutate
-  (let [tree (mutate func-set-maths term-set-maths
-		     17
-		     rtype
-		     (my-gen 4 :full rtype))]
+  (let [tree (mutate 17 (my-gen 4 :full rtype)
+		     func-set-maths
+		     term-set-maths
+		     rtype)]
     (full-tree-test tree)))
 
 (deftest test-get-valid
@@ -171,9 +171,9 @@
 (deftest test-mutate-ind
   (let [gen-old 0
 	ind (mutate-individual 
+	     17
 	     (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
-	     config-maths
-	     17)]
+	     config-maths)]
     (test-inds ind gen-old 1)))
 
 (deftest test-reproduce-ind

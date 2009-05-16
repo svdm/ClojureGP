@@ -73,14 +73,14 @@
 		     (prim `TEXT {:type ::string})]
       :arg-list []
 
-      :func-template-fn (standard-func-template)
+      :func-template-fn (make-func-template)
 
       :root-type Number
       
       :evaluation-fn (fn [x] (rand))
       :selection-fn (partial tournament-select 3)
 
-      :end-condition (make-simple-end 50)
+      :end-condition-fn (make-simple-end 50)
       :population-size 8
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}

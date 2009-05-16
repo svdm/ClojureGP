@@ -24,7 +24,7 @@
   individual's generation and a 'fn-form that is the individual's :func. The
   fn-form should be an s-expression that evals into a function, and will
   typically look like (fn NAME [ARGS] ...). See
-  cljgp.config/standard-func-template."
+  cljgp.config/make-func-template."
   ([fn-form gen]
      (assert (list? fn-form))
      (struct-map individual

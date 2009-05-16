@@ -27,7 +27,7 @@
   If the evaluator returns a map instead of a number, the map is merged into the
   individual. This allows storing additional evaluation details such as \"hits\"
   or raw score (eg. for analysis or customized selection)."
-  [evaluator ind]
+  [ind evaluator]
   (let [func (eval (get-func ind))
 	result (try (evaluator func) 
 		    (catch Exception e (report-exception e ind)))]
@@ -48,10 +48,11 @@
 	e-fn (:evaluation-fn run-config)]
     (mapcat deref
 	 (doall			    ; force creation of futures 
-	  (map #(future
-		  (binding [cljgp.random/gp-rand %2]
-		    (doall	    ; force actual evaluation to occur in future
-		     (map (partial evaluate-individual e-fn) %1))))
+	  (map (fn [ind rand-fn]
+		 (future
+		   (binding [cljgp.random/gp-rand rand-fn]
+		     (doall ; force actual evaluation to occur in future
+		      (map #(evaluate-individual % e-fn) ind)))))
 	       (partition-all per-future pop)
 	       (:rand-fns run-config))))))
 

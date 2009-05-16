@@ -52,7 +52,7 @@
 	(repeatedly #(System/currentTimeMillis))))
   ([] (seeds-from-time false)))
 
-(defn standard-func-template
+(defn make-func-template
   "In short, returns a fn as is expected by the :func-template-fn key in the
   run-config. Specifically, returns a function that inserts an evolved
   expression tree in a quoted fn form like:
@@ -71,9 +71,9 @@
        (fn standard-template [tree] (list `fn arg-list tree))
        (fn standard-template [tree] (list `fn func-name arg-list tree))))
   ([arg-list]
-     (standard-func-template nil arg-list))
+     (make-func-template nil arg-list))
   ([]
-     (standard-func-template nil [])))
+     (make-func-template nil [])))
 
 ;
 ; Configuration validation
@@ -81,13 +81,13 @@
 
 ; Values used as defaults in run config when no user-defined value is present.
 (def config-defaults
-     {:func-template-fn (standard-func-template)
+     {:func-template-fn (make-func-template)
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
 		 {:prob 0.1  :breeder-fn mutation-breeder}
 		 {:prob 0.1  :breeder-fn reproduction-breeder}]
       :breeding-retries 1
       :selection-fn (partial tournament-select 7)
-      :end-condition (make-simple-end 100)
+      :end-condition-fn (make-simple-end 100)
       :pop-generation-fn (partial generate-ramped 7 0.5)
       :rand-fn-maker make-default-rand
       :validate-tree-fn identity
@@ -123,7 +123,7 @@
      {:function-set #(strict-every? valid-func-entry? %)
       :terminal-set #(strict-every? valid-term-entry? %)
       :evaluation-fn fn?
-      :end-condition fn?
+      :end-condition-fn fn?
       :breeders #(strict-every? valid-breeder-entry? %)
       :breeding-retries number?
       :selection-fn fn?
@@ -202,7 +202,7 @@
 				 (:rand-seeds config-defaults))))}
 	tpl-fn   {:func-template-fn 
 		  (get run-config :func-template-fn
-		       (standard-func-template (get run-config :arg-list [])))}]
+		       (make-func-template (get run-config :arg-list [])))}]
     (merge run-config
 	   rand-fns
 	   tpl-fn)))

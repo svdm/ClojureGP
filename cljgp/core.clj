@@ -54,7 +54,7 @@
   [run-config]
   (let [config (prepare-config run-config)
 	pop-initial (generate-pop config)
-	end? (:end-condition config)]
+	end? (:end-condition-fn config)]
     (take-until-end end?
 		    (evolve-future-generations pop-initial config))))
 
