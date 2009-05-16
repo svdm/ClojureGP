@@ -1,7 +1,5 @@
 
-;; cljgp.tests.test_util.clj
-
-(ns cljgp.tests.test-util
+(ns test.cljgp.test-util
   (:use clojure.contrib.test-is
 	cljgp.util))
 

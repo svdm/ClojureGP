@@ -1,8 +1,7 @@
-;;; cljgp.tests.test_core.clj
 
-(ns cljgp.tests.test-core
+(ns test.cljgp.test-core
   (:use clojure.contrib.test-is
-	cljgp.tests.helpers
+	test.helpers
 	cljgp.core
 	[cljgp.breeding :only (generate-pop)]))
 

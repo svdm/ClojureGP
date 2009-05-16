@@ -1,9 +1,6 @@
 
-;; cljgp.tests.run_tests.clj
-
 (ns cljgp.tests.test-all
-  (:use [clojure.contrib.test-is :only (run-tests)])
-  (:gen-class))
+  (:use [clojure.contrib.test-is :only (run-tests)]))
 
 ; heavily borrowed from contrib.test_clojure.clj
 
@@ -17,7 +14,7 @@
       :test-config])
 
 (def test-namespaces
-     (map #(symbol (str "cljgp.tests." (name %))) test-names))
+     (map #(symbol (str "test.cljgp." (name %))) test-names))
 
 (defn run
   []

@@ -1,11 +1,9 @@
 
-;;; cljgp.tests.test_evaluation.clj
-
-(ns cljgp.tests.test-evaluation
+(ns test.cljgp.test-evaluation
   (:use clojure.contrib.test-is
+	test.helpers
 	cljgp.evaluation
 	cljgp.breeding
-	cljgp.tests.helpers
 	cljgp.util
 	cljgp.random))
 

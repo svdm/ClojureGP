@@ -1,9 +1,8 @@
-;;; cljgp.tests.test_config.clj
 
-(ns cljgp.tests.test-config
+(ns test.cljgp.test-config
   (:use clojure.contrib.test-is
+	test.helpers
 	cljgp.config
-	cljgp.tests.helpers
 	cljgp.util
 	cljgp.core))
 

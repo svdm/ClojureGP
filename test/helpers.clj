@@ -1,10 +1,7 @@
 
-
-;;; cljgp.tests.helpers.clj
-
 ; Various functions and data structures used in the tests
 
-(ns cljgp.tests.helpers
+(ns test.helpers
   (:use cljgp.breeding
 	cljgp.selection
 	cljgp.config

@@ -1,8 +1,5 @@
 
-;;; cljgp.tests.test_random.clj
-
-
-(ns cljgp.tests.test-random
+(ns test.cljgp.test-random
   (:use clojure.contrib.test-is
 	cljgp.random))
 

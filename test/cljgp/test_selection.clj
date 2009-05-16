@@ -1,10 +1,8 @@
 
-;;; cljgp.tests.selection.clj
-
-(ns cljgp.tests.test-selection
+(ns test.cljgp.test-selection
   (:use clojure.contrib.test-is
+	test.helpers
 	cljgp.selection
-	cljgp.tests.helpers
 	[cljgp.evaluation :only (evaluate-pop)]
 	[cljgp.breeding :only (generate-pop)]))
 

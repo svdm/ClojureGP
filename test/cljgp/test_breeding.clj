@@ -1,13 +1,10 @@
 
-;;; cljgp.tests.test_breeding.clj
-
-(ns cljgp.tests.test-breeding
+(ns test.cljgp.test-breeding
   (:use clojure.contrib.test-is
 	cljgp.breeding
 	cljgp.evaluation
-	;cljgp.tests.helpers
 	cljgp.util)
-  (:refer cljgp.tests.helpers))
+  (:refer test.helpers))
 
 (def func-set-maths (:function-set config-maths))
 (def term-set-maths (:terminal-set config-maths))
