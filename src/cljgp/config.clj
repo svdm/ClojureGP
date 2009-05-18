@@ -130,11 +130,11 @@
 
 ; Map of required keys, with as their values test predicates
 (def config-spec
-     {:function-set #(strict-every? valid-func-entry? %)
-      :terminal-set #(strict-every? valid-term-entry? %)
+     {:function-set #(and (coll? %) (strict-every? valid-func-entry? %))
+      :terminal-set #(and (coll? %) (strict-every? valid-term-entry? %))
       :evaluation-fn fn?
       :end-condition-fn fn?
-      :breeders #(strict-every? valid-breeder-entry? %)
+      :breeders #(and (coll? %) (strict-every? valid-breeder-entry? %))
       :breeding-retries number?
       :selection-fn fn?
       :population-size number?
@@ -148,25 +148,38 @@
       })
 
 (defn check-key
-  "If 'k does not exist in 'config, returns (k config-defaults) if any, else
-  returns nil. If the value in (k config) fails the given test, returns
-  nil. Else, returns (k config)."
+  "Returns a map with an :entry and an :type key.
+
+  If 'k exists in config and passes the given test, :entry is its map entry
+  and :type is :pass.
+
+  If 'k does not exist in 'config, :entry is (find config-defaults k) and :type
+  is :default.
+
+  If 'k does not exist in 'config and no default exists, :entry is nil and :type
+  is :no-default.
+
+  If the value in (k config) exists but fails the given test, :entry is nil
+  and :type is :fail."
   [k val-test config]
   (let [entry (find config k)]
     (cond
       (not (contains? config k)) 
         (if (contains? config-defaults k) 
-	  (do (println "Note: key" k "missing from configuration,"
-		       "using default.")
-	      (find config-defaults k))
-	  nil)
-      (not (val-test (val entry))) nil
-      :else entry)))
+	  {:entry (find config-defaults k) :type :default}
+	  {:entry nil :type :no-default})
+      (not (val-test (val entry))) 
+        {:entry nil :type :fail}
+      :else 
+        {:entry entry :type :pass})))
 
-(defmacro throw-config
-  [k config]
-  `(throw (Exception. (str "Invalid or missing run configuration entry. "
-			   "Key: " ~k " ; Value in config: " (~k ~config)))))
+(defn- add-check-result
+  "Helper for check-config. Updates a given config by adding the 'rval to the
+  'rkey entry list in its :check-results map, if rkey is not :pass."
+  [config rkey rval]
+  (if (= rkey :pass)
+    config
+    (update-in config [:check-results rkey] conj rval)))
 
 (defn check-config
   "Verifies that all required keys are present in the given configuration,
@@ -175,31 +188,55 @@
   key, an exception is thrown. Values for which no test is defined will be
   ignored."
   [run-config]
-  (loop [final run-config
+  (loop [conf run-config
 	 todo config-spec]
     (if (not (seq todo))
-      final
+      conf
       (let [[k test] (first todo)
-	    checked-entry (check-key k test run-config)]
+	    {checked-entry :entry etype :type} (check-key k test run-config)
+	    conf-upd (add-check-result conf etype k)]
 	(if (seq checked-entry)
-	  (recur (conj final checked-entry)
+	  (recur (conj conf-upd checked-entry)
 		 (next todo))
-	  (throw-config k run-config))))))
+	  (recur conf-upd
+		 (next todo)))))))
 
-(defmacro assert-msg
-  "Like assert, but with a more useful message."
-  [test msg]
-  `(when-not ~test
-     (throw (Exception. ~msg))))
+(defn report-check-problems
+  "Prints information on the :check-results of a given config. If any of the
+  issues are fatal, throws an exception."
+  [run-config]
+  (when-let [results (:check-results run-config)]
+    (println "Run configuration preprocessing report:")
+    (when-let [defaults (:default results)]
+      (println "  NOTE: The following keys were missing, reverted to defaults:")
+      (println "    " defaults))
+    (when-let [missing (:no-default results)]
+      (println "  FATAL: The following keys were missing, no defaults exist:")
+      (println "    " missing))
+    (when-let [fails (:fail results)]
+      (println "  FATAL: Values of the following keys were invalid:")
+      (println "    " fails))
+    (when-let [constraints (:constraint results)]
+      (doseq [c constraints]
+	(println "  FATAL: Constraint between keys violated:")
+	(println "    " c)))
+    (newline)
+    (when (seq (filter (partial contains? results) 
+		       [:fail :no-default :constraint]))
+      (throw (Exception. (str "Fatal problems exist in run configuration, "
+			      "run cannot proceed."))))))
 
+; TODO: restructure to test multiple constraints when more are needed
 (defn assert-constraints
-  "Checks constraints between keys (ie. 'global' constraints) and throws
-  exception if a test fails. Returns 'run-config unmodified."
+  "Checks constraints between keys (ie. 'global' constraints) and adds error
+  to :check-results map under :constraint key."
   [run-config]
   (let [{:keys [threads rand-seeds]} run-config]
-    (assert-msg (<= threads (count (take threads rand-seeds)))
-		"Insufficient seeds for the number of threads."))
-  run-config)
+    (cond 
+      (> threads (count (take threads rand-seeds)))
+        (add-check-result run-config :constraint 
+			  "Insufficient seeds for the number of threads.")
+      :else run-config)))
 
 (defn preproc-config
   "Performs some convenient preprocessing that generates values for more complex
@@ -225,6 +262,7 @@
   [run-config]
   (let [preprocessed (preproc-config run-config)
 	checked (assert-constraints (check-config preprocessed))]
+    (report-check-problems checked)
     (merge preprocessed
 	   checked))) ; keys changed in check-config will override run-config
 

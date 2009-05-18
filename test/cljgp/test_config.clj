@@ -77,33 +77,37 @@
 
 (deftest test-check-key
   (let [conf (dissoc config-maths :func-template-fn)]
-    (is (nil? (check-key :foo true? conf))
-	"If a key does not exist and there is no default, fail.")
-    (is (nil? (check-key :breeders (constantly false) conf))
-	"If key exists but fails test, fail.")
+    (is (= (check-key :foo true? conf)
+	   {:entry nil :type :no-default})
+	"If a key does not exist and there is no default...")
+    (is (= (check-key :breeders (constantly false) conf)
+	   {:entry nil :type :fail})
+	"If key exists but fails test...")
     (is (= (check-key :population-size number? conf) 
-	   [:population-size (:population-size conf)])
-	"If key exists and val passes test, return map entry.")
+	   {:entry [:population-size (:population-size conf)] :type :pass})
+	"If key exists and val passes test...")
     (is (= (quiet (check-key :func-template-fn true? conf)) 
-	   (find config-defaults :func-template-fn))
-	"If key does not exist and default does, return default entry.")))
+	   {:entry (find config-defaults :func-template-fn) :type :default})
+	"If key does not exist and default does...")))
 
 (deftest test-check-config
   (let [conf (dissoc config-maths :func-template-fn)
-	conf-broken (dissoc config-maths :function-set)]
-    (is (= (quiet (check-config conf)) 
-	   (assoc conf :func-template-fn (:func-template-fn config-defaults)))
+	conf-broken (dissoc config-maths :function-set)
+	conf-fail (assoc config-maths :function-set [+])]
+    (is (= (:func-template-fn (check-config conf)) 
+	   (:func-template-fn config-defaults))
 	"Missing key should be replaced by default if one exists.")
-    (is (thrown? Exception (check-config conf-broken))
-	"Missing key with no default should result in exception.")
-    (is (thrown? Exception 
-		 (check-config (assoc conf-broken :function-set [])))
-	"Invalid value for key should result in exception.")))
+    (is (seq (:default (:check-results (check-config conf))))
+	":default list should not be empty if a default was used.")
+    (is (seq (:no-default (:check-results (check-config conf-broken))))
+	":no-default list should not be empty if critical keys were missing.")
+    (is (seq (:fail (:check-results (check-config conf-fail))))
+	":fail list should not be empty if keys fail their validator.")))
 
 
 (deftest test-assert-constraints
-  (let [conf-broken (assoc config-maths :threads 999)]
-    (is (thrown? Exception (assert-constraints conf-broken))
+  (let [conf-broken (assoc config-maths :threads 999 :rand-seeds [1 2])]
+    (is (seq (:constraint (:check-results (assert-constraints conf-broken))))
 	"Too many threads for the number of seeds should fail.")
     (is (= config-maths (assert-constraints config-maths))
-	"Valid config should be returned with no exceptions thrown.")))
+	"Valid config should be returned with no changes.")))
