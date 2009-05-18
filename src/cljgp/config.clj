@@ -98,6 +98,7 @@
       :pop-generation-fn (partial generate-ramped 7 0.5)
       :rand-fn-maker make-default-rand
       :validate-tree-fn identity
+      :root-type nil
       })
 
 (defn valid-func-entry?
@@ -140,6 +141,7 @@
       :rand-fn-maker fn?
       :validate-tree-fn fn?
       :func-template-fn fn?
+      :root-type #(or (class? %) (keyword? %) (nil? %))
       })
 
 (defn check-key
