@@ -159,8 +159,7 @@
 	  (do (println "Note: key" k "missing from configuration,"
 		       "using default.")
 	      (find config-defaults k))
-	  (do (println k "not in defaults")
-	    nil))
+	  nil)
       (not (val-test (val entry))) nil
       :else entry)))
 

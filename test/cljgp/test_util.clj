@@ -43,5 +43,5 @@
 
 (deftest test-gp-type
   (let [sym (with-meta 'x {:type Number})]
-    (is (= (type sym) (gp-type sym)))
-    (is (= (type sym) (gp-type [sym 1 2])))))
+    (is (= (:type ^sym) (gp-type sym)))
+    (is (= (:type ^sym) (gp-type [sym 1 2])))))
