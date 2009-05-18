@@ -6,8 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/core.clj
-
 (ns cljgp.core
   "Core functions that handle a GP run, creating a population, evaluating and
   breeding it until the end condition is reached."

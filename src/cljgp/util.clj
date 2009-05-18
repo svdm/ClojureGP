@@ -88,12 +88,15 @@
 (defalias partition-all clojure.contrib.seq-utils/partition-all)
 
 (defn gp-type
-  "Returns type of given node, which is identical to (type (first node)) if it
-  is a coll (ie. non-terminal node) and (type node) if it is a terminal."
+  "Returns type of given node, which is similar to (type (first node)) if it
+  is a coll (ie. non-terminal node) and (type node) if it is a terminal.
+
+  Unlike clojure.core/type, does not return (class node) if type is nil. This is
+  important for untyped experiments where all primitives are typed as nil."
   [node]
-  (if (coll? node)
-    (type (first node))
-    (type node)))
+  (:type (meta (if (coll? node) 
+		 (first node)
+		 node))))
 
 (defn pick-rand-typed
   "Returns a random item from the collection that is of the given type. 
@@ -101,4 +104,4 @@
   As 'pick-rand, but first filters the seq to only include items of the given
   type 't (or a subtype of it)."
   [t coll]
-  (pick-rand (filter #(isa? (type %) t) coll)))
+  (pick-rand (filter #(isa? (gp-type %) t) coll)))

@@ -97,8 +97,10 @@
       :end-condition-fn (make-simple-end 100)
       :pop-generation-fn (partial generate-ramped 7 0.5)
       :rand-fn-maker make-default-rand
+      :rand-seeds (seeds-from-time)
       :validate-tree-fn identity
       :root-type nil
+      :threads 1
       })
 
 (defn valid-func-entry?
@@ -139,6 +141,7 @@
       :pop-generation-fn fn?
       :threads integer?
       :rand-fn-maker fn?
+      :rand-seeds coll?
       :validate-tree-fn fn?
       :func-template-fn fn?
       :root-type #(or (class? %) (keyword? %) (nil? %))
@@ -151,12 +154,13 @@
   [k val-test config]
   (let [entry (find config k)]
     (cond
-      (nil? entry) 
-        (if (k config-defaults) 
+      (not (contains? config k)) 
+        (if (contains? config-defaults k) 
 	  (do (println "Note: key" k "missing from configuration,"
 		       "using default.")
 	      (find config-defaults k))
-	  nil)
+	  (do (println k "not in defaults")
+	    nil))
       (not (val-test (val entry))) nil
       :else entry)))
 
