@@ -20,6 +20,6 @@
 (deftest test-tournament-select
   (let [tsize 5
 	pop (evaluate-pop (generate-pop config-maths) config-maths)
-	ind (tournament-select tsize pop)]
+	ind (tournament-select {:size tsize} pop)]
     (is (valid-ind? ind)
 	"Result should be a valid individual")))

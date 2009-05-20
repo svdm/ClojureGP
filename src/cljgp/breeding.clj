@@ -47,24 +47,26 @@
       (throw (RuntimeException. 
 	      (str "No available function of type " node-type))))))
 
-; FIXME: potential infinite loop for primitive sets where no valid trees can be
-;   generated
 (defn generate-ramped
   "Returns a tree generated using a version of the ramped half and half
-  method. Tree will be generated from 'func-set and 'term-set, up to
-  'max-depth (inclusive). The 'grow' method will be used with the probability
-  given as 'grow-chance."
-  [max-depth grow-chance func-set term-set root-type]
-  (if-let [tree (try
-		 (generate-tree (inc (gp-rand-int max-depth))
-				(if (< (gp-rand) grow-chance) :grow :full)
-				func-set
-				term-set
-				root-type)
-		 (catch RuntimeException e
-		   false))]
-    tree
-    (recur max-depth grow-chance func-set term-set root-type)))
+  method. Tree will be generated from the function and terminal sets, up to
+  :max-depth (inclusive). The 'grow' method will be used with the probability
+  given as :grow-chance.
+
+  If a tree is constructed that ends up not being validly typed, returns
+  nil. This can happen quite often in experiments with many different types. See
+  cljgp.breeding/get-valid for a way to deal with this."
+  [{:keys [max-depth grow-chance] :or {max-depth 7, grow-chance 0.5}} 
+   {:as run-config,
+    :keys [function-set terminal-set root-type]}]
+  (try
+   (generate-tree (inc (gp-rand-int max-depth))
+		  (if (< (gp-rand) grow-chance) :grow :full)
+		  function-set
+		  terminal-set
+		  root-type)
+   (catch RuntimeException e
+     nil)))
 
 (defn get-valid
   "Returns a result of 'gen-fn (which should be a tree-generating function) that
@@ -75,8 +77,8 @@
   been generated, returns nil."
   [valid-tree? tries gen-fn]
   (first (filter #(if (vector? %)
-		    (every? valid-tree? %)
-		    (valid-tree? %))
+		    (and (not-empty %) (every? valid-tree? %))
+		    (and (not (nil? %)) (valid-tree? %)))
 		 (take tries (repeatedly gen-fn)))))
 
 ; FIXME: does not handle situations where valid trees are impossible to generate
@@ -85,18 +87,13 @@
   expression trees generated from the function- and terminal-set, all as
   specified in the given 'run-config. Used internally by
   cljgp.breeding/generate-pop."
-  [run-config]
-  (let [{:keys [function-set terminal-set
-		pop-generation-fn
-		validate-tree-fn
-		func-template-fn
-		root-type]} run-config
-	generate (fn [] (get-valid validate-tree-fn Integer/MAX_VALUE 
-				   #(pop-generation-fn function-set 
-						       terminal-set
-						       root-type)))]
-
-    (repeatedly #(make-individual (func-template-fn (generate)) 0))))
+  [{:as run-config,
+    :keys [pop-generation-fn, validate-tree-fn, func-template-fn]}]
+  (let [generate (fn [] 
+		   (get-valid validate-tree-fn Integer/MAX_VALUE 
+			      #(pop-generation-fn run-config)))]
+    (repeatedly 
+     #(make-individual (func-template-fn (generate)) 0))))
 
 ; Note that it is intentional that (ind-generator-seq ..) is called inside each
 ; future, even though one might think it's just a producer function that is
@@ -108,9 +105,8 @@
   in the function set and terminal set, using the tree producer function also
   specified in the 'run-config (typically ramped half and half). The work is
   divided over worker threads, each with their own RNG."
-  [run-config]
-  (let [{:keys [population-size threads rand-fns]} run-config
-	per-future (divide-up population-size threads)]
+  [{:keys [population-size threads rand-fns] :as run-config}]
+  (let [per-future (divide-up population-size threads)]
     (mapcat deref
 	    (doall 
 	     (map #(future
@@ -193,7 +189,7 @@
 
   Returns the new tree. If no valid subtree could be generated, returns
   unmodified tree."
-  [max-depth tree func-set term-set root-type]
+  [tree max-depth func-set term-set root-type]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
 	pick-type (parent-arg-type idx root-type tree)
@@ -209,10 +205,10 @@
   'crossover-fn. Returns vector of two new individuals. If crossover-fn returns
   nil after the number of breeding retries configured in the 'run-config, then
   the given individuals are reproduced directly."
-  [crossover-fn inds run-config]
-  (let [{:keys [validate-tree-fn func-template-fn
-		breeding-retries root-type]} run-config
-	[orig-a orig-b] (map (comp get-fn-body get-func) inds)
+  [crossover-fn inds {:as run-config
+		      :keys [validate-tree-fn func-template-fn
+			     breeding-retries root-type]}]
+  (let [[orig-a orig-b] (map (comp get-fn-body get-func) inds)
 	[tree-a tree-b] (get-valid validate-tree-fn breeding-retries
 				   #(crossover-fn orig-a orig-b root-type))
 	gen (inc (get-gen (first inds)))]
@@ -226,14 +222,13 @@
 (defn mutate-individual
   "Performs mutation on given individual's tree. Returns seq with the new
   individual as single element (for easy compatibility with crossover-ind)."
-  [max-depth ind run-config]
-  (let [{:keys [validate-tree-fn breeding-retries
-		func-template-fn
-		function-set terminal-set root-type]} run-config
-	orig (get-fn-body (get-func ind))
+  [ind max-depth {:as run-config
+		  :keys [validate-tree-fn breeding-retries func-template-fn
+			 function-set terminal-set root-type]}]
+  (let [orig (get-fn-body (get-func ind))
 	tree (get-valid validate-tree-fn breeding-retries
-			#(mutate max-depth 
-				 orig
+			#(mutate orig 
+				 max-depth
 				 function-set terminal-set
 				 root-type))
 	gen (inc (get-gen ind))]
@@ -250,9 +245,9 @@
   "Performs direct reproduction, ie. breeds a new individual by directly copying
   the given individual's tree. Returns seq with new individual as single
   element."
-  [ind run-config]
-  (let [func-tpl (:func-template-fn run-config)
-	tree (get-fn-body (get-func ind))
+  [ind {:as run-config,
+	func-tpl :func-template-fn}]
+  (let [tree (get-fn-body (get-func ind))
 	gen (inc (get-gen ind))]
     [(make-individual (func-tpl tree) gen)]))
 
@@ -261,30 +256,30 @@
   "Selects two individuals from pop by applying the selection-fn specified in
    run-config to it twice, performs crossover and returns seq of two resulting
    new trees."
-  [pop run-config]
-  (let [select (:selection-fn run-config)]
-    (crossover-individuals crossover-uniform-typed
-			   [(select pop) (select pop)]
-			   run-config)))
+  [pop {:as run-config,
+	select :selection-fn}]
+  (crossover-individuals crossover-uniform-typed
+			 [(select pop) (select pop)]
+			 run-config))
 
 (defn mutation-breeder
   "Selects an individual from pop by applying selection-fn specified in the
   run-config to it, performs mutation and returns seq with the single resulting
   tree in it. Mutation will pull nodes from the function and terminal sets
   specified in run-config. Generated (sub)tree will be at most max-depth deep."
-  ([max-depth pop run-config]
-     (let [select (:selection-fn run-config)]
-       (mutate-individual max-depth (select pop) run-config)))
+  ([{max-depth :max-depth} pop {:as run-config,
+				select :selection-fn}]
+     (mutate-individual (select pop) max-depth run-config))
   ([pop run-config]
-     (mutation-breeder 17 pop run-config)))
+     (mutation-breeder {:max-depth 17} pop run-config)))
 
 (defn reproduction-breeder
   "Selects an individual from pop by applying selection-fn specified in the
   run-config to it, returns seq with a new individual whose tree is identical to
   the selected individual."
-  [pop run-config]
-  (let [select (:selection-fn run-config)]
-    (reproduce-individual (select pop) run-config)))
+  [pop {:as run-config,
+	select :selection-fn}]
+  (reproduce-individual (select pop) run-config))
 
 (defn- setup-breeders
   "Sets up (lazy-)seq of breeders (maps with a :prob key) in a seq in
@@ -311,10 +306,9 @@
   "Returns a new population of equal size bred from the given evaluated pop by
    repeatedly applying a random breeder to pop-evaluated. Work is divided over
    worker threads."
-  [pop-evaluated run-config]
-  (let [{:keys [breeders population-size 
-		threads rand-fns]} run-config
-	bs (setup-breeders breeders)
+  [pop-evaluated {:as run-config,
+		  :keys [breeders population-size threads rand-fns]}]
+  (let [bs (setup-breeders breeders)
 	per-future (divide-up population-size threads)
 	breed-generator (fn breed-new []
 			  (lazy-seq

@@ -93,9 +93,10 @@
 		 {:prob 0.1  :breeder-fn mutation-breeder}
 		 {:prob 0.1  :breeder-fn reproduction-breeder}]
       :breeding-retries 1
-      :selection-fn (partial tournament-select 7)
+      :selection-fn (partial tournament-select {:size 7})
       :end-condition-fn (make-simple-end 100)
-      :pop-generation-fn (partial generate-ramped 7 0.5)
+      :pop-generation-fn (partial generate-ramped {:max-depth 7 
+						   :grow-chance 0.5})
       :rand-fn-maker make-default-rand
       :rand-seeds (seeds-from-time)
       :validate-tree-fn identity

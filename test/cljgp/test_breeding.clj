@@ -87,9 +87,9 @@
 
 (deftest test-generate-ramped
   (let [d 4
-	grown-tree (generate-ramped d 1 func-set-maths term-set-maths rtype)
-	full-tree (generate-ramped d 0 func-set-maths term-set-maths rtype)
-	rand-tree (generate-ramped d 0.5 func-set-maths term-set-maths rtype)]
+	grown-tree (generate-ramped {:max-depth d :grow-chance 1} config-maths)
+	full-tree (generate-ramped {:max-depth d :grow-chance 0} config-maths)
+	rand-tree (generate-ramped {:max-depth d :grow-chance 0.5} config-maths)]
     (testing "generated tree validity"
 	     (full-tree-test grown-tree)
 	     (full-tree-test full-tree)
@@ -139,7 +139,7 @@
       (full-tree-test tree))))
 
 (deftest test-mutate
-  (let [tree (mutate 17 (my-gen 4 :full rtype)
+  (let [tree (mutate (my-gen 4 :full rtype) 17
 		     func-set-maths
 		     term-set-maths
 		     rtype)]
@@ -175,8 +175,8 @@
 (deftest test-mutate-ind
   (let [gen-old 0
 	ind (mutate-individual 
-	     17
 	     (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
+	     17
 	     config-maths)]
     (test-inds ind gen-old 1)))
 

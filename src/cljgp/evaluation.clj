@@ -45,22 +45,24 @@
 		    (str "Evaluator must return number or map. Returned: " 
 			 result))))))
 
+; The doall calls here force the future-related work to happen when (ie. now)
+; and where (ie. inside bindings) we want the creation/computation to happen.
 (defn evaluate-pop
   "Takes a population (collection) of individuals and returns a new seq with all
   individuals evaluated using the evaluator fn defined in 'run-config. Work is
   divided over worker threads."
-  [pop run-config]
-  (let [num-futures (:threads run-config)
-	per-future (Math/ceil (/ (count pop) num-futures))
-	e-fn (:evaluation-fn run-config)]
+  [pop {:as run-config
+	:keys [threads, evaluation-fn, rand-fns]}]
+  (let [per-future (Math/ceil (/ (count pop) threads))
+	e-fn evaluation-fn]
     (mapcat deref
-	 (doall			    ; force creation of futures 
-	  (map (fn [ind rand-fn]
+	 (doall
+	  (map (fn [inds rand-fn]
 		 (future
 		   (binding [cljgp.random/gp-rand rand-fn]
-		     (doall ; force actual evaluation to occur in future
-		      (map #(evaluate-individual % e-fn) ind)))))
+		     (doall
+		      (map #(evaluate-individual % e-fn) inds)))))
 	       (partition-all per-future pop)
-	       (:rand-fns run-config))))))
+	       rand-fns)))))
 
 

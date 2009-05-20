@@ -82,7 +82,7 @@
       :root-type Number
       
       :evaluation-fn (fn [x] (rand))
-      :selection-fn (partial tournament-select 3)
+      :selection-fn (partial tournament-select {:size 3})
 
       :end-condition-fn (make-simple-end 50)
       :population-size 8
@@ -95,12 +95,15 @@
 
       :validate-tree-fn identity
 
-      :pop-generation-fn (partial generate-ramped 7 0.5)
+      :pop-generation-fn (partial generate-ramped {:max-depth 7
+						   :grow-change 0.5})
 
       :threads 2
       :rand-seeds [0 1]			; not used
       :rand-fn-maker make-default-rand
-					; supply premade rand-fns instead of depending on preproc to do this
+
+					; supply premade rand-fns instead of
+					; depending on preproc to do this
       :rand-fns (map make-default-rand 
 		     (take 2 (repeatedly #(System/currentTimeMillis))))
       })
