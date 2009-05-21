@@ -123,6 +123,12 @@
        (float? (:prob entry))
        (fn? (:breeder-fn entry))))
 
+(defn valid-breeder-probs?
+  "Returns true if the :prob values of all breeders add up to 1.0 (allowing for
+  floating point errors), as they should."
+  [breeders]
+  (< 0.99 (reduce + (map :prob breeders))))
+
 (defn strict-every?
   "Like 'every?, but returns false on empty coll."
   [pred coll]
@@ -135,7 +141,9 @@
       :terminal-set #(and (coll? %) (strict-every? valid-term-entry? %))
       :evaluation-fn fn?
       :end-condition-fn fn?
-      :breeders #(and (coll? %) (strict-every? valid-breeder-entry? %))
+      :breeders #(and (coll? %) 
+		      (strict-every? valid-breeder-entry? %)
+		      (valid-breeder-probs? %))
       :breeding-retries number?
       :selection-fn fn?
       :population-size number?

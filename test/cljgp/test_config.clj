@@ -66,7 +66,7 @@
 	     (is (not (vte [])))))
   (testing "valid-breeder-entry?"
 	   (let [vbe valid-breeder-entry?
-		 b-fn #(println "mock breeder")]
+		 b-fn +] ; any fn will do for the testing
 	     (is (vbe {:prob 0.1 :breeder-fn b-fn}))
 	     (is (not (vbe {})))
 	     (is (not (vbe [])))

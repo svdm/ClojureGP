@@ -16,7 +16,7 @@
 (def func-set-maths (:function-set config-maths))
 (def term-set-maths (:terminal-set config-maths))
 
-(defn my-tpl [tree] (list `fn [] tree))
+(defn my-tpl [tree] (list `fn 'gp-mather [] tree))
 
 (defn my-gen
   [max-depth method root-type]
@@ -87,9 +87,11 @@
 
 (deftest test-generate-ramped
   (let [d 4
-	grown-tree (generate-ramped {:max-depth d :grow-chance 1} config-maths)
-	full-tree (generate-ramped {:max-depth d :grow-chance 0} config-maths)
-	rand-tree (generate-ramped {:max-depth d :grow-chance 0.5} config-maths)]
+	gtor (fn [opts] (get-valid (comp not nil?) 512 
+				   #(generate-ramped opts config-maths)))
+	grown-tree (gtor {:max-depth d :grow-chance 1})
+	full-tree (gtor {:max-depth d :grow-chance 0})
+	rand-tree (gtor {:max-depth d :grow-chance 0.5})]
     (testing "generated tree validity"
 	     (full-tree-test grown-tree)
 	     (full-tree-test full-tree)
@@ -106,7 +108,7 @@
 	"Generated population must be a valid seq-able.")
     (is (= (count pop) target-size)
 	"Generated population should be of the specified size.")
-    (is (empty? (filter #(not (valid-tree? (get-fn-body (:func %)))) pop))
+    (is (empty? (filter #(not (valid-tree? (get-fn-body (get-func %)))) pop))
 	"All generated trees must be valid.")))
 
 

@@ -46,7 +46,7 @@
   body). In GP terms, returns the expression tree of an individual's :func
   value."
   [quoted-fn]
-  (nth quoted-fn 2 '()))
+  (last quoted-fn))
 
 ; TODO: add (comp get-fn-body get-fn) ?
 

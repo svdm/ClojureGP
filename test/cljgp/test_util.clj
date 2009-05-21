@@ -29,8 +29,8 @@
 (deftest test-get-fn-body
   (is (= (get-fn-body (my-tpl valid-tree))
 	 valid-tree))
-  (is (= (get-fn-body '()) 
-	 '())))
+  (is (= (seq (get-fn-body '())) 
+	 nil)))
 
 (deftest test-make-tree-seq
   (is (= (macroexpand-1 `(make-tree-seq valid-tree))

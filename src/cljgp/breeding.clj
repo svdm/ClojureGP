@@ -81,7 +81,6 @@
 		    (and (not (nil? %)) (valid-tree? %)))
 		 (take tries (repeatedly gen-fn)))))
 
-; FIXME: does not handle situations where valid trees are impossible to generate
 (defn- ind-generator-seq
   "Returns a lazy infinite sequence of individuals with generation 0 and
   expression trees generated from the function- and terminal-set, all as
@@ -89,9 +88,16 @@
   cljgp.breeding/generate-pop."
   [{:as run-config,
     :keys [pop-generation-fn, validate-tree-fn, func-template-fn]}]
-  (let [generate (fn [] 
-		   (get-valid validate-tree-fn Integer/MAX_VALUE 
-			      #(pop-generation-fn run-config)))]
+  (let [retries 1024			; should perhaps be configurable
+	generate (fn [] 
+		   (if-let [ind (get-valid validate-tree-fn retries
+					   #(pop-generation-fn run-config))]
+		     ind
+		     (throw (RuntimeException. 
+			     (str "Failed to generate a valid tree after "
+				  retries " attempts. Most likely there is "
+				  "an issue that makes valid trees "
+				  "impossible to generate.")))))]
     (repeatedly 
      #(make-individual (func-template-fn (generate)) 0))))
 

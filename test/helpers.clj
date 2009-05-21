@@ -77,7 +77,7 @@
 		     (prim `TEXT {:type ::string})]
       :arg-list []
 
-      :func-template-fn (make-func-template)
+      :func-template-fn (make-func-template 'gp-mather [])
 
       :root-type Number
       
