@@ -143,9 +143,9 @@
 		(when (coll? node) 
 		  (first
 		   (remove nil?
-			   (map ptype
-				(rest node)
-				(:arg-type ^(first node))))))))]
+			   (doall (map ptype
+				       (next node)
+				       (:arg-type ^(first node)))))))))]
     (pfn tree root-type)))
 
 (defn tree-replace

@@ -105,3 +105,17 @@
   type 't (or a subtype of it)."
   [t coll]
   (pick-rand (filter #(isa? (gp-type %) t) coll)))
+
+
+(defn valid-types?
+  "Given a node (tree) and the type that node should satisfy (root-type),
+  returns whether it and its subtree (if any) are validly typed."
+  [node satisfies]
+  (cond
+    (nil? node) (nil? satisfies)
+    (not (coll? node)) (isa? (gp-type node) satisfies)
+    :else (and (isa? (gp-type node) satisfies)
+	       (every? true? 
+		       (map valid-types? 
+			    (next node) 
+			    (:arg-type ^(first node)))))))
