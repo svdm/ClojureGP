@@ -111,7 +111,7 @@
 		    [(p 'div [:div1 :div2]) (p 'a []) (p 'b [])]
 		    (p 'c [])]]]
     (is (= [:root :+1 :*1 :*2 :+2 :-1 :div1 :div2 :-2]
-	   (map #(parent-arg-type % :root tree-orig)
+	   (map #(parent-arg-type % :root (make-tree-seq tree-orig))
 		(range (count (make-tree-seq tree-orig))))))))
 
 (deftest test-tree-replace
@@ -121,31 +121,32 @@
 	     (nth (make-tree-seq (tree-replace i :test tree-orig)) i))
 	  "Replace should work correctly in any tree node."))))
 
-; Two manually created trees for testing a specific type situation
+;;; Two manually created trees for testing a specific type situation
 (def typetest-tree-a
      (list (with-meta `count {:type Number :arg-type [:test.helpers/seq]})
 	   (with-meta `TEXT {:type :test.helpers/string})))
 
 (def typetest-tree-b
-     (list (with-meta `safe-nth {:type Number :arg-type [:test.helpers/vector Number]})
+     (list (with-meta `safe-nth {:type Number 
+				 :arg-type [:test.helpers/vector Number]})
 	   (with-meta `VECT {:type :test.helpers/vector})
 	   (with-meta `_1 {:type Number})))
 
 (deftest test-crossover-uniform
-  (let [trees (crossover-uniform-typed (my-gen 6 :full rtype)
-				       (my-gen 6 :grow rtype)
+  (let [trees (crossover-uniform-typed [(my-gen 6 :full rtype)
+					(my-gen 6 :grow rtype)]
 				       rtype)]
     (is (or (= (count trees) 2) (= trees nil)))
     (doseq [tree trees]
       (full-tree-test tree)))
 
-; test for a regression in typed crossover, where types with a common parent
-; type could be picked for crossover even though the type of the first node
-; could not satisfy the parent-arg-type of the second node, leading to invalidly
-; typed trees
+;;; test for a regression in typed crossover, where types with a common parent
+;;; type could be picked for crossover even though the type of the first node
+;;; could not satisfy the parent-arg-type of the second node, leading to
+;;; invalidly typed trees
   (dotimes [_ 10] 
-    (let [typetrees (crossover-uniform-typed typetest-tree-a
-					     typetest-tree-b
+    (let [typetrees (crossover-uniform-typed [typetest-tree-a
+					      typetest-tree-b]
 					     Number)]
       (testing "Invalid types after crossover, possible regression"
 	       (doseq [tree typetrees]

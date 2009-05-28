@@ -125,16 +125,41 @@
 ;; Breeding
 ;;
 
+(defn parent-arg-type
+  "Returns the arg-type that the node at the given 'index of the 'tree
+  satisfies. In other words: returns the type that a node at the index must
+  satisfy in order to be valid. This type is retrieved from the parent
+  node's :arg-type metadata. For index 0, returns given 'root-type.
+
+  Throws out of bounds exception if idx is out of bounds."
+  [index root-type treeseq]
+  (loop [typestack (list root-type)
+	 i index
+	 nodes treeseq]
+    (cond 
+      (== i 0) (first typestack)
+      (seq nodes) (recur (concat (gp-arg-type (first nodes))
+				 (rest typestack))
+			 (dec i)
+			 (rest nodes))
+      :else (throw (IndexOutOfBoundsException. 
+		    "Index out of bounds of treeseq.")))))
+
 ; The low-level tree handling functions use a somewhat ugly side-effect counter
 ; while traversing a tree to keep track of the node index. This appears to be
 ; quite a bit faster than more elegant methods, and these functions are called
 ; very often. Hence the optimization. Will hopefully be improved in the future.
 
-(defn parent-arg-type
+;;; Older version of parent-arg-type that is most likely obsolete and will be
+;;; removed if the new version works out.
+(defn parent-arg-type-tree
   "Returns the arg-type that the node at the given 'index of the 'tree
   satisfies. In other words: returns the type that a node at the index must
   satisfy in order to be valid. This type is retrieved from the parent
-  node's :arg-type metadata. For index 0, returns given 'root-type."
+  node's :arg-type metadata. For index 0, returns given 'root-type.
+
+  Differs from 'parent-arg-type by walking the tree directly instead of using a
+  tree-seq. Also, returns nil if idx is out of bounds."
   [index root-type tree]
   (let [i (atom -1)
 	pfn (fn ptype [node type]
@@ -162,32 +187,37 @@
 		 :else node))]
     (r-fn tree)))
 
-;TODO/FIXME: crossover point selection is uniform instead of the traditional
-;  90/10 split between nodes and leaves respectively
+;;; Moved some code out of crossover-uniform-typed into a macro, not useful on
+;;; its own.
+(defmacro find-valid-indices
+  "Helper macro for internal use by crossover-uniform-typed.
+  Given a tree and some type information, finds all indices of nodes in the
+  tree-seq representation of the tree that can be safely exchanged with a node
+  whose type information is described in the replacement-type and
+  replacement-parent-type arguments."
+  [treeseq replacement-type replacement-parent-type root-type]
+  `(filter (fn [idx#] (and (isa? (gp-type (nth ~treeseq idx#))
+				 ~replacement-parent-type)
+			   (isa? ~replacement-type
+				 (parent-arg-type idx# ~root-type ~treeseq))))
+	   (range (count ~treeseq))))
 
-; not the prettiest, could use cleanup
 (defn crossover-uniform-typed
   "Performs a subtree crossover operation on the given trees, taking node types
   into account. The 'root-type is the type satisfied by the root nodes of both
   trees. Returns vector of two new trees, or nil if crossover failed."
-  [tree-a tree-b root-type]
+  [[tree-a tree-b] root-type]
   (let [seq-a (make-tree-seq tree-a)
 	idx-a (gp-rand-int (count seq-a))
 	pick-a (nth seq-a idx-a)
 
 	type-a (gp-type pick-a)
-	satisfied-a (parent-arg-type idx-a root-type tree-a)
-	
-	seq-b (vec (make-tree-seq tree-b)) ; vec for faster nth
+	parent-type-a (parent-arg-type idx-a root-type seq-a)
+	;; Convert to vec for faster nth in find-valid-indices
+	seq-b (make-tree-seq tree-b)
 
-	; find indices of nodes that can satisfy the type required in tree-a and
-	; currently satisfy a type that can be satisfied by pick-a ie. nodes
-	; that can safely be switched
-	valid-indices (filter #(and (isa? (gp-type (nth seq-b %)) 
-					  satisfied-a)
-				    (isa? type-a 
-					  (parent-arg-type % root-type tree-b)))
-			      (range (count seq-b)))]
+	;; Find indices of nodes that can safely be switched in for pick-a
+	valid-indices (find-valid-indices seq-b type-a parent-type-a root-type)]
     (when (seq valid-indices)
       (let [idx-b (pick-rand valid-indices)
 	    pick-b (nth seq-b idx-b)]
@@ -205,7 +235,7 @@
   [tree max-depth func-set term-set root-type]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
-	pick-type (parent-arg-type idx root-type tree)
+	pick-type (parent-arg-type idx root-type tree-seq)
 	subtree (try (generate-tree max-depth :grow func-set term-set pick-type)
 		     (catch RuntimeException e nil))]
     (if (nil? subtree)
@@ -221,16 +251,14 @@
   [crossover-fn inds {:as run-config
 		      :keys [validate-tree-fn func-template-fn
 			     breeding-retries root-type]}]
-  (let [[orig-a orig-b] (map (comp get-fn-body get-func) inds)
-	[tree-a tree-b] (get-valid validate-tree-fn breeding-retries
-				   #(crossover-fn orig-a orig-b root-type))
+  (let [orig-trees (map (comp get-fn-body get-func) inds)
+	new-trees (get-valid validate-tree-fn breeding-retries
+			     #(crossover-fn orig-trees root-type))
 	gen (inc (get-gen (first inds)))]
-    (if (not (nil? tree-a))
-      [(make-individual (func-template-fn tree-a) gen) ; crossover succeeded
-       (make-individual (func-template-fn tree-b) gen)]
-
-      [(make-individual (func-template-fn orig-a) gen) ; failed, plain copy
-       (make-individual (func-template-fn orig-b) gen)])))
+    (vec (map #(make-individual (func-template-fn %) gen)
+	      (if (nil? new-trees)
+		orig-trees		; crossover failed, copy
+		new-trees)))))		; successfull crossover
 
 (defn mutate-individual
   "Performs mutation on given individual's tree. Returns seq with the new

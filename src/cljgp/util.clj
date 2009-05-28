@@ -98,6 +98,15 @@
 		 (first node)
 		 node))))
 
+;;; TODO: generalize
+(defn gp-arg-type
+  "Returns :arg-type val from metadata of node. If node is a coll, uses metadata
+  of (first node)."
+  [node]
+  (:arg-type (meta (if (coll? node) 
+		     (first node)
+		     node))))
+
 (defn pick-rand-typed
   "Returns a random item from the collection that is of the given type. 
 

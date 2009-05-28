@@ -33,22 +33,23 @@
 
 (defn evaluate-nth
   [gpnth]
-  (try
-   (let [recurse-count (atom 0)
-	 recurse-limit 40]
-     (binding [wrapped-nth (make-wrapped-nth gpnth 
-					     recurse-count 
-					     recurse-limit)]
-       (let [c (range 0 50)
-	     evl (fn [idx]
-		   (if-let [result (gpnth c idx)]
-		     (Math/abs 
-		      (float (- (nth c idx)
-				result)))
-		     penalty))]
-	 (reduce + (map evl c)))))
-   (catch StackOverflowError e 
-     penalty)))
+  (let [recurse-count (atom 0)
+	recurse-limit 100]
+    (binding [wrapped-nth (make-wrapped-nth gpnth 
+					    recurse-count 
+					    recurse-limit)]
+      (let [c (range 0 20)
+	    evl (fn [idx]
+		  (if-let [result (try (gpnth c idx)
+				       (catch StackOverflowError e 
+					 (do 
+					   (reset! recurse-count 0)
+					   false)))]
+		    (Math/abs 
+		     (float (- (nth c idx)
+			       result)))
+		    penalty))]
+	(reduce + (map evl c))))))
 
 
 ; CONFIG
@@ -66,6 +67,7 @@
 (derive ::el ::any)
 
 (derive ::number ::any)
+(derive ::number-orig ::number)
 
 (def config-nth 
      {
@@ -75,7 +77,7 @@
 				       ::el
 				       ::el]})
 
-		     (prim `=
+		     (prim `==
 			   {:type ::bool
 			    :arg-type [::number ::number]})
 
@@ -97,11 +99,11 @@
 
 		     (prim `inc
 			   {:type ::number
-			    :arg-type [::number]})
+			    :arg-type [::number-orig]})
 		     
 		     (prim `dec
 			   {:type ::number
-			    :arg-type [::number]})
+			    :arg-type [::number-orig]})
 
 		     (prim `wrapped-nth
 			   {:type ::el
@@ -112,7 +114,7 @@
 			   {:type ::seq-orig})
 		     
 		     (prim 'index 
-			   {:type ::number})
+			   {:type ::number-orig})
 		     
 		     (prim `ZERO
 			   {:type ::number})
@@ -123,7 +125,7 @@
       
       :evaluation-fn evaluate-nth
 
-      :population-size 1024
+      :population-size 5000
 
       :end-condition-fn (make-simple-end 50)
 
@@ -131,11 +133,11 @@
 
       :breeders [{:prob 0.6  :breeder-fn crossover-breeder}
 		 {:prob 0.4  :breeder-fn (partial mutation-breeder 
-						  {:max-depth 10})}]
+						  {:max-depth 20})}]
 
       :breeding-retries 50
 
-      :threads 1
+      :threads 2
       
       :rand-seeds [(rand-int 8432894897)
 		   (rand-int 2713705494)]
