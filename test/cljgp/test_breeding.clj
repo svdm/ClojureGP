@@ -47,11 +47,11 @@
 (defn full-tree-test
   [tree]
   (is (valid-tree? tree)
-      "Root must be seq or result constant")
+      (str "Root must be seq or result constant, tree: " tree))
   (is (valid-types? tree rtype)
-      "Tree must be validly typed")
+      (str "Tree must be validly typed, tree: " tree))
   (is (valid-eval? tree)
-      "Result of evaluation must be valid"))
+      (str "Result of evaluation must be valid, tree: " tree)))
 
 ; generation function tests
 
@@ -121,13 +121,35 @@
 	     (nth (make-tree-seq (tree-replace i :test tree-orig)) i))
 	  "Replace should work correctly in any tree node."))))
 
+; Two manually created trees for testing a specific type situation
+(def typetest-tree-a
+     (list (with-meta `count {:type Number :arg-type [:test.helpers/seq]})
+	   (with-meta `TEXT {:type :test.helpers/string})))
+
+(def typetest-tree-b
+     (list (with-meta `safe-nth {:type Number :arg-type [:test.helpers/vector Number]})
+	   (with-meta `VECT {:type :test.helpers/vector})
+	   (with-meta `_1 {:type Number})))
+
 (deftest test-crossover-uniform
-  (let [trees (crossover-uniform-typed (my-gen 4 :full rtype)
-				       (my-gen 4 :grow rtype)
+  (let [trees (crossover-uniform-typed (my-gen 6 :full rtype)
+				       (my-gen 6 :grow rtype)
 				       rtype)]
     (is (or (= (count trees) 2) (= trees nil)))
     (doseq [tree trees]
-      (full-tree-test tree))))
+      (full-tree-test tree)))
+
+; test for a regression in typed crossover, where types with a common parent
+; type could be picked for crossover even though the type of the first node
+; could not satisfy the parent-arg-type of the second node, leading to invalidly
+; typed trees
+  (dotimes [_ 10] 
+    (let [typetrees (crossover-uniform-typed typetest-tree-a
+					     typetest-tree-b
+					     Number)]
+      (testing "Invalid types after crossover, possible regression"
+	       (doseq [tree typetrees]
+		 (full-tree-test tree))))))
 
 (deftest test-mutate
   (let [tree (mutate (my-gen 4 :full rtype) 17

@@ -30,4 +30,4 @@
   (apply run-tests test-namespaces))
 
 (run)
-
+(System/exit 0)

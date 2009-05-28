@@ -43,6 +43,7 @@
 (derive Number ::num)
 (derive ::seq ::any)
 (derive ::string ::seq)
+(derive ::vector ::seq)
 
 (def _1 1)
 (def _2 2)
@@ -51,6 +52,14 @@
 (def _5 5)
 
 (def TEXT "foobar")
+(def VECT [94 17 2])
+
+(defn safe-nth
+  [coll idx]
+  (if-let [result (try (nth coll idx)
+		       (catch RuntimeException e nil))]
+    result
+    0))
 
 (def config-maths
      {:function-set [(prim `- 
@@ -67,14 +76,19 @@
 
 		     (prim `count 
 			   {:type Number
-			    :arg-type [::seq]})]
+			    :arg-type [::seq]})
+
+		     (prim `safe-nth
+			   {:type Number
+			    :arg-type [::vector Number]})]
 
       :terminal-set [(prim `_1 {:type Number})
 		     (prim `_2 {:type Number})
 		     (prim `_3 {:type Number})
 		     (prim `_4 {:type Number})
 		     (prim `_5 {:type Number})
-		     (prim `TEXT {:type ::string})]
+		     (prim `TEXT {:type ::string})
+		     (prim `VECT {:type ::vector})]
       :arg-list []
 
       :func-template-fn (make-func-template 'gp-mather [])

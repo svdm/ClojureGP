@@ -50,18 +50,6 @@
    (catch StackOverflowError e 
      penalty)))
 
-(comment (defn evaluate-nth-unprotected
-	   [gpnth]
-	   (try
-	    (let [c (range 0 20)
-		  evl (fn [idx]
-			(Math/abs 
-			 (float (- (nth c idx)
-				   (gpnth c idx)))))]
-	      (reduce + (map evl c)))
-	    (catch RuntimeException e Float/MAX_VALUE))))
-
-
 
 ; CONFIG
 
@@ -137,12 +125,12 @@
 
       :population-size 1024
 
-      :end-condition-fn (make-simple-end 100)
+      :end-condition-fn (make-simple-end 50)
 
-      :validate-tree-fn #(< (tree-size %) 30)
+      :validate-tree-fn #(< (tree-size %) 40)
 
-      :breeders [{:prob 1.0  :breeder-fn crossover-breeder}
-		 {:prob 0.0  :breeder-fn (partial mutation-breeder 
+      :breeders [{:prob 0.6  :breeder-fn crossover-breeder}
+		 {:prob 0.4  :breeder-fn (partial mutation-breeder 
 						  {:max-depth 10})}]
 
       :breeding-retries 50

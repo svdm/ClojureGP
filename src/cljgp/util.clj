@@ -119,3 +119,14 @@
 		       (map valid-types? 
 			    (next node) 
 			    (:arg-type ^(first node)))))))
+
+; Can be useful for debugging typing problems
+(defn print-types
+  "Returns a tree where all symbols have been replaced by vectors of their type
+  and their arg-type metadata."
+  [node]
+  (cond
+    (not (coll? node)) [(gp-type node) (:arg-type ^node)]
+    :else (cons 
+	   [(gp-type node) (:arg-type ^(first node))]
+	    (doall (map print-types (next node))))))

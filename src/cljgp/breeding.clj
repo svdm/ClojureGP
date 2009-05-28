@@ -174,18 +174,25 @@
   (let [seq-a (make-tree-seq tree-a)
 	idx-a (gp-rand-int (count seq-a))
 	pick-a (nth seq-a idx-a)
-	type-a (parent-arg-type idx-a root-type tree-a)
+
+	type-a (gp-type pick-a)
+	satisfied-a (parent-arg-type idx-a root-type tree-a)
 	
 	seq-b (vec (make-tree-seq tree-b)) ; vec for faster nth
-	valid-indices (filter #(isa? (gp-type (nth seq-b %)) type-a) 
+
+	; find indices of nodes that can satisfy the type required in tree-a and
+	; currently satisfy a type that can be satisfied by pick-a ie. nodes
+	; that can safely be switched
+	valid-indices (filter #(and (isa? (gp-type (nth seq-b %)) 
+					  satisfied-a)
+				    (isa? type-a 
+					  (parent-arg-type % root-type tree-b)))
 			      (range (count seq-b)))]
-    (if (seq valid-indices)
+    (when (seq valid-indices)
       (let [idx-b (pick-rand valid-indices)
 	    pick-b (nth seq-b idx-b)]
 	[(tree-replace idx-a pick-b tree-a)
-	 (tree-replace idx-b pick-a tree-b)])
-
-      nil)))
+	 (tree-replace idx-b pick-a tree-b)]))))
 
 (defn mutate
   "Performs a mutation operation on the given tree, selecting a mutation point
