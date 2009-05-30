@@ -41,7 +41,9 @@
 	    :pretty true
 	    :stream writer))
   ([show-ns code] 
-     (print-code true show-ns code)))
+     (print-code true show-ns code))
+  ([code]
+     (print-code true false code)))
 
 (defn #^String stringify-ind-verbose
   "Prints data on given individual to a string. If 'show-ns is true, namespace
@@ -98,7 +100,7 @@
 	  (format "Gen %1$03d: Best: %2$.2f -- Worst: %3$.2f -- Avg: %4$.2f\n"
 		  gen-num fit-min fit-max fit-avg)
 	  (when treestats?
-	    (format "\t Trees: avg size: %1$.2f -- avg depth: %1$.2f\n" 
+	    (format "\t Trees: avg size: %1$.2f -- avg depth: %2$.2f\n" 
 		    (float (get-stat stats :tree-size-avg)) 
 		    (float (get-stat stats :tree-depth-avg))))))
        "")))				; generation is nil

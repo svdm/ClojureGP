@@ -8,86 +8,72 @@
 	cljgp.random
 	cljgp.util))
 
-(set! *warn-on-reflection* true)
-
-(defn my-nth
-  [coll index]
-  (cond
-    (= index 0) (first coll)
-    (> index 0) (recur (next coll) (dec index))
-    :else nil))
-
-(defn make-wrapped-nth
-  [the-nth counter limit]
-  (fn [coll idx]
-    (if (> (swap! counter inc)
-	   limit)
-      (do (the-nth coll idx)
-	  (swap! counter dec))
-      (throw (StackOverflowError. 
-	      "GP recursion limit exceeded.")))))
-
-(def wrapped-nth (fn [& _] (throw (Exception. "unbound wrapper"))))
-
-(def penalty 10000)
-
-(defn evaluate-nth
-  [gpnth]
-  (let [recurse-count (atom 0)
-	recurse-limit 100]
-    (binding [wrapped-nth (make-wrapped-nth gpnth 
-					    recurse-count 
-					    recurse-limit)]
-      (let [c (range 0 20)
-	    evl (fn [idx]
-		  (if-let [result (try (gpnth c idx)
-				       (catch StackOverflowError e 
-					 (do 
-					   (reset! recurse-count 0)
-					   false)))]
-		    (Math/abs 
-		     (float (- (nth c idx)
-			       result)))
-		    penalty))]
-	(reduce + (map evl c))))))
-
+;(set! *warn-on-reflection* true)
 
 ; CONFIG
 
-(def ZERO 0)
-
-;(derive ::testable ::any)
-(derive ::bool ::any)
-(derive ::seq ::any)
+(derive ::void ::any)
+(derive ::val ::any)
+(derive ::bool ::val)
+(derive ::seq ::val)
 (derive ::seq-rest ::seq)
 (derive ::seq-orig ::seq)
 
-;(derive ::el-or-recur ::any)
-;(derive ::el ::el-or-recur)
-(derive ::el ::any)
+(derive ::el ::val)
 
-(derive ::number ::any)
+(derive ::number ::val)
 (derive ::number-orig ::number)
 
-(def config-nth 
+;;; STGP NTH
+
+(def var-1 nil)
+
+(defn get-var-1
+  []
+  (deref var-1))
+
+(defn set-var-1
+  [lst]
+  (reset! var-1 lst))
+
+(defmacro do-times
+  [n & body]
+  `(dotimes [_# ~n]
+     ~@body))
+
+(defn evaluate-stgp-nth
+  [stgpnth]
+  (binding [var-1 (atom [])] ; local atom storage "variable"
+    (let [c (vec (range 0 50))
+	  evl (fn [idx]
+		(let [result (stgpnth c idx)]
+		  (if (number? result)
+		    (Math/abs 
+		     (float (- (nth c idx)
+			       result)))
+		    100)))]		; nil, punish as twice as bad as worst
+					; case (which would be 50 steps away)
+      (reduce + (map evl 
+		     (drop-last c))))))
+
+
+(def config-stgp-nth 
      {
-      :function-set [(prim `if
+      :function-set [(prim `do
+			   {:type ::seq
+			    :arg-type [::void ::seq]})
+
+		     (prim `do
 			   {:type ::el
-			    :arg-type [::bool
-				       ::el
-				       ::el]})
+			    :arg-type [::void ::el]})
 
-		     (prim `==
-			   {:type ::bool
-			    :arg-type [::number ::number]})
+		     (prim `do
+			   {:type ::number
+			    :arg-type [::void ::number]})
 
-		     (prim `>
-			   {:type ::bool
-			    :arg-type [::number ::number]})
-
-		     (prim `<
-			   {:type ::bool
-			    :arg-type [::number ::number]})
+		     (prim `do-times
+			   {:type ::void
+			    :arg-type [::number ::void]})
 
 		     (prim `first
 			   {:type ::el
@@ -97,79 +83,84 @@
 			   {:type ::seq-rest
 			    :arg-type [::seq-orig]})
 
-		     (prim `inc
-			   {:type ::number
-			    :arg-type [::number-orig]})
+		     (prim `set-var-1
+			   {:type ::void
+			    :arg-type [::seq]})
 		     
-		     (prim `dec
-			   {:type ::number
-			    :arg-type [::number-orig]})
-
-		     (prim `wrapped-nth
-			   {:type ::el
-			    :arg-type [::seq ::number]})]
+		     (prim `get-var-1
+			   {:type ::seq-orig
+			    :arg-type []})]
       
 
       :terminal-set [(prim 'coll 
 			   {:type ::seq-orig})
 		     
 		     (prim 'index 
-			   {:type ::number-orig})
-		     
-		     (prim `ZERO
-			   {:type ::number})
-		     ]
+			   {:type ::number})]
       
       :root-type ::el
-      :func-template-fn (make-func-template 'gp-nth '[coll index])
-      
-      :evaluation-fn evaluate-nth
 
-      :population-size 5000
+      :func-template-fn (make-func-template 'stgp-nth '[coll index])
+      
+      :evaluation-fn evaluate-stgp-nth
+
+      :population-size 1000
 
       :end-condition-fn (make-simple-end 50)
 
-      :validate-tree-fn #(< (tree-size %) 40)
+      :validate-tree-fn #(< (tree-depth %) 8)
 
-      :breeders [{:prob 0.6  :breeder-fn crossover-breeder}
-		 {:prob 0.4  :breeder-fn (partial mutation-breeder 
-						  {:max-depth 20})}]
+      :pop-generation-fn (partial generate-ramped {:max-depth 5
+						   :grow-chance 0.5})
 
-      :breeding-retries 50
+      :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
+		 {:prob 0.2  :breeder-fn (partial mutation-breeder 
+						  {:max-depth 5})}]
 
-      :threads 2
+      :breeding-retries 500
+
+      :threads 1
       
-      :rand-seeds [(rand-int 8432894897)
-		   (rand-int 2713705494)]
+      :rand-seeds (seeds-from-time true)
       })
 
-(defn run-exp
+
+
+(defn run-stgp
   ([]
-     (run-exp :basic-trees))
+     (run-stgp :basic-trees))
   ([print-type]
      (print-best 
       (last 
        (map #(print-stats print-type %) 
-	    (generate-run config-nth))))))
+	    (generate-run config-stgp-nth))))))
 
-(defn check-gen-types
-  [gen]
-  (let [check (fn [ind]
-		(when (not (valid-types? (get-fn-body (get-func ind)) ::el))
-		  (print-code false ind)
-		  (throw (Exception. "Found invalidly typed individual."))))]
-    (dorun (map check gen)))
-  gen)
 
-(defn test-types
-  []
-  (last
-   (map check-gen-types 
-	(map print-stats (generate-run config-nth)))))
+(def stgp-solution
+     `(fn [~'coll ~'index]
+	(do
+	  (do-times (do (set-var-1 ~'coll) ~'index)
+	    (set-var-1 (next (get-var-1))))
+	  (first (get-var-1)))))
 
-(def manual-solution
-     `(fn gp-nth
-	[coll index]
-	(if (= index ZERO)
-	  (first coll)
-	  (wrapped-nth (next coll) (dec index)))))
+(def evolved-solution
+     (fn stgp-nth [coll index]
+       (do
+	 (set-var-1
+	  (do
+	    (set-var-1 (next coll))
+	    (do (set-var-1 (next (get-var-1))) coll)))
+	 (first
+	  (do
+	    (do-times index (set-var-1 (next (get-var-1))))
+	    (get-var-1))))))
+
+(def evolved-simplified
+     (fn stgp-nth [coll index]
+       (do
+	 (set-var-1 coll)
+	 (first
+	  (do
+	    (do-times index 
+		      (set-var-1 (next (get-var-1))))
+	    (get-var-1))))))
