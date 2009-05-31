@@ -22,9 +22,9 @@
 (defmacro report-exception
   "Reports some info on the individual that caused exception e, then throws the
   exception up."
-  [e ind]
+  [e ind msg]
   `(do
-     (println "Exception during evaluation:" (str ~e))
+     (println ~msg (str ~e))
      (println "\tCaused by:\n" (print-code ~ind))
      (throw ~e)))
 
@@ -37,13 +37,16 @@
   individual. This allows storing additional evaluation details such as \"hits\"
   or raw score (eg. for analysis or customized selection)."
   [ind evaluator]
-  (let [func (try (eval (get-func ind))
-		  (catch Exception e 
-		    (do (println "Exception in (eval ..) of individual:")
-			(print-code ind)
-			(throw e))))
-	result (try (evaluator func) 
-		    (catch Exception e (report-exception e ind)))]
+  (let [func (try 
+	      (eval (get-func ind))	; compile tree
+	      (catch Exception e 
+		(report-exception e ind 
+				  "Exception in (eval ..) of individual: ")))
+	result (try 
+		(evaluator func)	; execute user's evaluation
+		(catch Exception e 
+		  (report-exception e ind
+				    "Exception during evaluation: ")))]
     (cond 
       (map? result) (conj ind result)
       (number? result) (assoc ind :fitness result)

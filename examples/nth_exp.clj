@@ -2,6 +2,7 @@
 (ns nth-exp
   "An attempt at evolving the nth function."
   (:use [cljgp.core :only (generate-run)]
+	cljgp.selection
 	cljgp.breeding
 	cljgp.tools.logging
 	cljgp.config
@@ -80,7 +81,7 @@
 			    :arg-type [::seq]})
 
 		     (prim `next
-			   {:type ::seq-rest
+			   {:type ::seq
 			    :arg-type [::seq-orig]})
 
 		     (prim `set-var-1
@@ -108,10 +109,12 @@
 
       :end-condition-fn (make-simple-end 50)
 
-      :validate-tree-fn #(< (tree-depth %) 8)
+      :validate-tree-fn #(<= (tree-depth %) 7)
 
       :pop-generation-fn (partial generate-ramped {:max-depth 5
 						   :grow-chance 0.5})
+
+      :selection-fn (partial tournament-select {:size 14})
 
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
 		 {:prob 0.2  :breeder-fn (partial mutation-breeder 
@@ -119,16 +122,20 @@
 
       :breeding-retries 500
 
-      :threads 1
+      :threads 2
       
-      :rand-seeds (seeds-from-time true)
+      :rand-seeds (seeds-from-time true) 
+
+;; Good seeds: 
+;; - (repeat 1243761389515)
+;; - [593221374086 825095143445]
       })
 
 
 
-(defn run-stgp
+(defn run
   ([]
-     (run-stgp :basic-trees))
+     (run :basic-trees))
   ([print-type]
      (print-best 
       (last 

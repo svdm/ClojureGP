@@ -47,16 +47,17 @@
   ([max-generations] (make-simple-end max-generations 0.0001)))
 
 (defn seeds-from-time
-  "Returns a lazy infinite sequence of calls to System/currentTimeMillis, which
-  can be used as PRNG seeds. Takes optional argument that when true enables
-  reporting of the seeds used to stdout. This is meant as a very basic way of
-  logging seeds in case the results need to be reproduced."
+  "Returns a lazy infinite sequence of calls
+  to (long (rand (System/currentTimeMillis))), the results of which can be used
+  as PRNG seeds. Takes optional argument that when true enables reporting of the
+  seeds used to stdout. This is meant as a very basic way of logging seeds in
+  case the results need to be reproduced."
   ([report]
       (if report
-	(repeatedly #(let [t (System/currentTimeMillis)]
+	(repeatedly #(let [t (long (rand (System/currentTimeMillis)))]
 		       (println "Used seed:" t)
 		       t))
-	(repeatedly #(System/currentTimeMillis))))
+	(repeatedly #(long (rand (System/currentTimeMillis))))))
   ([] (seeds-from-time false)))
 
 (defn make-func-template
@@ -217,7 +218,7 @@
   (when-let [results (:check-results run-config)]
     (println "Run configuration preprocessing report:")
     (when-let [defaults (:default results)]
-      (println "  NOTE: The following keys were missing, reverted to defaults:")
+      (println "  NOTE: The following keys were missing, using default values:")
       (println "    " defaults))
     (when-let [missing (:no-default results)]
       (println "  FATAL: The following keys were missing, no defaults exist:")
@@ -247,20 +248,23 @@
 			  "Insufficient seeds for the number of threads.")
       :else run-config)))
 
+
 (defn preproc-config
   "Performs some convenient preprocessing that generates values for more complex
   config values that non-experts may not want to specify directly. If these
   values are already present they will not be modified here."
   [run-config]
-  (let [rand-fns {:rand-fns 
-		  (get run-config :rand-fns
-		       (map (get run-config :rand-fn-maker
-				 (:rand-fn-maker config-defaults)) 
-			    (get run-config :rand-seeds
-				 (:rand-seeds config-defaults))))}
+  (let [config-get (fn ([key] (get run-config key (get config-defaults key)))
+		       ([key not-found] (get run-config key not-found)))
+	rand-fns {:rand-fns 
+		  (config-get :rand-fns
+		       ;; create and realize seq of rand-fns/seeds here
+		       (take (config-get :threads)
+			     (map (config-get :rand-fn-maker) 
+				  (config-get :rand-seeds))))}
 	tpl-fn   {:func-template-fn 
-		  (get run-config :func-template-fn
-		       (make-func-template (get run-config :arg-list [])))}]
+		  (config-get :func-template-fn
+		       (make-func-template (config-get :arg-list [])))}]
     (merge run-config
 	   rand-fns
 	   tpl-fn)))
