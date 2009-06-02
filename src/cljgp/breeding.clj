@@ -224,6 +224,10 @@
 	[(tree-replace idx-a pick-b tree-a)
 	 (tree-replace idx-b pick-a tree-b)]))))
 
+;;; Mutate used to return the unmodified tree if generating a subtree
+;;; failed. However, this did not fit in well with the higher level breeder
+;;; functions, as they should be the ones to decide whether to retry the
+;;; mutation or return the original tree (based on eg. :breeding-retries).
 (defn mutate
   "Performs a mutation operation on the given tree, selecting a mutation point
   uniformly and generating a new subtree to replace it (from the given 'func-set
@@ -231,7 +235,7 @@
   point may be the root.
 
   Returns the new tree. If no valid subtree could be generated, returns
-  unmodified tree."
+  nil."
   [tree max-depth func-set term-set root-type]
   (let [tree-seq (make-tree-seq tree)
 	idx (gp-rand-int (count tree-seq))
@@ -239,9 +243,8 @@
 	subtree (try (generate-tree max-depth :grow func-set term-set pick-type)
 		     (catch RuntimeException e nil))]
     (if (nil? subtree)
-      tree
+      nil
       (tree-replace idx subtree tree))))
-
 
 (defn crossover-individuals
   "Performs a crossover operation on the given individuals using given
@@ -267,15 +270,14 @@
 		  :keys [validate-tree-fn breeding-retries func-template-fn
 			 function-set terminal-set root-type]}]
   (let [orig (get-fn-body (get-func ind))
-	tree (get-valid validate-tree-fn breeding-retries
-			#(mutate orig 
-				 max-depth
-				 function-set terminal-set
-				 root-type))
+	new (get-valid validate-tree-fn breeding-retries
+		       #(mutate orig 
+				max-depth
+				function-set terminal-set
+				root-type))
+	tree (if (nil? new) orig new)
 	gen (inc (get-gen ind))]
-    (if (not (nil? tree))
-      [(make-individual (func-template-fn tree) gen)]
-      [(make-individual (func-template-fn orig) gen)])))
+    [(make-individual (func-template-fn tree) gen)]))
 
 
 ; The reason why we can't just assoc a new gen into the individual is that
