@@ -91,17 +91,26 @@
   "Returns type of given node, which is similar to (type (first node)) if it
   is a coll (ie. non-terminal node) and (type node) if it is a terminal.
 
-  Unlike clojure.core/type, does not return (class node) if type is nil. This is
-  important for untyped experiments where all primitives are typed as nil."
-  [node]
-  (:type (meta (if (coll? node) 
-		 (first node)
-		 node))))
+  Unlike clojure.core/type, does not return (class node) if the type of a symbol
+  is nil. This allows untyped experiments where all primitives are typed as nil.
 
-;;; TODO: generalize
+  Note that for terminal nodes that are *not* symbols, such as
+  constants (numbers etc.), gp-type behaves like clojure.core/type and will
+  return the class. This allows constant values to be used in typed experiments
+  without wrapping them in a var."
+  [node]
+  (let [is-symbol clojure.lang.Symbol
+	is-coll clojure.lang.IPersistentCollection]
+    (condp instance? node
+      is-symbol (:type ^node)
+      is-coll   (:type ^(first node))
+      ;; else:
+      (type node))))
+
+
 (defn gp-arg-type
-  "Returns :arg-type val from metadata of node. If node is a coll, uses metadata
-  of (first node)."
+  "Returns :arg-type val from metadata of node. If node is a coll (ie. a
+  function node), uses metadata of (first node)."
   [node]
   (:arg-type (meta (if (coll? node) 
 		     (first node)

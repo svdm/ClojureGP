@@ -115,7 +115,8 @@
 (defn valid-term-entry?
   "Returns true if the given terminal set entry is valid."
   [entry]
-  (symbol? entry))
+  (or (symbol? entry)
+      (number? entry)))
 
 (defn valid-breeder-entry?
   "Returns true if the given map is a valid breeder specification."

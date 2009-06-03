@@ -59,8 +59,8 @@
 	     (is (vte 'x))
 	     (is (vte (prim 'x {})))
 	     (is (vte (prim 'x nil)))
+	     (is (vte 1))
 	     (is (not (vte +)))
-	     (is (not (vte 1)))
 
 	     (is (not (vte {:sym 'x}))) ; old repr.
 	     (is (not (vte [])))))

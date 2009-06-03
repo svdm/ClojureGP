@@ -26,7 +26,8 @@
   a valid result?"
   [tree]
   (or (coll? tree) 
-      (symbol? tree)))	; sufficient for test terminal set(s)
+      (number? tree)
+      (symbol? tree)))
 
 (defn valid-ind?
   "Returns whether given map contains keys required for individuals."
@@ -85,8 +86,8 @@
       :terminal-set [(prim `_1 {:type Number})
 		     (prim `_2 {:type Number})
 		     (prim `_3 {:type Number})
-		     (prim `_4 {:type Number})
-		     (prim `_5 {:type Number})
+		     4
+		     5
 		     (prim `TEXT {:type ::string})
 		     (prim `VECT {:type ::vector})]
       :arg-list []
