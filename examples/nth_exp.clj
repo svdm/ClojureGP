@@ -1,50 +1,69 @@
 
 (ns nth-exp
-  "An attempt at evolving the nth function."
+  "An attempt at evolving the nth function, similar to the experiment in the
+  article Strongly Typed Genetic Programming by Montana, D.J., 2002."
   (:use [cljgp.core :only (generate-run)]
 	cljgp.selection
 	cljgp.breeding
 	cljgp.tools.logging
 	cljgp.config
 	cljgp.random
-	cljgp.util))
+	cljgp.util
+	[clojure.contrib.def :only (defvar)]))
 
 ;(set! *warn-on-reflection* true)
 
-; CONFIG
+
+;;; Here the type hierarchy is defined.
 
 (derive ::void ::any)
 (derive ::val ::any)
 (derive ::bool ::val)
+(derive ::el ::val)
+(derive ::number ::val)
+
+;;; The ::seq type is derived here so that we can guarantee that the 'next
+;;; function in the function set cannot be chained endlessly onto
+;;; itself. Without this, the evolution process can be tempted into a (terrible)
+;;; local maximum with long chains of (first (next (next (next ...). By
+;;; specialising ::seq, 'next can be configured to only take ::seq-orig while
+;;; returning a ::seq, which makes (next (next ..) illegal.
 (derive ::seq ::val)
-(derive ::seq-rest ::seq)
 (derive ::seq-orig ::seq)
 
-(derive ::el ::val)
 
-(derive ::number ::val)
-(derive ::number-orig ::number)
+;;; The canonical STGP nth experiment aims to evolve an iterative solution using
+;;; a mutable variable to store lists. Though not idiomatic clojure, this
+;;; approach is mirrored here for the sake of the example. A nice property of
+;;; the experiment is that the fitness landscape appears to be fairly smooth,
+;;; with little risk of ending up in a local maximum.
 
-;;; STGP NTH
-
-(def var-1 nil)
+(defvar var-1 nil
+  "Storage var provided to the GP process, will be bound to a local atom during
+  evaluation.")
 
 (defn get-var-1
+  "Retrieves the value stored in var-1."
   []
   (deref var-1))
 
 (defn set-var-1
+  "Sets the value stored in var-1."
   [lst]
   (reset! var-1 lst))
 
 (defmacro do-times
+  "Simplification of clojure.core/dotimes. Does not require a vector of
+  bindings, but only the number of executions."
   [n & body]
   `(dotimes [_# ~n]
      ~@body))
 
 (defn evaluate-stgp-nth
+  "Evaluates the performance of an evolved function and returns a fitness
+  value."
   [stgpnth]
-  (binding [var-1 (atom [])] ; local atom storage "variable"
+  (binding [var-1 (atom [])]		; local atom storage "variable"
     (let [c (vec (range 0 50))
 	  evl (fn [idx]
 		(let [result (stgpnth c idx)]
@@ -60,6 +79,11 @@
 
 (def config-stgp-nth 
      {
+;;; cljgp can match the GP system described in STGP in a lot of ways, but
+;;; polymorphic type checking is not supported. Hence, we have to define
+;;; multiple versions of 'do for different types in the function set so the type
+;;; checking system can guarantee the type of the second expression and the type
+;;; of the return value are of the same type.
       :function-set [(prim `do
 			   {:type ::seq
 			    :arg-type [::void ::seq]})
@@ -88,29 +112,43 @@
 			   {:type ::void
 			    :arg-type [::seq]})
 		     
+		     ;; get-var-1 could also be seen as a terminal as it does
+		     ;; not have children, however it is a function that needs
+		     ;; to be applied. A function primitive with zero arguments
+		     ;; is an easy way of handling this.
 		     (prim `get-var-1
 			   {:type ::seq-orig
 			    :arg-type []})]
       
 
+      ;; The only real terminals are the two arguments to the function. Note
+      ;; that these symbols are not resolved here.
       :terminal-set [(prim 'coll 
 			   {:type ::seq-orig})
 		     
 		     (prim 'index 
 			   {:type ::number})]
       
+      ;; nth must return a list element
       :root-type ::el
 
+      ;; We need our evolved trees to be made into functions with the right
+      ;; argument list, so we use a helper to create an appropriate "templating"
+      ;; function here that takes a tree and turns it into such an fn form.
       :func-template-fn (make-func-template 'stgp-nth '[coll index])
       
       :evaluation-fn evaluate-stgp-nth
 
       :population-size 1000
 
+      ;; Stop after 50 generations or when a perfect individual exist.
       :end-condition-fn (make-simple-end 50)
 
+      ;; Very deep trees are not of interest here, so we can limit the search
+      ;; space a bit.
       :validate-tree-fn #(<= (tree-depth %) 7)
 
+      ;; Some tweaking of the breeding facilities, not really required.
       :pop-generation-fn (partial generate-ramped {:max-depth 5
 						   :grow-chance 0.5})
 
@@ -118,22 +156,27 @@
 
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
 		 {:prob 0.2  :breeder-fn (partial mutation-breeder 
-						  {:max-depth 5})}]
+					   {:max-depth 5})}]
 
       :breeding-retries 500
 
       :threads 2
-      
+
+      ;; Generate new seeds on each run, and report them to stdout for
+      ;; later reproduction of the results.
       :rand-seeds (seeds-from-time true) 
 
-;; Good seeds: 
-;; - (repeat 1243761389515)
-;; - [593221374086 825095143445]
+      ;; Alternative good seeds: 
+      ;; - (repeat 1243761389515) ; same for all threads
+      ;; - [593221374086 825095143445]
       })
 
 
 
 (defn run
+  "Run the experiment and print the best individual at the end. The 'print-type
+  parameter determines how the statistics are printed to stdout for each
+  generation. See cljgp.tools.logging/print-stats for details."
   ([]
      (run :basic-trees))
   ([print-type]
@@ -143,6 +186,7 @@
 	    (generate-run config-stgp-nth))))))
 
 
+;;; Translation of the solution as listed in the STGP article.
 (def stgp-solution
      `(fn [~'coll ~'index]
 	(do
@@ -150,6 +194,7 @@
 	    (set-var-1 (next (get-var-1))))
 	  (first (get-var-1)))))
 
+;;; An example of a solution evolved by the experiment defined here.
 (def evolved-solution
      (fn stgp-nth [coll index]
        (do
@@ -162,6 +207,7 @@
 	    (do-times index (set-var-1 (next (get-var-1))))
 	    (get-var-1))))))
 
+;;; Simplified version of evolved-solution, with redundant code removed.
 (def evolved-simplified
      (fn stgp-nth [coll index]
        (do
