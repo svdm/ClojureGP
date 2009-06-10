@@ -1,7 +1,8 @@
 
 (ns nth-exp
-  "An attempt at evolving the nth function, similar to the experiment in the
-  article Strongly Typed Genetic Programming by Montana, D.J., 2002."
+  "Example 02: An attempt at evolving the nth function, similar to the
+  experiment in the article Strongly Typed Genetic Programming by Montana, D.J.,
+  2002."
   (:use [cljgp.core :only (generate-run)]
 	cljgp.selection
 	cljgp.breeding
