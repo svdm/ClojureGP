@@ -40,7 +40,7 @@
 	      (str "No available terminal of type " node-type))))
     (if-let [fnode (pick-rand-typed node-type func-set)]
       (cons fnode (doall     ; force seq to realize inside try/catch
-		   (for [cur-type (:arg-type ^fnode)]
+		   (for [cur-type (:gp-arg-types ^fnode)]
 		     (generate-tree (dec max-depth) method 
 				    func-set term-set 
 				    cur-type))))
@@ -129,7 +129,7 @@
   "Returns the arg-type that the node at the given 'index of the 'tree
   satisfies. In other words: returns the type that a node at the index must
   satisfy in order to be valid. This type is retrieved from the parent
-  node's :arg-type metadata. For index 0, returns given 'root-type.
+  node's :gp-arg-types metadata. For index 0, returns given 'root-type.
 
   Throws out of bounds exception if idx is out of bounds."
   [index root-type treeseq]
@@ -156,7 +156,7 @@
   "Returns the arg-type that the node at the given 'index of the 'tree
   satisfies. In other words: returns the type that a node at the index must
   satisfy in order to be valid. This type is retrieved from the parent
-  node's :arg-type metadata. For index 0, returns given 'root-type.
+  node's :gp-arg-types metadata. For index 0, returns given 'root-type.
 
   Differs from 'parent-arg-type by walking the tree directly instead of using a
   tree-seq. Also, returns nil if idx is out of bounds."
@@ -170,7 +170,7 @@
 		   (remove nil?
 			   (doall (map ptype
 				       (next node)
-				       (:arg-type ^(first node)))))))))]
+				       (:gp-arg-types ^(first node)))))))))]
     (pfn tree root-type)))
 
 (defn tree-replace

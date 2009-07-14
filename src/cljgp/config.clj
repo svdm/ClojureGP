@@ -114,7 +114,7 @@
   [entry]
   (let [m (meta entry)]
     (and (symbol? entry)
-	 (coll? (:arg-type m)))))
+	 (coll? (:gp-arg-types m)))))
 
 (defn valid-term-entry?
   "Returns true if the given terminal set entry is valid."

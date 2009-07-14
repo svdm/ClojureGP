@@ -46,8 +46,8 @@
 (deftest test-validators
   (testing "valid-func-entry?"
 	   (let [vfe valid-func-entry?]
-	     (is (vfe (prim `+ {:arg-type [Number Number]})))
-	     (is (vfe (prim 'x {:arg-type [Number Number]})))
+	     (is (vfe (prim `+ {:gp-arg-types [Number Number]})))
+	     (is (vfe (prim 'x {:gp-arg-types [Number Number]})))
 	     (is (not (vfe 'x)))
 	     (is (not (vfe (prim 'x {}))))
 

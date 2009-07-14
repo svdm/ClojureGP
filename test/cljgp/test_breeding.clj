@@ -104,7 +104,7 @@
 ; breeding function tests
 
 (deftest test-parent-arg-type
-  (let [p (fn [s t] (with-meta s {:arg-type t}))
+  (let [p (fn [s t] (with-meta s {:gp-arg-types t}))
 	tree-orig [(p '+ [:+1 :+2]) 
 		   [(p '* [:*1 :*2]) (p 'x []) (p 'y [])]
 		   [(p '- [:-1 :-2]) 
@@ -123,14 +123,14 @@
 
 ;;; Two manually created trees for testing a specific type situation
 (def typetest-tree-a
-     (list (with-meta `count {:type Number :arg-type [:test.helpers/seq]})
-	   (with-meta `TEXT {:type :test.helpers/string})))
+     (list (with-meta `count {:gp-type Number :gp-arg-types [:test.helpers/seq]})
+	   (with-meta `TEXT {:gp-type :test.helpers/string})))
 
 (def typetest-tree-b
-     (list (with-meta `safe-nth {:type Number 
-				 :arg-type [:test.helpers/vector Number]})
-	   (with-meta `VECT {:type :test.helpers/vector})
-	   (with-meta `_1 {:type Number})))
+     (list (with-meta `safe-nth {:gp-type Number 
+				 :gp-arg-types [:test.helpers/vector Number]})
+	   (with-meta `VECT {:gp-type :test.helpers/vector})
+	   (with-meta `_1 {:gp-type Number})))
 
 (deftest test-crossover-uniform
   (let [trees (crossover-uniform-typed [(my-gen 6 :full rtype)

@@ -86,49 +86,49 @@
 ;;; checking system can guarantee the type of the second expression and the type
 ;;; of the return value are of the same type.
       :function-set [(prim `do
-			   {:type ::seq
-			    :arg-type [::void ::seq]})
+			   {:gp-type ::seq
+			    :gp-arg-types [::void ::seq]})
 
 		     (prim `do
-			   {:type ::el
-			    :arg-type [::void ::el]})
+			   {:gp-type ::el
+			    :gp-arg-types [::void ::el]})
 
 		     (prim `do
-			   {:type ::number
-			    :arg-type [::void ::number]})
+			   {:gp-type ::number
+			    :gp-arg-types [::void ::number]})
 
 		     (prim `do-times
-			   {:type ::void
-			    :arg-type [::number ::void]})
+			   {:gp-type ::void
+			    :gp-arg-types [::number ::void]})
 
 		     (prim `first
-			   {:type ::el
-			    :arg-type [::seq]})
+			   {:gp-type ::el
+			    :gp-arg-types [::seq]})
 
 		     (prim `next
-			   {:type ::seq
-			    :arg-type [::seq-orig]})
+			   {:gp-type ::seq
+			    :gp-arg-types [::seq-orig]})
 
 		     (prim `set-var-1
-			   {:type ::void
-			    :arg-type [::seq]})
+			   {:gp-type ::void
+			    :gp-arg-types [::seq]})
 		     
 		     ;; get-var-1 could also be seen as a terminal as it does
 		     ;; not have children, however it is a function that needs
 		     ;; to be applied. A function primitive with zero arguments
 		     ;; is an easy way of handling this.
 		     (prim `get-var-1
-			   {:type ::seq-orig
-			    :arg-type []})]
+			   {:gp-type ::seq-orig
+			    :gp-arg-types []})]
       
 
       ;; The only real terminals are the two arguments to the function. Note
       ;; that these symbols are not resolved here.
       :terminal-set [(prim 'coll 
-			   {:type ::seq-orig})
+			   {:gp-type ::seq-orig})
 		     
 		     (prim 'index 
-			   {:type ::number})]
+			   {:gp-type ::number})]
       
       ;; nth must return a list element
       :root-type ::el

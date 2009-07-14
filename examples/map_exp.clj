@@ -79,38 +79,38 @@
 
 (def func-set
      [(primitive `when
-		 {:type ::seq
-		  :arg-type [::seq-orig
+		 {:gp-type ::seq
+		  :gp-arg-types [::seq-orig
 			     ::seq]})
 
       (primitive `cons
-		 {:type ::seq
-		  :arg-type [::el ::seq]})
+		 {:gp-type ::seq
+		  :gp-arg-types [::el ::seq]})
 
       (primitive `first
-		 {:type ::el
-		  :arg-type [::seq]})
+		 {:gp-type ::el
+		  :gp-arg-types [::seq]})
 
       (primitive `next
-		 {:type ::seq
-		  :arg-type [::seq-orig]})
+		 {:gp-type ::seq
+		  :gp-arg-types [::seq-orig]})
 
       (primitive `wrapped-gp-map
-		 {:type ::seq
-		  :arg-type [::func-passed ::seq]})
+		 {:gp-type ::seq
+		  :gp-arg-types [::func-passed ::seq]})
 
       ;; The function passed to map, applied to element
       (primitive 'f
-		 {:type ::el
-		  :arg-type [::el]})])
+		 {:gp-type ::el
+		  :gp-arg-types [::el]})])
 
 (def term-set
      [(primitive 'coll
-		 {:type ::seq-orig})
+		 {:gp-type ::seq-orig})
 
       ;; The function passed to map, passed on in self-call
       (primitive 'f
-		 {:type ::func-passed})])
+		 {:gp-type ::func-passed})])
 
 (def breeding-options
      {:root-type ::seq

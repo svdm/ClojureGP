@@ -42,6 +42,6 @@
   (is (= (tree-depth '(1)) 1)))
 
 (deftest test-gp-type
-  (let [sym (with-meta 'x {:type Number})]
-    (is (= (:type ^sym) (gp-type sym)))
-    (is (= (:type ^sym) (gp-type [sym 1 2])))))
+  (let [sym (with-meta 'x {:gp-type Number})]
+    (is (= (:gp-type ^sym) (gp-type sym)))
+    (is (= (:gp-type ^sym) (gp-type [sym 1 2])))))

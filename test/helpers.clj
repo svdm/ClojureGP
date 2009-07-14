@@ -64,32 +64,32 @@
 
 (def config-maths
      {:function-set [(prim `- 
-			   {:type Number 
-			    :arg-type [Number Number]})
+			   {:gp-type Number 
+			    :gp-arg-types [Number Number]})
 
 		     (prim `+ 
-			   {:type Number 
-			    :arg-type [Number Number]})
+			   {:gp-type Number 
+			    :gp-arg-types [Number Number]})
 
 		     (prim `* 
-			   {:type Number 
-			    :arg-type [Number Number]})
+			   {:gp-type Number 
+			    :gp-arg-types [Number Number]})
 
 		     (prim `count 
-			   {:type Number
-			    :arg-type [::seq]})
+			   {:gp-type Number
+			    :gp-arg-types [::seq]})
 
 		     (prim `safe-nth
-			   {:type Number
-			    :arg-type [::vector Number]})]
+			   {:gp-type Number
+			    :gp-arg-types [::vector Number]})]
 
-      :terminal-set [(prim `_1 {:type Number})
-		     (prim `_2 {:type Number})
-		     (prim `_3 {:type Number})
+      :terminal-set [(prim `_1 {:gp-type Number})
+		     (prim `_2 {:gp-type Number})
+		     (prim `_3 {:gp-type Number})
 		     4
 		     5
-		     (prim `TEXT {:type ::string})
-		     (prim `VECT {:type ::vector})]
+		     (prim `TEXT {:gp-type ::string})
+		     (prim `VECT {:gp-type ::vector})]
       :arg-list []
 
       :func-template-fn (make-func-template 'gp-mather [])

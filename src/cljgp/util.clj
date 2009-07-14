@@ -88,8 +88,8 @@
 (defalias partition-all clojure.contrib.seq-utils/partition-all)
 
 (defn gp-type
-  "Returns type of given node, which is similar to (type (first node)) if it
-  is a coll (ie. non-terminal node) and (type node) if it is a terminal.
+  "Returns type of given node, which is similar to (:gp-type (first node)) if it
+  is a coll (ie. non-terminal node) and (:gp-type node) if it is a terminal.
 
   Unlike clojure.core/type, does not return (class node) if the type of a symbol
   is nil. This allows untyped experiments where all primitives are typed as nil.
@@ -102,17 +102,17 @@
   (let [is-symbol clojure.lang.Symbol
 	is-coll clojure.lang.IPersistentCollection]
     (condp instance? node
-      is-symbol (:type ^node)
-      is-coll   (:type ^(first node))
+      is-symbol (:gp-type ^node)
+      is-coll   (:gp-type ^(first node))
       ;; else:
       (type node))))
 
 
 (defn gp-arg-type
-  "Returns :arg-type val from metadata of node. If node is a coll (ie. a
+  "Returns :gp-arg-types val from metadata of node. If node is a coll (ie. a
   function node), uses metadata of (first node)."
   [node]
-  (:arg-type (meta (if (coll? node) 
+  (:gp-arg-types (meta (if (coll? node) 
 		     (first node)
 		     node))))
 
@@ -136,7 +136,7 @@
 	       (every? true? 
 		       (map valid-types? 
 			    (next node) 
-			    (:arg-type ^(first node)))))))
+			    (:gp-arg-types ^(first node)))))))
 
 ; Can be useful for debugging typing problems
 (defn print-types
@@ -144,7 +144,7 @@
   and their arg-type metadata."
   [node]
   (cond
-    (not (coll? node)) [(gp-type node) (:arg-type ^node)]
+    (not (coll? node)) [(gp-type node) (:gp-arg-types ^node)]
     :else (cons 
-	   [(gp-type node) (:arg-type ^(first node))]
+	   [(gp-type node) (:gp-arg-types ^(first node))]
 	    (doall (map print-types (next node))))))

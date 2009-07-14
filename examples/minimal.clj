@@ -33,8 +33,8 @@
      {
 ;;; Function arguments are essentially untyped, but we do need to indicate how
 ;;; many args they take, hence specify them as type nil.
-      :function-set [(prim `+ {:arg-type [nil nil]})
-		     (prim `- {:arg-type [nil nil]})]
+      :function-set [(prim `+ {:gp-arg-types [nil nil]})
+		     (prim `- {:gp-arg-types [nil nil]})]
 
 ;;; The only terminal is a non-namespaced symbol that refers to the evolved
 ;;; function's only argument. No type info.
