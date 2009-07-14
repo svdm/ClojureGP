@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns test.cljgp.test-util
-  (:use clojure.contrib.test-is
+  (:use clojure.test
 	cljgp.util))
 
 ; mock expression tree, for the util functions the actual tree does not affect
@@ -19,7 +19,7 @@
 (deftest test-make-individual
   (let [given-gen 99
 	ind (make-individual (my-tpl valid-tree) given-gen)]
-    (are _
+    (are [_]
 	 (map? ind)
 	 (= (type ind) clojure.lang.PersistentStructMap)
 	 (= (:func ind) (my-tpl valid-tree))
