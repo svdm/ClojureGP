@@ -229,9 +229,10 @@
 ;;; functions, as they should be the ones to decide whether to retry the
 ;;; mutation or return the original tree (based on eg. :breeding-retries).
 (defn mutate
-  "Performs a mutation operation on the given tree, selecting a mutation point
-  uniformly and generating a new subtree to replace it (from the given 'func-set
-  and 'term-set, up to 'max-depth). Also requires the 'root-type as the mutation
+  "Performs a subtree mutation operation on the given tree, selecting a mutation
+  point uniformly and generating a new subtree to replace it (from the given
+  'func-set and 'term-set, up to 'max-depth). Also requires the
+  'root-type (specifying what type the root should satisfy) as the mutation
   point may be the root.
 
   Returns the new tree. If no valid subtree could be generated, returns
