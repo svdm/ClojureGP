@@ -1,6 +1,6 @@
 
 (ns nth-exp
-  "Example 02: An attempt at evolving the nth function, similar to the
+  "Example 02: an attempt at evolving the nth function, similar to an
   experiment in the article Strongly Typed Genetic Programming by Montana, D.J.,
   2002."
   (:use [cljgp.core :only (generate-run)]
@@ -11,9 +11,6 @@
 	cljgp.random
 	cljgp.util
 	[clojure.contrib.def :only (defvar)]))
-
-;(set! *warn-on-reflection* true)
-
 
 ;;; Here the type hierarchy is defined.
 
