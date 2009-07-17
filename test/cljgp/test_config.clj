@@ -18,18 +18,18 @@
     (is (= (meta (with-meta 'x m))
 	   (meta (prim 'x m))))))
 
-(deftest test-make-simple-end
+(deftest test-make-end
   (let [pop [(assoc (make-individual '() 10) :fitness 5) 
 	     (assoc (make-individual '() 10) :fitness 4.9999)]]
     (testing "generation limit"
-	     (is ((make-simple-end 9) pop))
-	     (is ((make-simple-end 10) pop))
-	     (is (not ((make-simple-end 11) pop))))
+      (is ((make-end 9) pop))
+      (is ((make-end 10) pop))
+      (is (not ((make-end 11) pop))))
     (testing "fitness limit"
-	     (is ((make-simple-end 99 6) pop))
-	     (is ((make-simple-end 99 4.9999) pop))
-	     (is (not ((make-simple-end 99 4.5) pop)))
-	     (is (not ((make-simple-end 99 0.1) pop))))))
+      (is ((make-end 99 6) pop))
+      (is ((make-end 99 4.9999) pop))
+      (is (not ((make-end 99 4.5) pop)))
+      (is (not ((make-end 99 0.1) pop))))))
 
 (deftest test-seeds-from-time
   (is (every? number? (take 50 (seeds-from-time))))
@@ -45,35 +45,35 @@
 ; prevent many bugs elsewhere.
 (deftest test-validators
   (testing "valid-func-entry?"
-	   (let [vfe valid-func-entry?]
-	     (is (vfe (prim `+ {:gp-arg-types [Number Number]})))
-	     (is (vfe (prim 'x {:gp-arg-types [Number Number]})))
-	     (is (not (vfe 'x)))
-	     (is (not (vfe (prim 'x {}))))
+    (let [vfe valid-func-entry?]
+      (is (vfe (prim `+ {:gp-arg-types [Number Number]})))
+      (is (vfe (prim 'x {:gp-arg-types [Number Number]})))
+      (is (not (vfe 'x)))
+      (is (not (vfe (prim 'x {}))))
 
-	     (is (not (vfe {:sym 'a :arity 2}))) ; old entry representation
-	     (is (not (vfe {:sym `+ :arity 4})))
-	     (is (not (vfe [])))))
+      (is (not (vfe {:sym 'a :arity 2}))) ; old entry representation
+      (is (not (vfe {:sym `+ :arity 4})))
+      (is (not (vfe [])))))
   (testing "valid-term-entry?"
-	   (let [vte valid-term-entry?]
-	     (is (vte 'x))
-	     (is (vte (prim 'x {})))
-	     (is (vte (prim 'x nil)))
-	     (is (vte 1))
-	     (is (not (vte +)))
+    (let [vte valid-term-entry?]
+      (is (vte 'x))
+      (is (vte (prim 'x {})))
+      (is (vte (prim 'x nil)))
+      (is (vte 1))
+      (is (not (vte +)))
 
-	     (is (not (vte {:sym 'x}))) ; old repr.
-	     (is (not (vte [])))))
+      (is (not (vte {:sym 'x})))	; old repr.
+      (is (not (vte [])))))
   (testing "valid-breeder-entry?"
-	   (let [vbe valid-breeder-entry?
-		 b-fn +] ; any fn will do for the testing
-	     (is (vbe {:prob 0.1 :breeder-fn b-fn}))
-	     (is (not (vbe {})))
-	     (is (not (vbe [])))
-	     (is (not (vbe {:prob 1})))
-	     (is (not (vbe {:breeder-fn b-fn})))
-	     (is (not (vbe {:prob true :breeder-fn b-fn})))
-	     (is (not (vbe {:prob 1 :breeder-fn 'foo}))))))
+    (let [vbe valid-breeder-entry?
+	  b-fn +]			; any fn will do for the testing
+      (is (vbe {:prob 0.1 :breeder-fn b-fn}))
+      (is (not (vbe {})))
+      (is (not (vbe [])))
+      (is (not (vbe {:prob 1})))
+      (is (not (vbe {:breeder-fn b-fn})))
+      (is (not (vbe {:prob true :breeder-fn b-fn})))
+      (is (not (vbe {:prob 1 :breeder-fn 'foo}))))))
 
 (deftest test-check-key
   (let [conf (dissoc config-maths :func-template-fn)]

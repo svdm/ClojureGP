@@ -122,7 +122,7 @@
 (def run-options
      {:evaluation-fn evaluate-map
       :population-size 1024
-      :end-condition-fn (make-simple-end 100)
+      :end-condition-fn (make-end 100)
       :threads 2})
 
 

@@ -140,7 +140,7 @@
       :population-size 1000
 
       ;; Stop after 50 generations or when a perfect individual exist.
-      :end-condition-fn (make-simple-end 50)
+      :end-condition-fn (make-end 50)
 
       ;; Very deep trees are not of interest here, so we can limit the search
       ;; space a bit.

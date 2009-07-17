@@ -6,11 +6,9 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/config.clj
-
 (ns cljgp.config
-  "Facilities for creating GP experiment (\"run\") configurations and validating
-  them."
+  "Facilities for creating GP experiment configurations (\"run configurations\")
+  and validating them."
   (:use [cljgp.breeding :only (crossover-breeder
 			       mutation-breeder
 			       reproduction-breeder
@@ -38,7 +36,7 @@
 
 (defalias prim primitive)
 
-(defn make-simple-end
+(defn make-end
   "Returns a simple end condition predicate that stops the evolution when the
   given max number of generations is reached, or the fitness of any individual
   in a generation is lower than (+ 0 fit-tolerance), where 'fit-tolerance is
@@ -48,7 +46,7 @@
        (let [ind (first pop)]
 	 (or (>= (:gen ind) max-generations)
 	     (some #(>= fit-tolerance (get-fitness %)) pop)))))
-  ([max-generations] (make-simple-end max-generations 0.0001)))
+  ([max-generations] (make-end max-generations 0.0001)))
 
 (defn seeds-from-time
   "Returns a lazy infinite sequence of calls
@@ -99,7 +97,7 @@
 		 {:prob 0.1  :breeder-fn reproduction-breeder}]
       :breeding-retries 1
       :selection-fn (partial tournament-select {:size 7})
-      :end-condition-fn (make-simple-end 100)
+      :end-condition-fn (make-end 100)
       :pop-generation-fn (partial generate-ramped {:max-depth 7 
 						   :grow-chance 0.5})
       :rand-fn-maker make-default-rand

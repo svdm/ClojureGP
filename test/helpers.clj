@@ -99,7 +99,7 @@
       :evaluation-fn (fn [x] (rand))
       :selection-fn (partial tournament-select {:size 3})
 
-      :end-condition-fn (make-simple-end 50)
+      :end-condition-fn (make-end 50)
       :population-size 8
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
