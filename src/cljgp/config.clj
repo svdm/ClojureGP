@@ -142,7 +142,7 @@
 ; Map of required keys, with as their values test predicates
 (def config-spec
      {:function-set #(and (coll? %) (strict-every? valid-func-entry? %))
-      :terminal-set #(and (coll? %) (strict-every? valid-term-entry? %))
+      :terminal-set #(and (coll? %) (every? valid-term-entry? %))
       :evaluation-fn fn?
       :end-condition-fn fn?
       :breeders #(and (coll? %) 
