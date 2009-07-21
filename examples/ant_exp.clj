@@ -1,16 +1,26 @@
+;; Copyright (c) Stefan A. van der Meer. All rights reserved.
+;; The use and distribution terms for this software are covered by the Eclipse
+;; Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which
+;; can be found in the file epl-v10.html at the root of this distribution. By
+;; using this software in any fashion, you are agreeing to be bound by the
+;; terms of this license. You must not remove this notice, or any other, from
+;; this software.
 
 (ns ant-exp
-  "Example 05: the traditional ant trail experiment."
+  "Example 03: the traditional Artifical Ant on the Santa Fe trail experiment.
+
+  The aim is to evolve a function that through repeated execution makes the ant
+  walk the entirety of the trail, eating all pieces of food on it.
+
+  Note that for this problem one should expect a fairly low probability of
+  success. It is not an area that GP performs particularly well in, even
+  compared to random search, but I include it here as it is quite well known and
+  included as example in established toolkits such as ECJ."
   (:use [cljgp.core :only [generate-run]]
-	[clojure.contrib.def :only [defvar
-				    defunbound]]
+	[clojure.contrib.def :only [defvar defunbound]]
 	cljgp.util
 	cljgp.config
 	cljgp.tools.logging))
-
-;;; Note that for this problem one should expect a fairly low probability of
-;;; success. It is not an area that GP performs particularly well in, even
-;;; compared to random search, but I include it here as it is quite well known.
 
 
 ;;;; Trails
@@ -75,6 +85,7 @@
 (defn evaluate-ant
   "Evaluates an evolved ant function by executing it 'max-moves times or until
   it has eaten all food on the trail.
+
   Returns a map containing:
   - :eaten    the number of food bits eaten
   - :moves    the number of actions performed
@@ -207,7 +218,7 @@
 						::any]})
 
 		     ;; "progn3"
-		     ;; Does not necessarily help in finding a solution
+		     ;;;; Does not necessarily help in finding a solution
 		     ;; (primitive `do
 		     ;; 		{:gp-type ::action
 		     ;; 		 :gp-arg-types [::any 
@@ -236,14 +247,11 @@
       :evaluation-fn #(evaluate-ant 600 %)
 
       :population-size 1024
-
       :end-condition-fn (make-end 50)
-
       :validate-tree-fn #(and (<= (tree-depth %) 15)
 			      (<= (tree-size %) 30))
       
       :threads 2
-
       :rand-seeds (seeds-from-time true)
 
       ;; Succesful seeds for 2 threads, without the "progn3" version of 'do in
@@ -252,6 +260,9 @@
       })
 
 (defn run
+  "Run the experiment and print the best individual at the end. The 'print-type
+  parameter determines how the statistics are printed to stdout for each
+  generation. See cljgp.tools.logging/print-stats for details."
   ([]
      (run :basic-trees))
   ([print-type]
@@ -259,10 +270,13 @@
       (map #(print-stats print-type %)
 	   (generate-run config-ant)))))
 
+
+;;;; Debugging and visualisation of results
+
 (defn traced-move
   "Version of move that places a \"4\" marker when moving into a tile with no
   food."
- []
+  []
   (let [{:keys [pos dir trail eaten moves]} @ant-state
 	newpos (pos-ahead pos dir)
 	hasfood (has-food? (place newpos))]

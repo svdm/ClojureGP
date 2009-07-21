@@ -18,7 +18,6 @@
 	[cljgp.tools.analyse :only (best-fitness)]
 	[cljgp.config :only (prim)]))
 
-;(set! *warn-on-reflection* true)
 
 (defn evaluate-minimal
   "Evaluate how well a given function fits the target of returning the square of
@@ -28,7 +27,7 @@
 	target (Math/pow 5 2)] 
     (Math/abs (float (- target result)))))
 
-;
+
 (def config-minimal
      {
 ;;; Function arguments are essentially untyped, but we do need to indicate how
