@@ -10,7 +10,6 @@
 (ns reg-exp
   "Example 02: evolving a solution to a simple regression problem."
   (:use [cljgp.core :only (generate-run)]
-	cljgp.breeding
 	cljgp.tools.logging
 	cljgp.config
 	cljgp.random
