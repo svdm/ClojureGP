@@ -7,9 +7,17 @@
 ;; this software.
 
 (ns nth-exp
-  "Example 01: an attempt at evolving the nth function, similar to an
-  experiment in the article Strongly Typed Genetic Programming by Montana, D.J.,
-  2002."
+  "Example 01: an attempt at evolving the nth function, similar to an experiment
+  in the original STGP article [1]. The design of that experiment is followed
+  quite closely.
+
+  Though this is numbered as the first example, the problem definition is not
+  trivial. The advantage of this is that it is a bit more like real-world usage,
+  but it may be difficult to follow at points. Both the reg_exp.clj example may
+  offer a more gentle introduction.
+
+  [1] David J. Montana. Strongly typed genetic programming. Evolutionary
+      Computation, 3(2):199--230, 1995."
   (:use [cljgp.core :only (generate-run)]
 	cljgp.selection
 	cljgp.breeding

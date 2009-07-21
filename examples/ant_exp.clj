@@ -15,7 +15,10 @@
   Note that for this problem one should expect a fairly low probability of
   success. It is not an area that GP performs particularly well in, even
   compared to random search, but I include it here as it is quite well known and
-  included as example in established toolkits such as ECJ."
+  included as example in established toolkits such as ECJ [1] and lil-gp [2].
+
+  [1] http://www.cs.gmu.edu/~eclab/projects/ecj/
+  [2] http://garage.cse.msu.edu/software/lil-gp/"
   (:use [cljgp.core :only [generate-run]]
 	[clojure.contrib.def :only [defvar defunbound]]
 	cljgp.util

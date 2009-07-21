@@ -12,8 +12,11 @@
   Shows one way of evolving a recursive function without running into stack
   overflow issues.
 
-  Very loosely based on an experiment in the article Strongly Typed Genetic
-  Programming by Montana, D.J., 2002."
+  Very loosely based on an experiment in the STGP article [1] also mentioned in
+  nth_exp.clj.
+
+  [1] David J. Montana. Strongly typed genetic programming. Evolutionary
+      Computation, 3(2):199--230, 1995."
   (:use [cljgp.core :only (generate-run)]
 	cljgp.selection
 	cljgp.breeding
