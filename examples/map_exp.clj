@@ -70,18 +70,17 @@
 ;;; integers we can do some primitive coercion on both the list indices and the
 ;;; elements to get significant speedups.
 (defn dist
-  "Returns the distance of el from the position (dec el) in lst. If not found,
-  returns 50."
+  "Returns the distance of el's actual position from the position (dec el) in
+  lst. If not found, returns 50."
   [el lst]
   (let [el (int el)
 	pos (dec el)
-	;; Loop through list until el is found, then return difference with pos
 	dst (loop [l lst
 		   i (int 1)]
-	      (when-let [s (seq l)]
-		(if (== el (int (first s)))
+	      (when-let [fst (first l)]
+		(if (== el (int fst))
 		  (Math/abs (- pos i))
-		  (recur (next s) (inc i)))))] 
+		  (recur (next l) (inc i)))))] 
     (if (nil? dst) 
       50
       dst)))
@@ -182,8 +181,12 @@
 (def run-options
      {:evaluation-fn evaluate-map
       :population-size 1024
-      :end-condition-fn (make-end 100)
-      :threads 2})
+      :end-condition-fn (make-end 50)
+      :threads 2
+      :rand-seeds (seeds-from-time true)
+      ;; Lucky seeds:
+      ;;:rand-seeds [236245406373, 565772875052]
+      })
 
 ;;; Merge everything into the final configuration (could do this inside the run
 ;;; function for more REPL-versatility)
