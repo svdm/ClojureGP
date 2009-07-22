@@ -8,7 +8,10 @@
 
 (ns cljgp.config
   "Facilities for creating GP experiment configurations (\"run configurations\")
-  and validating them."
+  and validating them.
+
+  Default values are specified for all experiment configuration options that
+  have sensible defaults. They can be found in cljgp.config/config-defaults."
   (:use [cljgp.breeding :only (crossover-breeder
 			       mutation-breeder
 			       reproduction-breeder
@@ -17,11 +20,11 @@
 	cljgp.random
 	cljgp.util
 
-	[clojure.contrib.def :only (defalias)]))
+	[clojure.contrib.def :only (defalias defvar)]))
 
-;
-; Helper fns for config creation
-;
+;;;;
+;;;; Helper fns for config creation
+;;;;
 
 (defn primitive
   "Given a symbol and a map of its properties, returns a GP primitive for use in
@@ -34,7 +37,8 @@
   (assert (symbol? sym))
   (with-meta sym properties))
 
-(defalias prim primitive)
+(defalias prim primitive
+  "Abbrevation of cljgp.config/primitive.")
 
 (defn make-end
   "Returns a simple end condition predicate that stops the evolution when the
@@ -68,7 +72,7 @@
   expression tree in a quoted fn form like:
     (fn my-name [] evolved-tree)
 
-  With the argument vector as 'arg-list is given (else []). And with the name as
+  With the argument vector as 'arg-list if given (else []). And with the name as
   'func-name if given (which may be useful for evolving recursive functions, as
   this func-name could be added to the function/terminal set).
 
@@ -85,27 +89,28 @@
   ([]
      (make-func-template nil [])))
 
-;
-; Configuration validation
-;
+;;;;
+;;;; Configuration validation
+;;;;
 
-; Values used as defaults in run config when no user-defined value is present.
-(def config-defaults
+(defvar config-defaults
      {:func-template-fn (make-func-template)
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
 		 {:prob 0.1  :breeder-fn mutation-breeder}
 		 {:prob 0.1  :breeder-fn reproduction-breeder}]
       :breeding-retries 1
-      :selection-fn (partial tournament-select {:size 7})
+      :selection-fn #(tournament-select {:size 7} %1) ; faster than (partial ..)
       :end-condition-fn (make-end 100)
-      :pop-generation-fn (partial generate-ramped {:max-depth 7 
-						   :grow-chance 0.5})
+      :pop-generation-fn #(generate-ramped {:max-depth 7 
+					    :grow-chance 0.5}
+					   %1)
       :rand-fn-maker make-default-rand
       :rand-seeds (seeds-from-time)
       :validate-tree-fn identity
       :root-type nil
-      :threads 1
-      })
+      :threads 1}
+     "Default values of experiment configuration options, used when no
+     user-defined value is present.")
 
 (defn valid-func-entry?
   "Returns true if the given function set entry is valid."
@@ -139,8 +144,7 @@
   (and (not-empty coll)
        (every? pred coll)))
 
-; Map of required keys, with as their values test predicates
-(def config-spec
+(defvar config-spec
      {:function-set #(and (coll? %) (strict-every? valid-func-entry? %))
       :terminal-set #(and (coll? %) (every? valid-term-entry? %))
       :evaluation-fn fn?
@@ -158,7 +162,8 @@
       :validate-tree-fn fn?
       :func-template-fn fn?
       :root-type #(or (class? %) (keyword? %) (nil? %))
-      })
+      }
+     "Mapping from required config keys to their test predicates.")
 
 (defn check-key
   "Returns a map with an :entry and an :type key.
@@ -239,7 +244,7 @@
       (throw (Exception. (str "Fatal problems exist in run configuration, "
 			      "run cannot proceed."))))))
 
-; TODO: restructure to test multiple constraints when more are needed
+;;; TODO: restructure to test multiple constraints when more are needed
 (defn assert-constraints
   "Checks constraints between keys (ie. 'global' constraints) and adds error
   to :check-results map under :constraint key."

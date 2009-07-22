@@ -6,7 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/breeding.clj
 
 (ns cljgp.breeding
   "Facilities for generating an initial population and breeding an evaluated
@@ -15,10 +14,9 @@
 	cljgp.util))
 
 
-
-;;
-;; Tree generation
-;;
+;;;;
+;;;; Tree generation
+;;;;
 
 (defn generate-tree
   "Returns a tree generated from given 'func-set and 'term-set, which have to be
@@ -81,7 +79,7 @@
 		    (and (not (nil? %)) (valid-tree? %)))
 		 (take tries (repeatedly gen-fn)))))
 
-(defn- ind-generator-seq
+(defn- individual-generator-seq
   "Returns a lazy infinite sequence of individuals with generation 0 and
   expression trees generated from the function- and terminal-set, all as
   specified in the given 'run-config. Used internally by
@@ -101,29 +99,30 @@
     (repeatedly 
      #(make-individual (func-template-fn (generate)) 0))))
 
-; Note that it is intentional that (ind-generator-seq ..) is called inside each
-; future, even though one might think it's just a producer function that is
-; identical between futures. The reason is that the closure appears to inherit
-; the bindings as they are at the point where it is created, as opposed to that
-; where it is called. Dynamic bindings are nefarious things.
+;;; Note that it is intentional that (individual-generator-seq ..) is called
+;;; inside each future, even though one might think it's just a producer
+;;; function that is identical between futures. The reason is that the closure
+;;; appears to inherit the bindings as they are at the point where it is
+;;; created, as opposed to that where it is called. Dynamic bindings are
+;;; nefarious things.
 (defn generate-pop
   "Returns a population of individuals generated from scratch out of the nodes
   in the function set and terminal set, using the tree producer function also
   specified in the 'run-config (typically ramped half and half). The work is
-  divided over worker threads, each with their own RNG."
+  divided over worker threads, each with their own RNG instance."
   [{:keys [population-size threads rand-fns] :as run-config}]
   (let [per-future (divide-up population-size threads)]
     (mapcat deref
 	    (doall 
 	     (map #(future
 		     (binding [cljgp.random/gp-rand %2]
-		       (doall (take %1 (ind-generator-seq run-config)))))
+		       (doall (take %1 (individual-generator-seq run-config)))))
 		  per-future
 		  rand-fns)))))
 
-;;
-;; Breeding
-;;
+;;;;
+;;;; Breeding
+;;;;
 
 (defn parent-arg-type
   "Returns the arg-type that the node at the given 'index of the 'tree
@@ -134,7 +133,7 @@
   Throws out of bounds exception if idx is out of bounds."
   [index root-type treeseq]
   (loop [typestack (list root-type)
-	 i index
+	 i (int index)
 	 nodes treeseq]
     (cond 
       (== i 0) (first typestack)
@@ -145,33 +144,11 @@
       :else (throw (IndexOutOfBoundsException. 
 		    "Index out of bounds of treeseq.")))))
 
-; The low-level tree handling functions use a somewhat ugly side-effect counter
-; while traversing a tree to keep track of the node index. This appears to be
-; quite a bit faster than more elegant methods, and these functions are called
-; very often. Hence the optimization. Will hopefully be improved in the future.
-
-;;; Older version of parent-arg-type that is most likely obsolete and will be
-;;; removed if the new version works out.
-(defn parent-arg-type-tree
-  "Returns the arg-type that the node at the given 'index of the 'tree
-  satisfies. In other words: returns the type that a node at the index must
-  satisfy in order to be valid. This type is retrieved from the parent
-  node's :gp-arg-types metadata. For index 0, returns given 'root-type.
-
-  Differs from 'parent-arg-type by walking the tree directly instead of using a
-  tree-seq. Also, returns nil if idx is out of bounds."
-  [index root-type tree]
-  (let [i (atom -1)
-	pfn (fn ptype [node type]
-	      (if (>= (swap! i inc) index)
-		type
-		(when (coll? node) 
-		  (first
-		   (remove nil?
-			   (doall (map ptype
-				       (next node)
-				       (:gp-arg-types ^(first node)))))))))]
-    (pfn tree root-type)))
+;;; Some of the low-level tree handling functions use a somewhat ugly
+;;; side-effect counter while traversing a tree to keep track of the node
+;;; index. This appears to be quite a bit faster than more elegant methods, and
+;;; these functions are called very often. Hence the optimization. Will
+;;; hopefully be improved in the future.
 
 (defn tree-replace
   "Returns given 'tree with node at 'idx replaced by 'new-node."
@@ -187,6 +164,7 @@
 		 :else node))]
     (r-fn tree)))
 
+
 ;;; Moved some code out of crossover-uniform-typed into a macro, not useful on
 ;;; its own.
 (defmacro find-valid-indices
@@ -194,7 +172,10 @@
   Given a tree and some type information, finds all indices of nodes in the
   tree-seq representation of the tree that can be safely exchanged with a node
   whose type information is described in the replacement-type and
-  replacement-parent-type arguments."
+  replacement-parent-type arguments.
+
+  The 'treeseq should be a vector, as nth is called on it N times, where N is
+  the size of the tree (length of the treeseq)."
   [treeseq replacement-type replacement-parent-type root-type]
   `(filter (fn [idx#] (and (isa? (gp-type (nth ~treeseq idx#))
 				 ~replacement-parent-type)
@@ -207,18 +188,18 @@
   into account. The 'root-type is the type satisfied by the root nodes of both
   trees. Returns vector of two new trees, or nil if crossover failed."
   [[tree-a tree-b] root-type]
+  ;; First select a node from tree A, and gather type information on it
   (let [seq-a (make-tree-seq tree-a)
 	idx-a (gp-rand-int (count seq-a))
 	pick-a (nth seq-a idx-a)
-
 	type-a (gp-type pick-a)
 	parent-type-a (parent-arg-type idx-a root-type seq-a)
-	;; Convert to vec for faster nth in find-valid-indices
-	seq-b (make-tree-seq tree-b)
 
 	;; Find indices of nodes that can safely be switched in for pick-a
+	seq-b (vec (make-tree-seq tree-b))
 	valid-indices (find-valid-indices seq-b type-a parent-type-a root-type)]
     (when (seq valid-indices)
+      ;; Select an index and perform the switch
       (let [idx-b (pick-rand valid-indices)
 	    pick-b (nth seq-b idx-b)]
 	[(tree-replace idx-a pick-b tree-a)
@@ -249,7 +230,7 @@
 
 (defn crossover-individuals
   "Performs a crossover operation on the given individuals using given
-  'crossover-fn. Returns vector of two new individuals. If crossover-fn returns
+  'crossover-fn. Returns seq of two new individuals. If crossover-fn returns
   nil after the number of breeding retries configured in the 'run-config, then
   the given individuals are reproduced directly."
   [crossover-fn inds {:as run-config
@@ -259,10 +240,10 @@
 	new-trees (get-valid validate-tree-fn breeding-retries
 			     #(crossover-fn orig-trees root-type))
 	gen (inc (get-gen (first inds)))]
-    (vec (map #(make-individual (func-template-fn %) gen)
-	      (if (nil? new-trees)
-		orig-trees		; crossover failed, copy
-		new-trees)))))		; successfull crossover
+    (doall (map #(make-individual (func-template-fn %) gen)
+		(if (nil? new-trees)
+		  orig-trees		; Crossover failed, just copy.
+		  new-trees)))))	; Successfull crossover.
 
 (defn mutate-individual
   "Performs mutation on given individual's tree. Returns seq with the new
@@ -311,11 +292,12 @@
   run-config to it, performs mutation and returns seq with the single resulting
   tree in it. Mutation will pull nodes from the function and terminal sets
   specified in run-config. Generated (sub)tree will be at most max-depth deep."
-  ([{max-depth :max-depth} pop {:as run-config,
-				select :selection-fn}]
+  ([{max-depth :max-depth, :or {max-depth 17}} ; extra configuration
+    pop {:as run-config,
+	 select :selection-fn}]
      (mutate-individual (select pop) max-depth run-config))
   ([pop run-config]
-     (mutation-breeder {:max-depth 17} pop run-config)))
+     (mutation-breeder nil pop run-config)))
 
 (defn reproduction-breeder
   "Selects an individual from pop by applying selection-fn specified in the

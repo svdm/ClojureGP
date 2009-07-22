@@ -9,8 +9,7 @@
 (ns cljgp.core
   "Core functions that handle a GP run, creating a population, evaluating and
   breeding it until the end condition is reached."
-  (:use cljgp.selection
-	cljgp.breeding
+  (:use cljgp.breeding
 	cljgp.evaluation
 	[cljgp.config :only (prepare-config)]))
 

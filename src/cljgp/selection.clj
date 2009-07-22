@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns cljgp.selection
-  "Default selection functionality."
+  "Selection functions."
   (:use cljgp.random
 	[cljgp.tools.analyse :only (best-fitness)]))
 
