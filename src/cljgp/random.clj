@@ -6,8 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/random.clj
-
 (ns cljgp.random
   "Default random functions, and facilities for overriding them with better
   RNGs."

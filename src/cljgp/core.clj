@@ -55,11 +55,11 @@
 
   See cljgp.core/evolve-future-gens for more details on the returned lazy seq."
   [run-config]
-  (let [config (prepare-config run-config)
-	pop-initial (generate-pop config)
-	end? (:end-condition-fn config)]
+  (let [final-config (prepare-config run-config)
+	pop-initial (generate-pop final-config)
+	end? (:end-condition-fn final-config)]
     (take-until-end end?
-		    (evolve-future-generations pop-initial config))))
+		    (evolve-future-generations pop-initial final-config))))
 
 
 

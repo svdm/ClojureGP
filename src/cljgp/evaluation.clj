@@ -6,8 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/evaluation.clj
-
 (ns cljgp.evaluation
   "Functionality concerning the evaluation of (populations of) individuals."
   (:use [cljgp.random :only (gp-rand)]
@@ -73,5 +71,4 @@
 		      (map #(evaluate-individual % e-fn) inds)))))
 	       (partition-all per-future pop)
 	       rand-fns)))))
-
 
