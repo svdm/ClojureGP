@@ -6,7 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/tools/logging.clj
 
 (ns cljgp.tools.logging
   "Facilities for printing statistics and information relating to GP runs and

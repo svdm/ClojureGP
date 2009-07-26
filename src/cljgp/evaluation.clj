@@ -10,7 +10,8 @@
   "Functionality concerning the evaluation of (populations of) individuals."
   (:use [cljgp.random :only (gp-rand)]
 	cljgp.util
-	[cljgp.tools.logging :only (print-code)]))
+	[cljgp.tools.logging :only (print-code)]
+	[clojure.contrib.seq-utils :only (partition-all)]))
 
 ; It's recommended that evaluator functions handle any exceptions they might
 ; expect themselves, for example by catching them and giving the individual a

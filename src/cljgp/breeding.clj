@@ -77,7 +77,7 @@
   (first (filter #(if (vector? %)
 		    (and (not-empty %) (every? valid-tree? %))
 		    (and (not (nil? %)) (valid-tree? %)))
-		 (take tries (repeatedly gen-fn)))))
+		 (take (inc tries) (repeatedly gen-fn)))))
 
 (defn- individual-generator-seq
   "Returns a lazy infinite sequence of individuals with generation 0 and

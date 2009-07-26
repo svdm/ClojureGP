@@ -11,7 +11,11 @@
   and validating them.
 
   Default values are specified for all experiment configuration options that
-  have sensible defaults. They can be found in cljgp.config/config-defaults."
+  have sensible defaults. They can be found in cljgp.config/config-defaults.
+
+  A detailed explanation of every configuration key is available in the
+  configuration key reference that can be found with the rest of the (external)
+  documentation."
   (:use [cljgp.breeding :only (crossover-breeder
 			       mutation-breeder
 			       reproduction-breeder

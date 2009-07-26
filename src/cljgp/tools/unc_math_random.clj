@@ -6,8 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/tools/unc_math_random.clj
-
 (ns cljgp.tools.unc-math-random
   (:import [org.uncommons.maths.random MersenneTwisterRNG])
   (:use [cljgp.random :only (rand-fn)]))
