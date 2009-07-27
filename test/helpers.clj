@@ -9,10 +9,13 @@
 ; Various functions and data structures used in the tests
 
 (ns test.helpers
-  (:use cljgp.breeding
+  (:use clojure.test
+	cljgp.breeding
+	cljgp.generate
 	cljgp.selection
 	cljgp.config
-	cljgp.random))
+	cljgp.random
+	cljgp.util))
 
 (defmacro quiet
   [form]
@@ -123,3 +126,43 @@
 		     (take 2 (repeatedly #(System/currentTimeMillis))))
       })
 
+
+; Helpers for breeding and generate tests
+
+(def func-set-maths (:function-set config-maths))
+(def term-set-maths (:terminal-set config-maths))
+
+(defn my-tpl [tree] (list `fn 'gp-mather [] tree))
+
+(defn my-gen
+  [max-depth method root-type]
+  (if-let [tree (try
+		 (generate-tree max-depth
+				method
+				func-set-maths
+				term-set-maths
+				root-type)
+		 (catch RuntimeException e
+		   false))]
+    tree
+    (recur max-depth method root-type)))
+
+
+(def rtype (:root-type config-maths))
+
+; for this primitive set, trees should always return a number
+(def valid-result? number?)
+
+(defn valid-eval?
+  "When evaluated, does this tree produce a valid result?"
+  [tree]
+  (valid-result? (eval tree)))
+
+(defn full-tree-test
+  [tree]
+  (is (valid-tree? tree)
+      (str "Root must be seq or result constant, tree: " tree))
+  (is (valid-types? tree rtype)
+      (str "Tree must be validly typed, tree: " tree))
+  (is (valid-eval? tree)
+      (str "Result of evaluation must be valid, tree: " tree)))

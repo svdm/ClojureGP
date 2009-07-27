@@ -10,7 +10,7 @@
   (:use clojure.test
 	test.helpers
 	cljgp.core
-	[cljgp.breeding :only (generate-pop)]))
+	[cljgp.generate :only [generate-pop]]))
 
 (deftest test-evolve-future-generations
   (let [pop-size (:population-size config-maths)

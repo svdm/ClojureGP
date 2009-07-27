@@ -16,6 +16,7 @@
       :test-evaluation
       :test-random
       :test-breeding
+      :test-generate
       :test-selection
       :test-core
       :test-config])

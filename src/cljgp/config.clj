@@ -16,15 +16,15 @@
   A detailed explanation of every configuration key is available in the
   configuration key reference that can be found with the rest of the (external)
   documentation."
-  (:use [cljgp.breeding :only (crossover-breeder
+  (:use [cljgp.breeding :only [crossover-breeder
 			       mutation-breeder
-			       reproduction-breeder
-			       generate-ramped)]
-	[cljgp.selection :only (tournament-select)]
+			       reproduction-breeder]]
+	[cljgp.generate :only [generate-ramped]]
+	[cljgp.selection :only [tournament-select]]
 	cljgp.random
 	cljgp.util
 
-	[clojure.contrib.def :only (defalias defvar)]))
+	[clojure.contrib.def :only [defalias defvar]]))
 
 ;;;;
 ;;;; Helper fns for config creation

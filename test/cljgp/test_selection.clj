@@ -11,7 +11,7 @@
 	test.helpers
 	cljgp.selection
 	[cljgp.evaluation :only (evaluate-pop)]
-	[cljgp.breeding :only (generate-pop)]))
+	[cljgp.generate :only (generate-pop)]))
 
 ; Which individuals are selected is not predictable without random seed
 ; mangling, making it cumbersome to test for correctness. However,

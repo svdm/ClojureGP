@@ -10,8 +10,9 @@
   "Core functions that handle a GP run, creating a population, evaluating and
   breeding it until the end condition is reached."
   (:use cljgp.breeding
+	[cljgp.generate :only [generate-pop]]
 	cljgp.evaluation
-	[cljgp.config :only (prepare-config)]))
+	[cljgp.config :only [prepare-config]]))
 
 
 (defn evolve-future-generations

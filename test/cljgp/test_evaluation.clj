@@ -19,7 +19,6 @@
   (println "Throwing test exception...")
   (throw (RuntimeException. "Except! I should be reported on stdout!")))
 
-(defn my-tpl [tree] (list `fn [] tree))
 
 ; Have to copy from structmap into normal map to use dissoc in tests
 ; while the cljgp functions want structmaps. Bit of a hassle.
