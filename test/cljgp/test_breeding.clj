@@ -133,9 +133,9 @@
 	   (with-meta `_1 {:gp-type Number})))
 
 (deftest test-crossover-uniform
-  (let [trees (crossover-uniform-typed [(my-gen 6 :full rtype)
-					(my-gen 6 :grow rtype)]
-				       rtype)]
+  (let [trees (crossover-uniform [(my-gen 6 :full rtype)
+				  (my-gen 6 :grow rtype)]
+				 rtype)]
     (is (or (= (count trees) 2) (= trees nil)))
     (doseq [tree trees]
       (full-tree-test tree)))
@@ -145,12 +145,12 @@
 ;;; could not satisfy the parent-arg-type of the second node, leading to
 ;;; invalidly typed trees
   (dotimes [_ 10] 
-    (let [typetrees (crossover-uniform-typed [typetest-tree-a
-					      typetest-tree-b]
-					     Number)]
+    (let [typetrees (crossover-uniform [typetest-tree-a
+					typetest-tree-b]
+				       Number)]
       (testing "Invalid types after crossover, possible regression"
-	       (doseq [tree typetrees]
-		 (full-tree-test tree))))))
+	(doseq [tree typetrees]
+	  (full-tree-test tree))))))
 
 (deftest test-mutate
   (let [tree (mutate (my-gen 4 :full rtype) 17
@@ -178,7 +178,7 @@
 (deftest test-crossover-individuals
   (let [gen-old 0
 	inds (crossover-individuals 
-	      crossover-uniform-typed
+	      crossover-uniform
 	      [(make-individual (my-tpl (my-gen 4 :full rtype)) 
 				gen-old)
 	       (make-individual (my-tpl (my-gen 4 :grow rtype)) 

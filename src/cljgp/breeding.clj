@@ -165,10 +165,10 @@
     (r-fn tree)))
 
 
-;;; Moved some code out of crossover-uniform-typed into a macro, not useful on
+;;; Moved some code out of crossover-uniform into a macro, not useful on
 ;;; its own.
 (defmacro find-valid-indices
-  "Helper macro for internal use by crossover-uniform-typed.
+  "Helper macro for internal use by crossover-uniform.
   Given a tree and some type information, finds all indices of nodes in the
   tree-seq representation of the tree that can be safely exchanged with a node
   whose type information is described in the replacement-type and
@@ -183,7 +183,7 @@
 				 (parent-arg-type idx# ~root-type ~treeseq))))
 	   (range (count ~treeseq))))
 
-(defn crossover-uniform-typed
+(defn crossover-uniform
   "Performs a subtree crossover operation on the given trees, taking node types
   into account. The 'root-type is the type satisfied by the root nodes of both
   trees. Returns vector of two new trees, or nil if crossover failed."
@@ -283,7 +283,7 @@
    new trees."
   [pop {:as run-config,
 	select :selection-fn}]
-  (crossover-individuals crossover-uniform-typed
+  (crossover-individuals crossover-uniform
 			 [(select pop) (select pop)]
 			 run-config))
 
