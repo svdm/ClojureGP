@@ -6,7 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/tools/graph.clj
 
 (ns cljgp.tools.graph
   "Example graphing implementation that plots data about the evolution process
@@ -56,15 +55,17 @@
 		   (.validate)
 		   (.setVisible true))]
        (fn [generation]
-	 (when-let [gen-seq (seq generation)]
-	   (let [gui frame
+	 (when-let [gen-seq (setup-stats-map generation)]
+	   (let [;; Capture the JFrame in this closure
+		 gui frame
+		 ;; QN Plot wants BigDecimals for everything
 		 gen-num (bigdec (:gen (first gen-seq)))
-		 avg (fitness-average gen-seq)
-		 {:keys [highest lowest]} (fitness-range gen-seq)]
-	     (.addPoint min-fit-func gen-num (bigdec lowest))
+		 stats (:stats-map ^gen-seq)
+		 {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
+	     (.addPoint min-fit-func gen-num (bigdec fit-min))
 	     (when (not draw-min-only)
-	       (.addPoint avg-fit-func gen-num (bigdec avg))
-	       (.addPoint max-fit-func gen-num (bigdec highest)))
+	       (.addPoint avg-fit-func gen-num (bigdec fit-avg))
+	       (.addPoint max-fit-func gen-num (bigdec fit-max)))
 	     (doto graph
 	       .render
 	       .repaint)))

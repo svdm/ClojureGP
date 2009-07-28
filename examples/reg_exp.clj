@@ -80,3 +80,18 @@
      (reduce-to-summary
       (map #(print-stats print-type %)
 	   (generate-run config-reg)))))
+
+
+;;; Uncomment the below with the QN Plot .jar in your classpath to try the
+;;; simple plotting functionality, using run-graphed instead of run.
+
+(comment
+  (use 'cljgp.tools.graph)
+
+  (defn run-graphed
+    []
+    (reduce-to-summary
+     (map print-stats
+	  (map (create-fitness-plotter true)
+	       (generate-run config-reg)))))
+)
