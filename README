@@ -1,0 +1,52 @@
+-*- markdown -*-
+
+ClojureGP
+=========
+
+ClojureGP is a genetic programming framework written in Clojure. It aims to be
+highly configurable and versatile while still being concise and easy to learn.
+
+
+Usage
+-----
+
+Please refer to the included documentation and examples in the `./doc/` and
+`./examples/` directories.
+
+
+Dependencies
+------------
+
+ClojureGP only *requires* Clojure 1.0 and the Clojure Contrib (1.0 compatible)
+library. For additional features such as plotting and improved random number
+generation, the QN Plot library and Uncommons Maths library are needed.
+
+Compatible versions of all four libraries are included in the `./lib/`
+directory.
+
+- Clojure 1.0 and Clojure Contrib:
+  - Included as `./lib/clojure-1.0.0.jar` and `./lib/clojure-contrib.jar`
+  - Available through <http://www.clojure.org/>
+  - Licensed under the EPL 1.0, included as `./epl_v10.html`
+
+- Uncommons Maths 1.2:
+  - Included as `./lib/uncommons-maths-1.2.jar`
+  - Available through <https://uncommons-maths.dev.java.net/>
+  - Licensed under the APL 2.0, included as `./lib/UNCOMMONS-MATHS-LICENSE`
+
+- QN Plot 1.6:
+  - Included as `./lib/qnplot-1.6.jar`
+  - Available through <http://quies.net/java/math/plot/>
+  - Licensed under the BSD license, included as `./lib/QNPLOT-LICENSE`
+
+
+License
+-------
+
+Copyright (c) Stefan A. van der Meer. All rights reserved.
+The use and distribution terms for this software are covered by the Eclipse
+Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which
+can be found in the file epl-v10.html at the root of this distribution. By
+using this software in any fashion, you are agreeing to be bound by the
+terms of this license. You must not remove this notice, or any other, from
+this software.
