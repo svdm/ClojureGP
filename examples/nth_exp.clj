@@ -13,37 +13,20 @@
 
   Though this is numbered as the first example, the problem definition is not
   trivial. The advantage of this is that it is a bit more like real-world usage,
-  but it may be difficult to follow at points. Both the reg_exp.clj example may
-  offer a more gentle introduction.
+  but it may be difficult to follow at points. The reg_exp.clj example may offer
+  a more gentle introduction.
 
   [1] David J. Montana. Strongly typed genetic programming. Evolutionary
       Computation, 3(2):199--230, 1995."
-  (:use [cljgp.core :only (generate-run)]
+  (:use [cljgp.core :only [generate-run]]
 	cljgp.selection
 	cljgp.breeding
+	cljgp.generate
 	cljgp.tools.logging
 	cljgp.config
 	cljgp.random
 	cljgp.util
-	[clojure.contrib.def :only (defvar)]))
-
-;;; Here the type hierarchy is defined.
-
-(derive ::void ::any)
-(derive ::val ::any)
-(derive ::bool ::val)
-(derive ::el ::val)
-(derive ::number ::val)
-
-;;; The ::seq type is derived here so that we can guarantee that the 'next
-;;; function in the function set cannot be chained endlessly onto
-;;; itself. Without this, the evolution process can be tempted into a (terrible)
-;;; local maximum with long chains of (first (next (next (next ...). By
-;;; specialising ::seq, 'next can be configured to only take ::seq-orig while
-;;; returning a ::seq, which makes (next (next ..) illegal.
-(derive ::seq ::val)
-(derive ::seq-orig ::seq)
-
+	[clojure.contrib.def :only [defvar]]))
 
 ;;; The canonical STGP nth experiment aims to evolve an iterative solution using
 ;;; a mutable variable to store lists. Though not idiomatic clojure, this
@@ -88,6 +71,23 @@
 					; case (which would be 50 steps away)
       (reduce + (map evl 
 		     (drop-last c))))))
+
+;;; Here the type hierarchy is defined.
+
+(derive ::void ::any)
+(derive ::val ::any)
+(derive ::bool ::val)
+(derive ::el ::val)
+(derive ::number ::val)
+
+;;; The ::seq type is derived here so that we can guarantee that the 'next
+;;; function in the function set cannot be chained endlessly onto
+;;; itself. Without this, the evolution process can be tempted into a (terrible)
+;;; local maximum with long chains of (first (next (next (next ...). By
+;;; specialising ::seq, 'next can be configured to only take ::seq-orig while
+;;; returning a ::seq, which makes (next (next ..) illegal.
+(derive ::seq ::val)
+(derive ::seq-orig ::seq)
 
 
 (def config-stgp-nth 

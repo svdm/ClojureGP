@@ -24,14 +24,21 @@
 	   [net.quies.math.plot Graph Function ChartStyle ChartType])
   (:use cljgp.tools.analyse))
 
-;(set! *warn-on-reflection* true)
 
 (defn- make-style
+  "Creates a ChartStyle object of the given Color."
   [#^Color c]
   (doto (new ChartStyle)
     (.setPaint c)))
 
 (defn create-fitness-plotter
+  "Creates a QN Plot graph in a JFrame, and returns a function that plots
+  fitness statistics for each generation live during the GP run.
+
+  If 'draw-min-only is true, only draws the minimum fitness. This can be
+  appropriate when some individuals in the population may have very large
+  fitness values, as the graph will scale to fit those, making the other
+  statistics difficult to discern."
   ([draw-min-only]
      (let [avg-fit-func (new Function "fitness-average")
 	   min-fit-func (new Function "fitness-min")

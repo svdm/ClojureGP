@@ -17,8 +17,9 @@
 
   [1] David J. Montana. Strongly typed genetic programming. Evolutionary
       Computation, 3(2):199--230, 1995."
-  (:use [cljgp.core :only (generate-run)]
+  (:use [cljgp.core :only [generate-run]]
 	cljgp.selection
+	cljgp.generate
 	cljgp.breeding
 	cljgp.tools.logging
 	cljgp.config

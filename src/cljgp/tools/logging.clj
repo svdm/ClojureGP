@@ -19,7 +19,7 @@
                   (map <graph plotter fn>
                        (generate-run ...)))))
 
-  The (reduce.. ) call forces the lazy seq of generations to realize, and each
+  The (last.. ) call forces the lazy seq of generations to realize, and each
   realized generation gets passed through a graph plotter, 'print-stats and
   a file logger, before being discarded by 'last unless it is in fact the last
   generation. This means that side effects will be performed as soon as each

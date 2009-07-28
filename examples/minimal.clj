@@ -11,12 +11,13 @@
 
   This experiment does not necessarily do a great job at showing what a typical
   experiment would look like, or even a basic experiment. It simply tries to be
-  as minimal and simplistic as possible while still performing a gp run."
-  (:use [cljgp.core :only (generate-run)]
-	[cljgp.tools.logging :only (reduce-to-summary
-				    print-stats)]
-	[cljgp.tools.analyse :only (best-fitness)]
-	[cljgp.config :only (prim)]))
+  as minimal and simplistic as possible while still performing a gp run. See
+  reg_exp.clj or one of the other examples for something more fleshed out."
+  (:use [cljgp.core :only [generate-run]]
+	[cljgp.tools.logging :only [reduce-to-summary
+				    print-stats]]
+	[cljgp.tools.analyse :only [best-fitness]]
+	[cljgp.config :only [prim]]))
 
 
 (defn evaluate-minimal

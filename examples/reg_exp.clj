@@ -9,21 +9,23 @@
 
 (ns reg-exp
   "Example 02: evolving a solution to a simple regression problem."
-  (:use [cljgp.core :only (generate-run)]
-	cljgp.tools.logging
-	cljgp.config
-	cljgp.random
-	cljgp.util))
+  (:use [cljgp.core :only [generate-run]]
+	[cljgp.config :only [prim
+			     make-func-template]]
+	[cljgp.random :only [gp-rand]]
+	[cljgp.util :only [tree-depth]]
+	[cljgp.tools.logging :only [print-stats
+				    reduce-to-summary]]))
 
 (defn test-reg-once
   "Evaluate the given function on a single result, returning the abs error."
   [func]
-  (let [x (gp-rand)
-	y (gp-rand)
-	result (func x y)
+  (let [x (double (gp-rand))
+	y (double (gp-rand))
 	target (+ 
 		(+ (* (* x x) (* y y)) (* (* x x) (* x x)))
-		(* x y))] ; z = x^2 * y^2 + x^4 + xy
+		(* x y))		; z = x^2 * y^2 + x^4 + xy
+	result (func x y)]
     (Math/abs (float (- target result)))))
 
 (defn evaluate-reg
@@ -65,13 +67,15 @@
       :population-size 128
 
       :threads 2
+
+      :rand-seeds [9234 5327]
       })
 
 
-(defn run-reg
+(defn run
   "Run experiment and print summary when done."
   ([]
-     (run-reg :basic-trees))
+     (run :basic))
   ([print-type]
      (reduce-to-summary
       (map #(print-stats print-type %)
