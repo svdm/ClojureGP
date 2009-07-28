@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns test.cljgp.test-breeding
-  (:use clojure.test
+  (:use clojure.contrib.test-is
 	cljgp.generate
 	cljgp.breeding
 	cljgp.evaluation

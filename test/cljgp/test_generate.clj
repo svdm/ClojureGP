@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns test.cljgp.test-generate
-  (:use clojure.test
+  (:use clojure.contrib.test-is
 	cljgp.generate
 	cljgp.util)
   (:refer test.helpers))

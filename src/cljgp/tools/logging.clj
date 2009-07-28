@@ -24,12 +24,22 @@
   a file logger, before being discarded by 'last unless it is in fact the last
   generation. This means that side effects will be performed as soon as each
   generation is computed (which might be counter-intuitive at first) due to the
-  laziness of the seq of generations returned by generate-run."
+  laziness of the seq of generations returned by generate-run.
+
+  Primary functions of interest, check their docstrings for details:
+    - print-stats
+    - print-best
+    - log-stats
+    - reduce-to-summary"
   (:use cljgp.tools.analyse
 	cljgp.util)
   (:use clojure.contrib.pprint)
   (:import [java.io Writer BufferedWriter FileWriter]))
 
+
+;;;;
+;;;; PRINTING INDIVIDUALS
+;;;;
 
 (defn print-code
   "Pretty-prints an evolved function/tree, or an individual/map."
@@ -77,11 +87,15 @@
      (print-individual :verbose false ind)))
 
 (defn print-best
-  "Prints best individual verbosely."
+  "Prints best individual of a given generation/population verbosely."
   [generation]
   (when-let [gen-seq (setup-stats-map generation)]
     (let [stats (:stats-map ^gen-seq)]
       (print-individual (get-stat stats :best-fitness)))))
+
+;;;;
+;;;; PRINTING STATISTICS
+;;;;
 
 (defn #^String stat-string
   "Returns a string containing basic stats/info on the given
@@ -155,6 +169,10 @@
 	 (flush)
 	 gen))))
 
+;;;;
+;;;; LOGGING STATISTICS
+;;;;
+
 (defn- log-stats-writer
   "Returns a function that writes basic information about a given generation to
   a file."
@@ -197,9 +215,9 @@
 		    :verbose stat-string-verbose)]
        (log-stats-writer filename statfn flush-every?))))
 
-;
-; RUN SUMMARY
-;
+;;;;
+;;;; PRINTING RUN SUMMARY
+;;;;
 
 (defn- stringify-summary
   [summary]

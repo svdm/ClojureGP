@@ -6,8 +6,6 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;;; cljgp/tools/analyse.clj
-
 (ns cljgp.tools.analyse
   "Basic analysis functions, see cljgp.tools.logging for example usage."
   (:use cljgp.util))
@@ -29,12 +27,12 @@
   Also see cljgp.tools.logging/reduce-to-summary."
   [best-yet generation]
   (if (not (or (map? best-yet) (nil? best-yet)))
-    ; handle reduce with no start val, ie. initially both params are generations
+    ;; handle reduce with no start val, ie. both initial params are generations
     (let [gen (setup-stats-map best-yet)
 	  stats (:stats-map ^gen)
 	  best-gen (get-stat stats :best-fitness)]
       (find-best-of-run best-gen generation))
-    ; handle standard case
+    ;; handle standard case
     (let [gen (setup-stats-map generation)
 	  stats (:stats-map ^gen)
 	  best-gen (get-stat stats :best-fitness)
@@ -49,8 +47,8 @@
   (/ (reduce + (map func pop))
      (count pop)))
 
-; pop-min-of and max-of are not very efficient, but will likely suffice for
-; basic stat gathering
+;;; pop-min-of and max-of are not very efficient, but will likely suffice for
+;;; basic stat gathering
 (defn pop-min-of
   "Returns the minimum of the results of mapping 'func over 'pop."
   [func pop]
@@ -61,8 +59,8 @@
   [func pop]
   (apply max (map func pop)))
 
-; First iteration used a sort-by on :fitness, second was a much faster but
-; uglier manual loop-recur, this version seems to be best of both worlds.
+;;; First iteration used a sort-by on :fitness, second was a much faster but
+;;; uglier manual loop-recur, this version seems to be best of both worlds.
 (defn best-fitness
   "Returns the individual with the best (lowest) fitness in the population."
   [pop]
@@ -112,6 +110,10 @@
 (def tree-size-avg (partial pop-avg-of tree-size-ind))
 (def tree-size-min (partial pop-min-of tree-size-ind))
 (def tree-size-max (partial pop-max-of tree-size-ind))
+
+;;;;
+;;;; STATS-MAP
+;;;;
 
 ; List of stats that will be present in the stats-map
 (def *all-stats*

@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns cljgp.tests.test-all
-  (:use [clojure.test :only (run-tests)]))
+  (:use [clojure.contrib.test-is :only (run-tests)]))
 
 ; heavily borrowed from contrib.test_clojure.clj
 

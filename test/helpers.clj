@@ -9,7 +9,7 @@
 ; Various functions and data structures used in the tests
 
 (ns test.helpers
-  (:use clojure.test
+  (:use clojure.contrib.test-is
 	cljgp.breeding
 	cljgp.generate
 	cljgp.selection

@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns test.cljgp.test-core
-  (:use clojure.test
+  (:use clojure.contrib.test-is
 	test.helpers
 	cljgp.core
 	[cljgp.generate :only [generate-pop]]))

@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns test.cljgp.test-util
-  (:use clojure.test
+  (:use clojure.contrib.test-is
 	cljgp.util))
 
 ; mock expression tree, for the util functions the actual tree does not affect
@@ -19,12 +19,11 @@
 (deftest test-make-individual
   (let [given-gen 99
 	ind (make-individual (my-tpl valid-tree) given-gen)]
-    (are [_]
-	 (map? ind)
-	 (= (type ind) clojure.lang.PersistentStructMap)
-	 (= (:func ind) (my-tpl valid-tree))
-	 (= (:gen ind) given-gen)
-	 (= (:fitness ind 'not-found) nil))))
+    (is (map? ind))
+    (is (= (type ind) clojure.lang.PersistentStructMap))
+    (is (= (:func ind) (my-tpl valid-tree)))
+    (is (= (:gen ind) given-gen))
+    (is (= (:fitness ind 'not-found) nil))))
 
 (deftest test-get-fn-body
   (is (= (get-fn-body (my-tpl valid-tree))
