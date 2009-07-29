@@ -17,14 +17,14 @@
   configuration key reference that can be found with the rest of the (external)
   documentation."
   (:use [cljgp.breeding :only [crossover-breeder
-			       mutation-breeder
-			       reproduction-breeder]]
-	[cljgp.generate :only [generate-ramped]]
-	[cljgp.selection :only [tournament-select]]
-	cljgp.random
-	cljgp.util
+                               mutation-breeder
+                               reproduction-breeder]]
+        [cljgp.generate :only [generate-ramped]]
+        [cljgp.selection :only [tournament-select]]
+        cljgp.random
+        cljgp.util
 
-	[clojure.contrib.def :only [defalias defvar]]))
+        [clojure.contrib.def :only [defalias defvar]]))
 
 ;;;;
 ;;;; Helper fns for config creation
@@ -52,8 +52,8 @@
   ([max-generations fit-tolerance]
      (fn [pop]
        (let [ind (first pop)]
-	 (or (>= (:gen ind) max-generations)
-	     (some #(>= fit-tolerance (get-fitness %)) pop)))))
+         (or (>= (:gen ind) max-generations)
+             (some #(>= fit-tolerance (get-fitness %)) pop)))))
   ([max-generations] (make-end max-generations 0.0001)))
 
 (defn seeds-from-time
@@ -64,10 +64,10 @@
   case the results need to be reproduced."
   ([report]
       (if report
-	(repeatedly #(let [t (long (rand (System/currentTimeMillis)))]
-		       (println "Used seed:" t)
-		       t))
-	(repeatedly #(long (rand (System/currentTimeMillis))))))
+        (repeatedly #(let [t (long (rand (System/currentTimeMillis)))]
+                       (println "Used seed:" t)
+                       t))
+        (repeatedly #(long (rand (System/currentTimeMillis))))))
   ([] (seeds-from-time false)))
 
 (defn make-func-template
@@ -85,7 +85,7 @@
   ([func-name arg-list]
      (assert (or (symbol? func-name) (nil? func-name)))
      (assert (vector? arg-list))
-     (if (nil? func-name)		; can't just put nil in fn def
+     (if (nil? func-name)               ; can't just put nil in fn def
        (fn standard-template [tree] (list `fn arg-list tree))
        (fn standard-template [tree] (list `fn func-name arg-list tree))))
   ([arg-list]
@@ -100,14 +100,14 @@
 (defvar config-defaults
      {:func-template-fn (make-func-template)
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
-		 {:prob 0.1  :breeder-fn mutation-breeder}
-		 {:prob 0.1  :breeder-fn reproduction-breeder}]
+                 {:prob 0.1  :breeder-fn mutation-breeder}
+                 {:prob 0.1  :breeder-fn reproduction-breeder}]
       :breeding-retries 1
       :selection-fn #(tournament-select {:size 7} %1) ; faster than (partial ..)
       :end-condition-fn (make-end 100)
       :pop-generation-fn #(generate-ramped {:max-depth 7 
-					    :grow-chance 0.5}
-					   %1)
+                                            :grow-chance 0.5}
+                                           %1)
       :rand-fn-maker make-default-rand
       :rand-seeds (seeds-from-time)
       :validate-tree-fn identity
@@ -121,7 +121,7 @@
   [entry]
   (let [m (meta entry)]
     (and (symbol? entry)
-	 (coll? (:gp-arg-types m)))))
+         (coll? (:gp-arg-types m)))))
 
 (defn valid-term-entry?
   "Returns true if the given terminal set entry is valid."
@@ -154,8 +154,8 @@
       :evaluation-fn fn?
       :end-condition-fn fn?
       :breeders #(and (coll? %) 
-		      (strict-every? valid-breeder-entry? %)
-		      (valid-breeder-probs? %))
+                      (strict-every? valid-breeder-entry? %)
+                      (valid-breeder-probs? %))
       :breeding-retries number?
       :selection-fn fn?
       :population-size number?
@@ -188,8 +188,8 @@
     (cond
       (not (contains? config k)) 
         (if (contains? config-defaults k) 
-	  {:entry (find config-defaults k) :type :default}
-	  {:entry nil :type :no-default})
+          {:entry (find config-defaults k) :type :default}
+          {:entry nil :type :no-default})
       (not (val-test (val entry))) 
         {:entry nil :type :fail}
       :else 
@@ -211,17 +211,17 @@
   ignored."
   [run-config]
   (loop [conf run-config
-	 todo config-spec]
+         todo config-spec]
     (if (not (seq todo))
       conf
       (let [[k test] (first todo)
-	    {checked-entry :entry etype :type} (check-key k test run-config)
-	    conf-upd (add-check-result conf etype k)]
-	(if (seq checked-entry)
-	  (recur (conj conf-upd checked-entry)
-		 (next todo))
-	  (recur conf-upd
-		 (next todo)))))))
+            {checked-entry :entry etype :type} (check-key k test run-config)
+            conf-upd (add-check-result conf etype k)]
+        (if (seq checked-entry)
+          (recur (conj conf-upd checked-entry)
+                 (next todo))
+          (recur conf-upd
+                 (next todo)))))))
 
 (defn report-check-problems
   "Prints information on the :check-results of a given config. If any of the
@@ -240,13 +240,13 @@
       (println "    " fails))
     (when-let [constraints (:constraint results)]
       (doseq [c constraints]
-	(println "  FATAL: Constraint between keys violated:")
-	(println "    " c)))
+        (println "  FATAL: Constraint between keys violated:")
+        (println "    " c)))
     (newline)
     (when (seq (filter (partial contains? results) 
-		       [:fail :no-default :constraint]))
+                       [:fail :no-default :constraint]))
       (throw (Exception. (str "Fatal problems exist in run configuration, "
-			      "run cannot proceed."))))))
+                              "run cannot proceed."))))))
 
 ;;; TODO: restructure to test multiple constraints when more are needed
 (defn assert-constraints
@@ -257,7 +257,7 @@
     (cond 
       (> threads (count (take threads rand-seeds)))
         (add-check-result run-config :constraint 
-			  "Insufficient seeds for the number of threads.")
+                          "Insufficient seeds for the number of threads.")
       :else run-config)))
 
 
@@ -267,27 +267,27 @@
   values are already present they will not be modified here."
   [run-config]
   (let [config-get (fn ([key] (get run-config key (get config-defaults key)))
-		       ([key not-found] (get run-config key not-found)))
-	rand-fns {:rand-fns 
-		  (config-get :rand-fns
-		       ;; create and realize seq of rand-fns/seeds here
-		       (take (config-get :threads)
-			     (map (config-get :rand-fn-maker) 
-				  (config-get :rand-seeds))))}
-	tpl-fn   {:func-template-fn 
-		  (config-get :func-template-fn
-		       (make-func-template (config-get :arg-list [])))}]
+                       ([key not-found] (get run-config key not-found)))
+        rand-fns {:rand-fns 
+                  (config-get :rand-fns
+                       ;; create and realize seq of rand-fns/seeds here
+                       (take (config-get :threads)
+                             (map (config-get :rand-fn-maker) 
+                                  (config-get :rand-seeds))))}
+        tpl-fn   {:func-template-fn 
+                  (config-get :func-template-fn
+                       (make-func-template (config-get :arg-list [])))}]
     (merge run-config
-	   rand-fns
-	   tpl-fn)))
+           rand-fns
+           tpl-fn)))
 
 (defn prepare-config
   "First calls check-config on given run-config, then performs both
   preprocessing and checks involving multiple keys."
   [run-config]
   (let [preprocessed (preproc-config run-config)
-	checked (assert-constraints (check-config preprocessed))]
+        checked (assert-constraints (check-config preprocessed))]
     (report-check-problems checked)
     (merge preprocessed
-	   checked))) ; keys changed in check-config will override run-config
+           checked))) ; keys changed in check-config will override run-config
 

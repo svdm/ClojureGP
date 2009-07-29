@@ -29,16 +29,16 @@
   (if (not (or (map? best-yet) (nil? best-yet)))
     ;; handle reduce with no start val, ie. both initial params are generations
     (let [gen (setup-stats-map best-yet)
-	  stats (:stats-map ^gen)
-	  best-gen (get-stat stats :best-fitness)]
+          stats (:stats-map ^gen)
+          best-gen (get-stat stats :best-fitness)]
       (find-best-of-run best-gen generation))
     ;; handle standard case
     (let [gen (setup-stats-map generation)
-	  stats (:stats-map ^gen)
-	  best-gen (get-stat stats :best-fitness)
-	  best-new (if best-yet
-		     (min-key :fitness best-yet best-gen)
-		     best-gen)]
+          stats (:stats-map ^gen)
+          best-gen (get-stat stats :best-fitness)
+          best-new (if best-yet
+                     (min-key :fitness best-yet best-gen)
+                     best-gen)]
       best-new)))
 
 (defn pop-avg-of
@@ -80,23 +80,23 @@
 (defn fitness-all
   "Returns minimum, maximum and average fitness in a single loop over the
   population. This is much faster than calling fitness-min, fitness-max, and
-  fitness-avg separately."		; of course, fast is not always pretty
+  fitness-avg separately."              ; of course, fast is not always pretty
   [pop]
   (loop [fit-ind (float (get-fitness (first pop)))
-	 poprest (rest pop)
-	 fit-min Float/MAX_VALUE
-	 fit-max Float/MIN_VALUE
-	 fit-tot (float 0)]
+         poprest (rest pop)
+         fit-min Float/MAX_VALUE
+         fit-max Float/MIN_VALUE
+         fit-tot (float 0)]
     (let [fmin (float (min fit-min fit-ind))
-	  fmax (float (max fit-max fit-ind))
-	  ftot (+ fit-tot fit-ind)]
+          fmax (float (max fit-max fit-ind))
+          ftot (+ fit-tot fit-ind)]
       (if (seq poprest)
-	(recur (float (get-fitness (first poprest))) 
-	       (rest poprest)
-	       fmin fmax ftot)
-	{:fit-min fmin 
-	 :fit-max fmax 
-	 :fit-avg (/ ftot (count pop))}))))
+        (recur (float (get-fitness (first poprest))) 
+               (rest poprest)
+               fmin fmax ftot)
+        {:fit-min fmin 
+         :fit-max fmax 
+         :fit-avg (/ ftot (count pop))}))))
 
 ; These defs were macro'd, but this seemed to obfuscate things unnecessarily
 (def fitness-avg (partial pop-avg-of get-fitness))
@@ -130,9 +130,9 @@
   for different logging/output functions that report on the same seq."
   [pop]
   (reduce (fn [m func] 
-	     (conj m [(keyword (name func)) `(delay (~func ~pop))])) 
-	   {} 
-	   *all-stats*))
+             (conj m [(keyword (name func)) `(delay (~func ~pop))])) 
+           {} 
+           *all-stats*))
 
 (defn get-stat
   "Gets a key from the stats map, which consists of delays that need forcing."
@@ -149,9 +149,9 @@
   (when-let [gen (seq generation)]
     (let [gen-meta ^gen]
       (if (contains? gen-meta :stats-map)
-	gen
-	(with-meta gen (conj {:stats-map (make-stats-map gen)} 
-			     gen-meta))))))
+        gen
+        (with-meta gen (conj {:stats-map (make-stats-map gen)} 
+                             gen-meta))))))
 
 
 

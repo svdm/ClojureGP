@@ -12,7 +12,7 @@
   generate-ramped is currently the only provided population generation function
   ready for use in experiment configurations."
   (:use cljgp.random
-	cljgp.util))
+        cljgp.util))
 
 (declare generate-tree)
 
@@ -30,10 +30,10 @@
     :keys [function-set terminal-set root-type]}]
   (try
    (generate-tree (inc (gp-rand-int max-depth))
-		  (if (< (gp-rand) grow-chance) :grow :full)
-		  function-set
-		  terminal-set
-		  root-type)
+                  (if (< (gp-rand) grow-chance) :grow :full)
+                  function-set
+                  terminal-set
+                  root-type)
    (catch RuntimeException e
      nil)))
 
@@ -48,21 +48,21 @@
   Throws exception if no legal tree could be generated due to type constraints."
   [max-depth method func-set term-set node-type]
   (if (or (<= max-depth 1)
-	  (and (= method :grow)
-	       (< (gp-rand) (/ (count term-set)
-			       (+ (count term-set) (count func-set))))))
+          (and (= method :grow)
+               (< (gp-rand) (/ (count term-set)
+                               (+ (count term-set) (count func-set))))))
     (if-let [tnode (pick-rand-typed node-type term-set)]
       tnode
       (throw (RuntimeException. 
-	      (str "No available terminal of type " node-type))))
+              (str "No available terminal of type " node-type))))
     (if-let [fnode (pick-rand-typed node-type func-set)]
       (cons fnode (doall     ; force seq to realize inside try/catch
-		   (for [cur-type (:gp-arg-types ^fnode)]
-		     (generate-tree (dec max-depth) method 
-				    func-set term-set 
-				    cur-type))))
+                   (for [cur-type (:gp-arg-types ^fnode)]
+                     (generate-tree (dec max-depth) method 
+                                    func-set term-set 
+                                    cur-type))))
       (throw (RuntimeException. 
-	      (str "No available function of type " node-type))))))
+              (str "No available function of type " node-type))))))
 
 (defn get-valid
   "Returns a result of 'gen-fn (which should be a tree-generating function) that
@@ -73,9 +73,9 @@
   been generated, returns nil."
   [valid-tree? tries gen-fn]
   (first (filter #(if (vector? %)
-		    (and (not-empty %) (every? valid-tree? %))
-		    (and (not (nil? %)) (valid-tree? %)))
-		 (take (inc tries) (repeatedly gen-fn)))))
+                    (and (not-empty %) (every? valid-tree? %))
+                    (and (not (nil? %)) (valid-tree? %)))
+                 (take (inc tries) (repeatedly gen-fn)))))
 
 (defn- individual-generator-seq
   "Returns a lazy infinite sequence of individuals with generation 0 and
@@ -84,16 +84,16 @@
   cljgp.breeding/generate-pop."
   [{:as run-config,
     :keys [pop-generation-fn, validate-tree-fn, func-template-fn]}]
-  (let [retries 1024			; should perhaps be configurable
-	generate (fn [] 
-		   (if-let [ind (get-valid validate-tree-fn retries
-					   #(pop-generation-fn run-config))]
-		     ind
-		     (throw (RuntimeException. 
-			     (str "Failed to generate a valid tree after "
-				  retries " attempts. Most likely there is "
-				  "an issue that makes valid trees "
-				  "impossible to generate.")))))]
+  (let [retries 1024                    ; should perhaps be configurable
+        generate (fn [] 
+                   (if-let [ind (get-valid validate-tree-fn retries
+                                           #(pop-generation-fn run-config))]
+                     ind
+                     (throw (RuntimeException. 
+                             (str "Failed to generate a valid tree after "
+                                  retries " attempts. Most likely there is "
+                                  "an issue that makes valid trees "
+                                  "impossible to generate.")))))]
     (repeatedly 
      #(make-individual (func-template-fn (generate)) 0))))
 
@@ -111,9 +111,9 @@
   [{:keys [population-size threads rand-fns] :as run-config}]
   (let [per-future (divide-up population-size threads)]
     (mapcat deref
-	    (doall 
-	     (map #(future
-		     (binding [cljgp.random/gp-rand %2]
-		       (doall (take %1 (individual-generator-seq run-config)))))
-		  per-future
-		  rand-fns)))))
+            (doall 
+             (map #(future
+                     (binding [cljgp.random/gp-rand %2]
+                       (doall (take %1 (individual-generator-seq run-config)))))
+                  per-future
+                  rand-fns)))))

@@ -10,22 +10,22 @@
 (ns reg-exp
   "Example 02: evolving a solution to a simple regression problem."
   (:use [cljgp.core :only [generate-run]]
-	[cljgp.config :only [prim
-			     make-func-template]]
-	[cljgp.random :only [gp-rand]]
-	[cljgp.util :only [tree-depth]]
-	[cljgp.tools.logging :only [print-stats
-				    reduce-to-summary]]))
+        [cljgp.config :only [prim
+                             make-func-template]]
+        [cljgp.random :only [gp-rand]]
+        [cljgp.util :only [tree-depth]]
+        [cljgp.tools.logging :only [print-stats
+                                    reduce-to-summary]]))
 
 (defn test-reg-once
   "Evaluate the given function on a single result, returning the abs error."
   [func]
   (let [x (double (gp-rand))
-	y (double (gp-rand))
-	target (+ 
-		(+ (* (* x x) (* y y)) (* (* x x) (* x x)))
-		(* x y))		; z = x^2 * y^2 + x^4 + xy
-	result (func x y)]
+        y (double (gp-rand))
+        target (+ 
+                (+ (* (* x x) (* y y)) (* (* x x) (* x x)))
+                (* x y))                ; z = x^2 * y^2 + x^4 + xy
+        result (func x y)]
     (Math/abs (float (- target result)))))
 
 (defn evaluate-reg
@@ -40,18 +40,18 @@
      {
       ;; Some mathematical operators
       :function-set [(prim `- {:gp-type Number 
-			       :gp-arg-types [Number Number]})
+                               :gp-arg-types [Number Number]})
 
-		     (prim `+ {:gp-type Number 
-			       :gp-arg-types [Number Number]})
+                     (prim `+ {:gp-type Number 
+                               :gp-arg-types [Number Number]})
 
-		     (prim `* {:gp-type Number 
-			       :gp-arg-types [Number Number]})]
+                     (prim `* {:gp-type Number 
+                               :gp-arg-types [Number Number]})]
 
       ;; The two variables in the equation
       :terminal-set [(prim 'x {:gp-type Number})
 
-		     (prim 'y {:gp-type Number})]
+                     (prim 'y {:gp-type Number})]
 
       ;; Evolved functions must return a number
       :root-type Number
@@ -79,7 +79,7 @@
   ([print-type]
      (reduce-to-summary
       (map #(print-stats print-type %)
-	   (generate-run config-reg)))))
+           (generate-run config-reg)))))
 
 
 ;;; Uncomment the below with the QN Plot .jar in your classpath to try the
@@ -92,6 +92,6 @@
     []
     (reduce-to-summary
      (map print-stats
-	  (map (create-fitness-plotter true)
-	       (generate-run config-reg)))))
+          (map (create-fitness-plotter true)
+               (generate-run config-reg)))))
 )

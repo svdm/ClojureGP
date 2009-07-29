@@ -18,14 +18,14 @@
   [1] David J. Montana. Strongly typed genetic programming. Evolutionary
       Computation, 3(2):199--230, 1995."
   (:use [cljgp.core :only [generate-run]]
-	cljgp.selection
-	cljgp.generate
-	cljgp.breeding
-	cljgp.tools.logging
-	cljgp.config
-	cljgp.random
-	cljgp.util
-	[clojure.contrib.def :only [defunbound defvar]]))
+        cljgp.selection
+        cljgp.generate
+        cljgp.breeding
+        cljgp.tools.logging
+        cljgp.config
+        cljgp.random
+        cljgp.util
+        [clojure.contrib.def :only [defunbound defvar]]))
 
 
 ;;;; Evaluation
@@ -39,8 +39,8 @@
 
 
 (defvar trials [(list)
-		(list 1)
-		(apply list (range 1 21))]
+                (list 1)
+                (apply list (range 1 21))]
   "The trials on which the evolved functions will be evaluated. Note that for
   the third trial, all elements are numbers that are equal to their (one-based)
   index. Based on STGP article.")
@@ -60,12 +60,12 @@
   (try
    (let [limit (atom 0)]
      (binding [wrapped-gp-map (fn [f c]
-				(if (> @limit 40)
-				  (throw (StackOverflowError. "gp"))
-				  (do (swap! limit inc)
-				      (let [result (gp-map f c)]
-					(swap! limit dec)
-					result))))]
+                                (if (> @limit 40)
+                                  (throw (StackOverflowError. "gp"))
+                                  (do (swap! limit inc)
+                                      (let [result (gp-map f c)]
+                                        (swap! limit dec)
+                                        result))))]
        (gp-map safe-inc (seq trial))))
    (catch StackOverflowError e
      :overflow)))
@@ -78,13 +78,13 @@
   lst. If not found, returns 50."
   [el lst]
   (let [el (int el)
-	pos (dec el)
-	dst (loop [l lst
-		   i (int 1)]
-	      (when-let [fst (first l)]
-		(if (== el (int fst))
-		  (Math/abs (- pos i))
-		  (recur (next l) (inc i)))))] 
+        pos (dec el)
+        dst (loop [l lst
+                   i (int 1)]
+              (when-let [fst (first l)]
+                (if (== el (int fst))
+                  (Math/abs (- pos i))
+                  (recur (next l) (inc i)))))] 
     (if (nil? dst) 
       50
       dst)))
@@ -102,16 +102,16 @@
   (cond
     (= result :overflow) (+ (* 2 (count solution)) 10)
     :else (+ (* 2 (Math/abs (- (count solution) (count result))))
-	     (reduce #(+ %1 (dec (Math/pow 2 (dist %2 result))))
-		     0
-		     solution))))
+             (reduce #(+ %1 (dec (Math/pow 2 (dist %2 result))))
+                     0
+                     solution))))
 
 (defn evaluate-map
   "Evaluates a given map function on the trials. Returns a fitness equal to the
   sum of the scores obtained for each trial using score-result."
   [gp-map]
   (let [results (map #(evaluate-map-single gp-map %) trials)
-	errs (doall (map #(score-result %1 %2) results solutions))]
+        errs (doall (map #(score-result %1 %2) results solutions))]
     (reduce + errs)))
 
 ;;;; Type hierarchy:
@@ -136,41 +136,41 @@
      ;; has this structure and might get a good fitness, or it does not and gets
      ;; a terrible fitness due to hitting the recursion limit.
      [(primitive `when
-		 {:gp-type ::seq
-		  :gp-arg-types [::seq-orig
-				 ::seq]})
+                 {:gp-type ::seq
+                  :gp-arg-types [::seq-orig
+                                 ::seq]})
 
       (primitive `cons
-		 {:gp-type ::seq
-		  :gp-arg-types [::el ::seq]})
+                 {:gp-type ::seq
+                  :gp-arg-types [::el ::seq]})
 
       (primitive `first
-		 {:gp-type ::el
-		  :gp-arg-types [::seq]})
+                 {:gp-type ::el
+                  :gp-arg-types [::seq]})
 
       (primitive `next
-		 {:gp-type ::seq
-		  :gp-arg-types [::seq-orig]})
+                 {:gp-type ::seq
+                  :gp-arg-types [::seq-orig]})
 
       ;; The "secured" self-call, refers to unbound var that will be bound
       ;; during evaluation.
       (primitive `wrapped-gp-map
-		 {:gp-type ::seq
-		  :gp-arg-types [::func-passed ::seq]})
+                 {:gp-type ::seq
+                  :gp-arg-types [::func-passed ::seq]})
 
       ;; The function passed to map, applied to element
       (primitive 'f
-		 {:gp-type ::el
-		  :gp-arg-types [::el]})])
+                 {:gp-type ::el
+                  :gp-arg-types [::el]})])
 
 (def term-set
      ;; The input sequence
      [(primitive 'coll
-		 {:gp-type ::seq-orig})
+                 {:gp-type ::seq-orig})
 
       ;; The function passed to map, passed on in self-call
       (primitive 'f
-		 {:gp-type ::func-passed})])
+                 {:gp-type ::func-passed})])
 
 (def breeding-options
      {;; Evolved functions must return a seq
@@ -196,9 +196,9 @@
 ;;; function for more REPL-versatility)
 (def config-map
      (merge {:function-set func-set
-	     :terminal-set term-set}
-	    breeding-options
-	    run-options))
+             :terminal-set term-set}
+            breeding-options
+            run-options))
 
 (defn run
   "Run the experiment and print the best individual at the end. The 'print-type
@@ -209,7 +209,7 @@
   ([print-type]
      (reduce-to-summary
       (map #(print-stats print-type %) 
-	   (generate-run config-map)))))
+           (generate-run config-map)))))
 
 
 ;;; Example of an evolution result, with instances of 'wrapped-gp-map renamed to
@@ -217,14 +217,14 @@
 (def evolved-solution
      (fn gp-map [f coll]
        (when coll
-	 (cons
-	  (f (first (when coll coll)))
-	  (when coll (gp-map f (next coll)))))))
+         (cons
+          (f (first (when coll coll)))
+          (when coll (gp-map f (next coll)))))))
 
 ;;; Again with redundant code removed
 (def evolved-simplified
      (fn gp-map [f coll]
        (when coll
-	 (cons
-	  (f (first coll))
-	  (gp-map f (next coll))))))
+         (cons
+          (f (first coll))
+          (gp-map f (next coll))))))

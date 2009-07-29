@@ -19,14 +19,14 @@
   [1] David J. Montana. Strongly typed genetic programming. Evolutionary
       Computation, 3(2):199--230, 1995."
   (:use [cljgp.core :only [generate-run]]
-	cljgp.selection
-	cljgp.breeding
-	cljgp.generate
-	cljgp.tools.logging
-	cljgp.config
-	cljgp.random
-	cljgp.util
-	[clojure.contrib.def :only [defvar]]))
+        cljgp.selection
+        cljgp.breeding
+        cljgp.generate
+        cljgp.tools.logging
+        cljgp.config
+        cljgp.random
+        cljgp.util
+        [clojure.contrib.def :only [defvar]]))
 
 ;;; The canonical STGP nth experiment aims to evolve an iterative solution using
 ;;; a mutable variable to store lists. Though not idiomatic clojure, this
@@ -59,18 +59,18 @@
   "Evaluates the performance of an evolved function and returns a fitness
   value."
   [stgpnth]
-  (binding [var-1 (atom [])]		; local atom storage "variable"
+  (binding [var-1 (atom [])]            ; local atom storage "variable"
     (let [c (vec (range 0 50))
-	  evl (fn [idx]
-		(let [result (stgpnth c idx)]
-		  (if (number? result)
-		    (Math/abs 
-		     (float (- (nth c idx)
-			       result)))
-		    100)))]		; nil, punish as twice as bad as worst
-					; case (which would be 50 steps away)
+          evl (fn [idx]
+                (let [result (stgpnth c idx)]
+                  (if (number? result)
+                    (Math/abs 
+                     (float (- (nth c idx)
+                               result)))
+                    100)))]             ; nil, punish as twice as bad as worst
+                                        ; case (which would be 50 steps away)
       (reduce + (map evl 
-		     (drop-last c))))))
+                     (drop-last c))))))
 
 ;;; Here the type hierarchy is defined.
 
@@ -98,49 +98,49 @@
 ;;; checking system can guarantee the type of the second expression and the type
 ;;; of the return value are of the same type.
       :function-set [(prim `do
-			   {:gp-type ::seq
-			    :gp-arg-types [::void ::seq]})
+                           {:gp-type ::seq
+                            :gp-arg-types [::void ::seq]})
 
-		     (prim `do
-			   {:gp-type ::el
-			    :gp-arg-types [::void ::el]})
+                     (prim `do
+                           {:gp-type ::el
+                            :gp-arg-types [::void ::el]})
 
-		     (prim `do
-			   {:gp-type ::number
-			    :gp-arg-types [::void ::number]})
+                     (prim `do
+                           {:gp-type ::number
+                            :gp-arg-types [::void ::number]})
 
-		     (prim `do-times
-			   {:gp-type ::void
-			    :gp-arg-types [::number ::void]})
+                     (prim `do-times
+                           {:gp-type ::void
+                            :gp-arg-types [::number ::void]})
 
-		     (prim `first
-			   {:gp-type ::el
-			    :gp-arg-types [::seq]})
+                     (prim `first
+                           {:gp-type ::el
+                            :gp-arg-types [::seq]})
 
-		     (prim `next
-			   {:gp-type ::seq
-			    :gp-arg-types [::seq-orig]})
+                     (prim `next
+                           {:gp-type ::seq
+                            :gp-arg-types [::seq-orig]})
 
-		     (prim `set-var-1
-			   {:gp-type ::void
-			    :gp-arg-types [::seq]})
-		     
-		     ;; get-var-1 could also be seen as a terminal as it does
-		     ;; not have children, however it is a function that needs
-		     ;; to be applied. A function primitive with zero arguments
-		     ;; is an easy way of handling this.
-		     (prim `get-var-1
-			   {:gp-type ::seq-orig
-			    :gp-arg-types []})]
+                     (prim `set-var-1
+                           {:gp-type ::void
+                            :gp-arg-types [::seq]})
+                     
+                     ;; get-var-1 could also be seen as a terminal as it does
+                     ;; not have children, however it is a function that needs
+                     ;; to be applied. A function primitive with zero arguments
+                     ;; is an easy way of handling this.
+                     (prim `get-var-1
+                           {:gp-type ::seq-orig
+                            :gp-arg-types []})]
       
 
       ;; The only real terminals are the two arguments to the function. Note
       ;; that these symbols are not resolved here.
       :terminal-set [(prim 'coll 
-			   {:gp-type ::seq-orig})
-		     
-		     (prim 'index 
-			   {:gp-type ::number})]
+                           {:gp-type ::seq-orig})
+                     
+                     (prim 'index 
+                           {:gp-type ::number})]
       
       ;; nth must return a list element
       :root-type ::el
@@ -163,13 +163,13 @@
 
       ;; Some tweaking of the breeding facilities, not really required.
       :pop-generation-fn (partial generate-ramped {:max-depth 5
-						   :grow-chance 0.5})
+                                                   :grow-chance 0.5})
 
       :selection-fn (partial tournament-select {:size 14})
 
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
-		 {:prob 0.2  :breeder-fn (partial mutation-breeder 
-					   {:max-depth 5})}]
+                 {:prob 0.2  :breeder-fn (partial mutation-breeder 
+                                           {:max-depth 5})}]
 
       :breeding-retries 500
 
@@ -196,37 +196,37 @@
      (print-best 
       (last 
        (map #(print-stats print-type %) 
-	    (generate-run config-stgp-nth))))))
+            (generate-run config-stgp-nth))))))
 
 
 ;;; Translation of the solution as listed in the STGP article.
 (def stgp-solution
      `(fn [~'coll ~'index]
-	(do
-	  (do-times (do (set-var-1 ~'coll) ~'index)
-	    (set-var-1 (next (get-var-1))))
-	  (first (get-var-1)))))
+        (do
+          (do-times (do (set-var-1 ~'coll) ~'index)
+            (set-var-1 (next (get-var-1))))
+          (first (get-var-1)))))
 
 ;;; An example of a solution evolved by the experiment defined here.
 (def evolved-solution
      (fn stgp-nth [coll index]
        (do
-	 (set-var-1
-	  (do
-	    (set-var-1 (next coll))
-	    (do (set-var-1 (next (get-var-1))) coll)))
-	 (first
-	  (do
-	    (do-times index (set-var-1 (next (get-var-1))))
-	    (get-var-1))))))
+         (set-var-1
+          (do
+            (set-var-1 (next coll))
+            (do (set-var-1 (next (get-var-1))) coll)))
+         (first
+          (do
+            (do-times index (set-var-1 (next (get-var-1))))
+            (get-var-1))))))
 
 ;;; Simplified version of evolved-solution, with redundant code removed.
 (def evolved-simplified
      (fn stgp-nth [coll index]
        (do
-	 (set-var-1 coll)
-	 (first
-	  (do
-	    (do-times index 
-		      (set-var-1 (next (get-var-1))))
-	    (get-var-1))))))
+         (set-var-1 coll)
+         (first
+          (do
+            (do-times index 
+                      (set-var-1 (next (get-var-1))))
+            (get-var-1))))))

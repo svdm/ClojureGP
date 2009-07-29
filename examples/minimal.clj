@@ -14,10 +14,10 @@
   as minimal and simplistic as possible while still performing a gp run. See
   reg_exp.clj or one of the other examples for something more fleshed out."
   (:use [cljgp.core :only [generate-run]]
-	[cljgp.tools.logging :only [reduce-to-summary
-				    print-stats]]
-	[cljgp.tools.analyse :only [best-fitness]]
-	[cljgp.config :only [prim]]))
+        [cljgp.tools.logging :only [reduce-to-summary
+                                    print-stats]]
+        [cljgp.tools.analyse :only [best-fitness]]
+        [cljgp.config :only [prim]]))
 
 
 (defn evaluate-minimal
@@ -25,7 +25,7 @@
   the number 5."
   [func]
   (let [result (func 5)
-	target (Math/pow 5 2)] 
+        target (Math/pow 5 2)] 
     (Math/abs (float (- target result)))))
 
 
@@ -34,7 +34,7 @@
 ;;; Function arguments are essentially untyped, but we do need to indicate how
 ;;; many args they take, hence specify them as type nil.
       :function-set [(prim `+ {:gp-arg-types [nil nil]})
-		     (prim `- {:gp-arg-types [nil nil]})]
+                     (prim `- {:gp-arg-types [nil nil]})]
 
 ;;; The only terminal is a non-namespaced symbol that refers to the evolved
 ;;; function's only argument. No type info.
@@ -68,7 +68,7 @@
   []
   (reduce-to-summary
    (map print-stats 
-	(generate-run config-minimal))))
+        (generate-run config-minimal))))
 
 (defn run-min-quiet
   "Performs minimalistic run even more minimalistically, without reporting."

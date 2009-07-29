@@ -44,7 +44,7 @@
   experiment: (map #(rand-fn nextDouble (Random. %)) [1234 8472 9000])."
   ([method rng] 
      `(let [r# ~rng]
-	(fn [] (. r# ~method))))
+        (fn [] (. r# ~method))))
   ([rng]
      `(rand-fn nextDouble rng)))
 

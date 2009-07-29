@@ -10,9 +10,9 @@
   "Core functions that handle a GP run, creating a population, evaluating and
   breeding it until the end condition is reached."
   (:use cljgp.breeding
-	[cljgp.generate :only [generate-pop]]
-	cljgp.evaluation
-	[cljgp.config :only [prepare-config]]))
+        [cljgp.generate :only [generate-pop]]
+        cljgp.evaluation
+        [cljgp.config :only [prepare-config]]))
 
 
 (defn evolve-future-generations
@@ -27,10 +27,10 @@
   (lazy-seq
     (when-let [pop-seq (seq pop)]
       (let [pop-evaluated (evaluate-pop pop-seq run-config)]
-	(cons pop-evaluated
-	      (evolve-future-generations (breed-new-pop pop-evaluated 
-							run-config)
-					 run-config))))))
+        (cons pop-evaluated
+              (evolve-future-generations (breed-new-pop pop-evaluated 
+                                                        run-config)
+                                         run-config))))))
 
 (defn- take-until-end
   "As take-while, but lazy sequence includes the item for which end? first
@@ -43,8 +43,8 @@
   (lazy-seq
     (when-let [s (seq coll)]
       (if (end? (first s))
-	(cons (with-meta (seq (first s)) {:final true}) nil)
-	(cons (first s) (take-until-end end? (rest s)))))))
+        (cons (with-meta (seq (first s)) {:final true}) nil)
+        (cons (first s) (take-until-end end? (rest s)))))))
 
 (defn generate-run
   "Returns a lazy seq of successive generations (= populations = collections of
@@ -57,10 +57,10 @@
   See cljgp.core/evolve-future-gens for more details on the returned lazy seq."
   [run-config]
   (let [final-config (prepare-config run-config)
-	pop-initial (generate-pop final-config)
-	end? (:end-condition-fn final-config)]
+        pop-initial (generate-pop final-config)
+        end? (:end-condition-fn final-config)]
     (take-until-end end?
-		    (evolve-future-generations pop-initial final-config))))
+                    (evolve-future-generations pop-initial final-config))))
 
 
 

@@ -10,12 +10,12 @@
 
 (ns test.helpers
   (:use clojure.contrib.test-is
-	cljgp.breeding
-	cljgp.generate
-	cljgp.selection
-	cljgp.config
-	cljgp.random
-	cljgp.util))
+        cljgp.breeding
+        cljgp.generate
+        cljgp.selection
+        cljgp.config
+        cljgp.random
+        cljgp.util))
 
 (defmacro quiet
   [form]
@@ -37,8 +37,8 @@
   [ind]
   (and (map? ind)
        (every? (set (keys ind)) [:func
-				 :gen
-				 :fitness])))
+                                 :gen
+                                 :fitness])))
 
 
 ; A config for a simple gimped experiment
@@ -61,38 +61,38 @@
 (defn safe-nth
   [coll idx]
   (if-let [result (try (nth coll idx)
-		       (catch RuntimeException e nil))]
+                       (catch RuntimeException e nil))]
     result
     0))
 
 (def config-maths
      {:function-set [(prim `- 
-			   {:gp-type Number 
-			    :gp-arg-types [Number Number]})
+                           {:gp-type Number 
+                            :gp-arg-types [Number Number]})
 
-		     (prim `+ 
-			   {:gp-type Number 
-			    :gp-arg-types [Number Number]})
+                     (prim `+ 
+                           {:gp-type Number 
+                            :gp-arg-types [Number Number]})
 
-		     (prim `* 
-			   {:gp-type Number 
-			    :gp-arg-types [Number Number]})
+                     (prim `* 
+                           {:gp-type Number 
+                            :gp-arg-types [Number Number]})
 
-		     (prim `count 
-			   {:gp-type Number
-			    :gp-arg-types [::seq]})
+                     (prim `count 
+                           {:gp-type Number
+                            :gp-arg-types [::seq]})
 
-		     (prim `safe-nth
-			   {:gp-type Number
-			    :gp-arg-types [::vector Number]})]
+                     (prim `safe-nth
+                           {:gp-type Number
+                            :gp-arg-types [::vector Number]})]
 
       :terminal-set [(prim `_1 {:gp-type Number})
-		     (prim `_2 {:gp-type Number})
-		     (prim `_3 {:gp-type Number})
-		     4
-		     5
-		     (prim `TEXT {:gp-type ::string})
-		     (prim `VECT {:gp-type ::vector})]
+                     (prim `_2 {:gp-type Number})
+                     (prim `_3 {:gp-type Number})
+                     4
+                     5
+                     (prim `TEXT {:gp-type ::string})
+                     (prim `VECT {:gp-type ::vector})]
       :arg-list []
 
       :func-template-fn (make-func-template 'gp-mather [])
@@ -106,24 +106,24 @@
       :population-size 8
 
       :breeders [{:prob 0.8    :breeder-fn crossover-breeder}
-		 {:prob 0.1    :breeder-fn mutation-breeder}
-		 {:prob 0.1    :breeder-fn reproduction-breeder}]
+                 {:prob 0.1    :breeder-fn mutation-breeder}
+                 {:prob 0.1    :breeder-fn reproduction-breeder}]
 
       :breeding-retries 5
 
       :validate-tree-fn identity
 
       :pop-generation-fn (partial generate-ramped {:max-depth 7
-						   :grow-change 0.5})
+                                                   :grow-change 0.5})
 
       :threads 2
-      :rand-seeds [0 1]			; not used
+      :rand-seeds [0 1]                 ; not used
       :rand-fn-maker make-default-rand
 
-					; supply premade rand-fns instead of
-					; depending on preproc to do this
+                                        ; supply premade rand-fns instead of
+                                        ; depending on preproc to do this
       :rand-fns (map make-default-rand 
-		     (take 2 (repeatedly #(System/currentTimeMillis))))
+                     (take 2 (repeatedly #(System/currentTimeMillis))))
       })
 
 
@@ -137,13 +137,13 @@
 (defn my-gen
   [max-depth method root-type]
   (if-let [tree (try
-		 (generate-tree max-depth
-				method
-				func-set-maths
-				term-set-maths
-				root-type)
-		 (catch RuntimeException e
-		   false))]
+                 (generate-tree max-depth
+                                method
+                                func-set-maths
+                                term-set-maths
+                                root-type)
+                 (catch RuntimeException e
+                   false))]
     tree
     (recur max-depth method root-type)))
 

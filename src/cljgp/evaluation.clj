@@ -9,9 +9,9 @@
 (ns cljgp.evaluation
   "Functionality concerning the evaluation of (populations of) individuals."
   (:use [cljgp.random :only (gp-rand)]
-	cljgp.util
-	[cljgp.tools.logging :only (print-code)]
-	[clojure.contrib.seq-utils :only (partition-all)]))
+        cljgp.util
+        [cljgp.tools.logging :only (print-code)]
+        [clojure.contrib.seq-utils :only (partition-all)]))
 
 ; It's recommended that evaluator functions handle any exceptions they might
 ; expect themselves, for example by catching them and giving the individual a
@@ -37,21 +37,21 @@
   or raw score (eg. for analysis or customized selection)."
   [ind evaluator]
   (let [func (try 
-	      (eval (get-func ind))	; compile tree
-	      (catch Exception e 
-		(report-exception e ind 
-				  "Exception in (eval ..) of individual: ")))
-	result (try 
-		(evaluator func)	; execute user's evaluation
-		(catch Exception e 
-		  (report-exception e ind
-				    "Exception during evaluation: ")))]
+              (eval (get-func ind))     ; compile tree
+              (catch Exception e 
+                (report-exception e ind 
+                                  "Exception in (eval ..) of individual: ")))
+        result (try 
+                (evaluator func)        ; execute user's evaluation
+                (catch Exception e 
+                  (report-exception e ind
+                                    "Exception during evaluation: ")))]
     (cond 
       (map? result) (conj ind result)
       (number? result) (assoc ind :fitness result)
       :else (throw (IllegalArgumentException. 
-		    (str "Evaluator must return number or map. Returned: " 
-			 result))))))
+                    (str "Evaluator must return number or map. Returned: " 
+                         result))))))
 
 ; The doall calls here force the future-related work to happen when (ie. now)
 ; and where (ie. inside bindings) we want the creation/computation to happen.
@@ -60,16 +60,16 @@
   individuals evaluated using the evaluator fn defined in 'run-config. Work is
   divided over worker threads."
   [pop {:as run-config
-	:keys [threads, evaluation-fn, rand-fns]}]
+        :keys [threads, evaluation-fn, rand-fns]}]
   (let [per-future (Math/ceil (/ (count pop) threads))
-	e-fn evaluation-fn]
+        e-fn evaluation-fn]
     (mapcat deref
-	 (doall
-	  (map (fn [inds rand-fn]
-		 (future
-		   (binding [cljgp.random/gp-rand rand-fn]
-		     (doall
-		      (map #(evaluate-individual % e-fn) inds)))))
-	       (partition-all per-future pop)
-	       rand-fns)))))
+         (doall
+          (map (fn [inds rand-fn]
+                 (future
+                   (binding [cljgp.random/gp-rand rand-fn]
+                     (doall
+                      (map #(evaluate-individual % e-fn) inds)))))
+               (partition-all per-future pop)
+               rand-fns)))))
 

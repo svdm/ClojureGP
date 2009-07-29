@@ -32,7 +32,7 @@
     - log-stats
     - reduce-to-summary"
   (:use cljgp.tools.analyse
-	cljgp.util)
+        cljgp.util)
   (:use clojure.contrib.pprint)
   (:import [java.io Writer BufferedWriter FileWriter]))
 
@@ -45,10 +45,10 @@
   "Pretty-prints an evolved function/tree, or an individual/map."
   ([writer show-ns code]
      (write code
-	    :dispatch *code-dispatch*
-	    :suppress-namespaces (false? show-ns)
-	    :pretty true
-	    :stream writer))
+            :dispatch *code-dispatch*
+            :suppress-namespaces (false? show-ns)
+            :pretty true
+            :stream writer))
   ([show-ns code] 
      (print-code true show-ns code))
   ([code]
@@ -59,16 +59,16 @@
   info will be included in the printed tree."
   [show-ns ind]
   (let [added-data (dissoc (into {} ind) ; copy into normal map for dissoc
-			   :gen :fitness :func)]
+                           :gen :fitness :func)]
     (str "Data of individual:\n"
-	 "  Generation: " (:gen ind) "\n"
-	 "  Fitness: " (:fitness ind) "\n"
-	 (when (not (empty? added-data)) 
-	   (str "  Additional data: "
-		(write added-data :stream nil) "\n"))
-	 "  Function:\n"
-	 (print-code nil show-ns (:func ind))
-	 "\n")))
+         "  Generation: " (:gen ind) "\n"
+         "  Fitness: " (:fitness ind) "\n"
+         (when (not (empty? added-data)) 
+           (str "  Additional data: "
+                (write added-data :stream nil) "\n"))
+         "  Function:\n"
+         (print-code nil show-ns (:func ind))
+         "\n")))
 
 (defn print-individual
   "Prints individual to *out*. The 'print-type determines output style, 'show-ns
@@ -107,46 +107,46 @@
   ([generation treestats?]
      (if-let [gen-seq (seq generation)]
        (let [gen-num (:gen (first gen-seq))
-	     stats (:stats-map ^gen-seq)
-	     {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
-	 (str 
-	  (format "Gen %1$03d: Best: %2$.2f -- Worst: %3$.2f -- Avg: %4$.2f\n"
-		  gen-num fit-min fit-max fit-avg)
-	  (when treestats?
-	    (format "\t Trees: avg size: %1$.2f -- avg depth: %2$.2f\n" 
-		    (float (get-stat stats :tree-size-avg)) 
-		    (float (get-stat stats :tree-depth-avg))))))
-       "")))				; generation is nil
+             stats (:stats-map ^gen-seq)
+             {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
+         (str 
+          (format "Gen %1$03d: Best: %2$.2f -- Worst: %3$.2f -- Avg: %4$.2f\n"
+                  gen-num fit-min fit-max fit-avg)
+          (when treestats?
+            (format "\t Trees: avg size: %1$.2f -- avg depth: %2$.2f\n" 
+                    (float (get-stat stats :tree-size-avg)) 
+                    (float (get-stat stats :tree-depth-avg))))))
+       "")))                            ; generation is nil
 
 (defn #^String stat-string-verbose
   "Return a formatted multi-line string with stats on fitness and tree size."
   [generation]
   (if-let [gen-seq (seq generation)]
     (let [gen-num (:gen (first gen-seq))
-	  stats (:stats-map ^gen-seq)
-	  {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
+          stats (:stats-map ^gen-seq)
+          {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
       (format (str 
-	       "=================\n"
-	       "Generation %1$03d\n"
-	       "=================\n"
-	       "Trees:\n"
-	       "  Avg size: \t%2$.4f\n"
-	       "  Avg depth:\t%3$.4f\n"
-	       "\n"
-	       "Fitness:\n"
-	       "  Best:  \t%4$.4f\n"
-	       "  Worst: \t%5$.4f\n"
-	       "  Avg:   \t%6$.4f\n"
-	       "\n"
-	       "Best individual of generation:\n"
-	       (stringify-ind-verbose false (get-stat stats :best-fitness))
-	       "=================\n\n")
-	      gen-num 
-	      (float (get-stat stats :tree-size-avg)) 
-	      (float (get-stat stats :tree-depth-avg))
-	      fit-min
-	      fit-max
-	      fit-avg))
+               "=================\n"
+               "Generation %1$03d\n"
+               "=================\n"
+               "Trees:\n"
+               "  Avg size: \t%2$.4f\n"
+               "  Avg depth:\t%3$.4f\n"
+               "\n"
+               "Fitness:\n"
+               "  Best:  \t%4$.4f\n"
+               "  Worst: \t%5$.4f\n"
+               "  Avg:   \t%6$.4f\n"
+               "\n"
+               "Best individual of generation:\n"
+               (stringify-ind-verbose false (get-stat stats :best-fitness))
+               "=================\n\n")
+              gen-num 
+              (float (get-stat stats :tree-size-avg)) 
+              (float (get-stat stats :tree-depth-avg))
+              fit-min
+              fit-max
+              fit-avg))
     ""))
 
 (defn print-stats
@@ -162,12 +162,12 @@
   ([stat-type generation]
      (when-let [gen (setup-stats-map generation)]
        (let [statfn (condp = stat-type 
-		      :basic stat-string
-		      :basic-trees #(stat-string % true)
-		      :verbose stat-string-verbose)]
-	 (print (statfn gen))
-	 (flush)
-	 gen))))
+                      :basic stat-string
+                      :basic-trees #(stat-string % true)
+                      :verbose stat-string-verbose)]
+         (print (statfn gen))
+         (flush)
+         gen))))
 
 ;;;;
 ;;;; LOGGING STATISTICS
@@ -180,18 +180,18 @@
   (let [writer (BufferedWriter. (FileWriter. filename))]
     (fn file-logger [generation]
       (let [gen (setup-stats-map (seq generation))]
-	(when (seq gen)
-	  (.write writer #^String (stat-string-fn gen))
-	  (when flush-every? 
-	    (.flush writer))
-	  (when (:final ^gen)
-	    (.write writer "\n\nBest individual of final generation:\n")
-	    (.write writer 
-		    (stringify-ind-verbose false 
-					   (get-stat (:stats-map ^gen) 
-						     :best-fitness)))
-	    (.close writer))
-	  gen)))))
+        (when (seq gen)
+          (.write writer #^String (stat-string-fn gen))
+          (when flush-every? 
+            (.flush writer))
+          (when (:final ^gen)
+            (.write writer "\n\nBest individual of final generation:\n")
+            (.write writer 
+                    (stringify-ind-verbose false 
+                                           (get-stat (:stats-map ^gen) 
+                                                     :best-fitness)))
+            (.close writer))
+          gen)))))
 
 
 (defn log-stats
@@ -210,9 +210,9 @@
      (log-stats filename stat-type true))
   ([#^String filename stat-type flush-every?]
      (let [statfn (condp = stat-type 
-		    :basic stat-string
-		    :basic-trees #(stat-string % true)
-		    :verbose stat-string-verbose)]
+                    :basic stat-string
+                    :basic-trees #(stat-string % true)
+                    :verbose stat-string-verbose)]
        (log-stats-writer filename statfn flush-every?))))
 
 ;;;;
@@ -223,17 +223,17 @@
   [summary]
   (let [{:keys [best-ind total-inds running-time]} summary]
     (format (str "\n"
-	         "#################\n"
-		 "  Run complete   \n"
-		 "#################\n"
-		 "Best individual of entire run:\n"
-		 (when best-ind (stringify-ind-verbose false best-ind))
-		 "\nRun statistics:\n"
-		 "  Total time:      %1$.2f msecs\n"
-		 "  Inds. evaluated: %2$d\n"
-		 "#################\n\n")
-	    running-time
-	    total-inds)))
+                 "#################\n"
+                 "  Run complete   \n"
+                 "#################\n"
+                 "Best individual of entire run:\n"
+                 (when best-ind (stringify-ind-verbose false best-ind))
+                 "\nRun statistics:\n"
+                 "  Total time:      %1$.2f msecs\n"
+                 "  Inds. evaluated: %2$d\n"
+                 "#################\n\n")
+            running-time
+            total-inds)))
 
 (defn- print-and-log
   "Appends given 'text to file designated by 'filename, and prints it to
@@ -266,30 +266,30 @@
   after the final generation."
   [log-filename returned-key]
   (let [finalize (fn [smry]
-		   (do 
-		     (print-and-log log-filename
-				    (stringify-summary smry))
-		     (if (= returned-key :summary-map)
-		       smry
-		       (get smry returned-key))))]
+                   (do 
+                     (print-and-log log-filename
+                                    (stringify-summary smry))
+                     (if (= returned-key :summary-map)
+                       smry
+                       (get smry returned-key))))]
     (fn [summary generation]
       (if-let [gen (setup-stats-map generation)]
-	(let [{:keys [best-ind, total-inds, start-time]} summary
-	      stats (:stats-map ^gen)
-	      best-gen (get-stat stats :best-fitness)
-	      best-new (if best-ind
-			 (min-key :fitness best-ind best-gen)
-			 best-gen)
-	      summary-new (assoc summary 
-			    :best-ind best-new
-			    :total-inds (+ total-inds (count gen)))]
-	  (if (:final ^gen)		; if end of run, print summary
-	    (finalize (assoc summary-new
-			:running-time (/ (double (- (System/nanoTime) 
-						    start-time))
-					 1000000.0)))
-	    summary-new))
-	(throw (Exception. "Summarizer got invalid generation."))))))
+        (let [{:keys [best-ind, total-inds, start-time]} summary
+              stats (:stats-map ^gen)
+              best-gen (get-stat stats :best-fitness)
+              best-new (if best-ind
+                         (min-key :fitness best-ind best-gen)
+                         best-gen)
+              summary-new (assoc summary 
+                            :best-ind best-new
+                            :total-inds (+ total-inds (count gen)))]
+          (if (:final ^gen)             ; if end of run, print summary
+            (finalize (assoc summary-new
+                        :running-time (/ (double (- (System/nanoTime) 
+                                                    start-time))
+                                         1000000.0)))
+            summary-new))
+        (throw (Exception. "Summarizer got invalid generation."))))))
 
 (defn reduce-to-summary
   "Consumes a run-sequence of generations, gathers data and prints a report at
@@ -305,10 +305,10 @@
     :summary-map   -> The summary map itself instead of a value from it."
   ([log-filename returned-key run-seq]
      (reduce (create-summarizer log-filename returned-key) 
-	     {:start-time (System/nanoTime)
-	      :best-ind nil
-	      :total-inds 0}
-	     run-seq))
+             {:start-time (System/nanoTime)
+              :best-ind nil
+              :total-inds 0}
+             run-seq))
   ([log-filename run-seq]
      (reduce-to-summary log-filename nil run-seq))
   ([run-seq]

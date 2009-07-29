@@ -8,19 +8,19 @@
 
 (ns test.cljgp.test-config
   (:use clojure.contrib.test-is
-	test.helpers
-	cljgp.config
-	cljgp.util
-	cljgp.core))
+        test.helpers
+        cljgp.config
+        cljgp.util
+        cljgp.core))
 
 (deftest test-prim
   (let [m {:foo 27723 :bar true}]
     (is (= (meta (with-meta 'x m))
-	   (meta (prim 'x m))))))
+           (meta (prim 'x m))))))
 
 (deftest test-make-end
   (let [pop [(assoc (make-individual '() 10) :fitness 5) 
-	     (assoc (make-individual '() 10) :fitness 4.9999)]]
+             (assoc (make-individual '() 10) :fitness 4.9999)]]
     (testing "generation limit"
       (is ((make-end 9) pop))
       (is ((make-end 10) pop))
@@ -34,7 +34,7 @@
 (deftest test-seeds-from-time
   (is (every? number? (take 50 (seeds-from-time))))
   (is (not= ""
-	    (with-out-str (dorun (take 5 (seeds-from-time true)))))))
+            (with-out-str (dorun (take 5 (seeds-from-time true)))))))
 
 (deftest test-strict-every?
   (is (strict-every? true? [true true true]))
@@ -62,11 +62,11 @@
       (is (vte 1))
       (is (not (vte +)))
 
-      (is (not (vte {:sym 'x})))	; old repr.
+      (is (not (vte {:sym 'x})))        ; old repr.
       (is (not (vte [])))))
   (testing "valid-breeder-entry?"
     (let [vbe valid-breeder-entry?
-	  b-fn +]			; any fn will do for the testing
+          b-fn +]                       ; any fn will do for the testing
       (is (vbe {:prob 0.1 :breeder-fn b-fn}))
       (is (not (vbe {})))
       (is (not (vbe [])))
@@ -78,36 +78,36 @@
 (deftest test-check-key
   (let [conf (dissoc config-maths :func-template-fn)]
     (is (= (check-key :foo true? conf)
-	   {:entry nil :type :no-default})
-	"If a key does not exist and there is no default...")
+           {:entry nil :type :no-default})
+        "If a key does not exist and there is no default...")
     (is (= (check-key :breeders (constantly false) conf)
-	   {:entry nil :type :fail})
-	"If key exists but fails test...")
+           {:entry nil :type :fail})
+        "If key exists but fails test...")
     (is (= (check-key :population-size number? conf) 
-	   {:entry [:population-size (:population-size conf)] :type :pass})
-	"If key exists and val passes test...")
+           {:entry [:population-size (:population-size conf)] :type :pass})
+        "If key exists and val passes test...")
     (is (= (quiet (check-key :func-template-fn true? conf)) 
-	   {:entry (find config-defaults :func-template-fn) :type :default})
-	"If key does not exist and default does...")))
+           {:entry (find config-defaults :func-template-fn) :type :default})
+        "If key does not exist and default does...")))
 
 (deftest test-check-config
   (let [conf (dissoc config-maths :func-template-fn)
-	conf-broken (dissoc config-maths :function-set)
-	conf-fail (assoc config-maths :function-set [+])]
+        conf-broken (dissoc config-maths :function-set)
+        conf-fail (assoc config-maths :function-set [+])]
     (is (= (:func-template-fn (check-config conf)) 
-	   (:func-template-fn config-defaults))
-	"Missing key should be replaced by default if one exists.")
+           (:func-template-fn config-defaults))
+        "Missing key should be replaced by default if one exists.")
     (is (seq (:default (:check-results (check-config conf))))
-	":default list should not be empty if a default was used.")
+        ":default list should not be empty if a default was used.")
     (is (seq (:no-default (:check-results (check-config conf-broken))))
-	":no-default list should not be empty if critical keys were missing.")
+        ":no-default list should not be empty if critical keys were missing.")
     (is (seq (:fail (:check-results (check-config conf-fail))))
-	":fail list should not be empty if keys fail their validator.")))
+        ":fail list should not be empty if keys fail their validator.")))
 
 
 (deftest test-assert-constraints
   (let [conf-broken (assoc config-maths :threads 999 :rand-seeds [1 2])]
     (is (seq (:constraint (:check-results (assert-constraints conf-broken))))
-	"Too many threads for the number of seeds should fail.")
+        "Too many threads for the number of seeds should fail.")
     (is (= config-maths (assert-constraints config-maths))
-	"Valid config should be returned with no changes.")))
+        "Valid config should be returned with no changes.")))

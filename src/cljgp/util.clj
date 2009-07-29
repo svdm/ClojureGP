@@ -9,7 +9,7 @@
 (ns cljgp.util
   "Utility functions and macros."
   (:use [cljgp.random :only (pick-rand)]
-	[clojure.contrib.def :only (defvar defalias)]))
+        [clojure.contrib.def :only (defvar defalias)]))
 
 
 (defstruct individual :func :gen :fitness)
@@ -74,10 +74,10 @@
   [num pieces]
   (let [per (Math/ceil (/ num pieces))]
     (loop [s []
-	   n num]
+           n num]
       (if (<= n 0)
-	s
-	(recur (conj s (min per n)) (- n per))))))
+        s
+        (recur (conj s (min per n)) (- n per))))))
 
 (defn gp-type
   "Returns type of given node, which is similar to (:gp-type (first node)) if it
@@ -92,7 +92,7 @@
   without wrapping them in a var."
   [node]
   (let [is-symbol clojure.lang.Symbol
-	is-coll clojure.lang.IPersistentCollection]
+        is-coll clojure.lang.IPersistentCollection]
     (condp instance? node
       is-symbol (:gp-type ^node)
       is-coll   (:gp-type ^(first node))
@@ -105,8 +105,8 @@
   function node), uses metadata of (first node)."
   [node]
   (:gp-arg-types (meta (if (coll? node) 
-		     (first node)
-		     node))))
+                     (first node)
+                     node))))
 
 (defn pick-rand-typed
   "Returns a random item from the collection that is of the given type. 
@@ -125,10 +125,10 @@
     (nil? node) (nil? satisfies)
     (not (coll? node)) (isa? (gp-type node) satisfies)
     :else (and (isa? (gp-type node) satisfies)
-	       (every? true? 
-		       (map valid-types? 
-			    (next node) 
-			    (:gp-arg-types ^(first node)))))))
+               (every? true? 
+                       (map valid-types? 
+                            (next node) 
+                            (:gp-arg-types ^(first node)))))))
 
 ;;; Can be useful for debugging typing problems
 (defn print-types
@@ -138,5 +138,5 @@
   (cond
     (not (coll? node)) [(gp-type node) (:gp-arg-types ^node)]
     :else (cons 
-	   [(gp-type node) (:gp-arg-types ^(first node))]
-	    (doall (map print-types (next node))))))
+           [(gp-type node) (:gp-arg-types ^(first node))]
+            (doall (map print-types (next node))))))

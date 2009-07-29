@@ -19,8 +19,8 @@
 
   See also cljgp.tools.logging."
   (:import [javax.swing JFrame JPanel]
-	   [java.awt Color Graphics Dimension]
-	   [net.quies.math.plot Graph Function ChartStyle ChartType])
+           [java.awt Color Graphics Dimension]
+           [net.quies.math.plot Graph Function ChartStyle ChartType])
   (:use cljgp.tools.analyse))
 
 
@@ -40,34 +40,34 @@
   statistics difficult to discern."
   ([draw-min-only]
      (let [avg-fit-func (new Function "fitness-average")
-	   min-fit-func (new Function "fitness-min")
-	   max-fit-func (new Function "fitness-max")
-	   graph (doto (new Graph)
-		   (.setBackground Color/WHITE)
-		   (.addFunction avg-fit-func (make-style 
-					       (new Color 0 0 255 100)))
-		   (.addFunction max-fit-func (make-style 
-					       (new Color 0 255 0 100)))
-		   (.addFunction min-fit-func (make-style Color/RED)))
-	   frame (doto (new JFrame "cljgp-plot")
-		   (.add graph)
-		   (.setSize 800 600)
-		   (.validate)
-		   (.setVisible true))]
+           min-fit-func (new Function "fitness-min")
+           max-fit-func (new Function "fitness-max")
+           graph (doto (new Graph)
+                   (.setBackground Color/WHITE)
+                   (.addFunction avg-fit-func (make-style 
+                                               (new Color 0 0 255 100)))
+                   (.addFunction max-fit-func (make-style 
+                                               (new Color 0 255 0 100)))
+                   (.addFunction min-fit-func (make-style Color/RED)))
+           frame (doto (new JFrame "cljgp-plot")
+                   (.add graph)
+                   (.setSize 800 600)
+                   (.validate)
+                   (.setVisible true))]
        (fn [generation]
-	 (when-let [gen-seq (setup-stats-map generation)]
-	   (let [;; Capture the JFrame in this closure
-		 gui frame
-		 ;; QN Plot wants BigDecimals for everything
-		 gen-num (bigdec (:gen (first gen-seq)))
-		 stats (:stats-map ^gen-seq)
-		 {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
-	     (.addPoint min-fit-func gen-num (bigdec fit-min))
-	     (when (not draw-min-only)
-	       (.addPoint avg-fit-func gen-num (bigdec fit-avg))
-	       (.addPoint max-fit-func gen-num (bigdec fit-max)))
-	     (doto graph
-	       .render
-	       .repaint)))
-	 generation)))
+         (when-let [gen-seq (setup-stats-map generation)]
+           (let [;; Capture the JFrame in this closure
+                 gui frame
+                 ;; QN Plot wants BigDecimals for everything
+                 gen-num (bigdec (:gen (first gen-seq)))
+                 stats (:stats-map ^gen-seq)
+                 {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
+             (.addPoint min-fit-func gen-num (bigdec fit-min))
+             (when (not draw-min-only)
+               (.addPoint avg-fit-func gen-num (bigdec fit-avg))
+               (.addPoint max-fit-func gen-num (bigdec fit-max)))
+             (doto graph
+               .render
+               .repaint)))
+         generation)))
   ([] (create-fitness-plotter false)))

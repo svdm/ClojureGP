@@ -20,10 +20,10 @@
   [1] http://www.cs.gmu.edu/~eclab/projects/ecj/
   [2] http://garage.cse.msu.edu/software/lil-gp/"
   (:use [cljgp.core :only [generate-run]]
-	[clojure.contrib.def :only [defvar defunbound]]
-	cljgp.util
-	cljgp.config
-	cljgp.tools.logging))
+        [clojure.contrib.def :only [defvar defunbound]]
+        cljgp.util
+        cljgp.config
+        cljgp.tools.logging))
 
 
 ;;;; Trails
@@ -95,12 +95,12 @@
   - :fitness  the fitness value, defined as the number of food items remaining."
   [max-moves func]
   (binding [ant-state (atom {:trail reference-trail
-			     :moves 0
-			     :eaten 0
-			     :pos [0 0]
-			     :dir :right})]
+                             :moves 0
+                             :eaten 0
+                             :pos [0 0]
+                             :dir :right})]
     (while (and (< (:moves @ant-state) max-moves)
-		(< (:eaten @ant-state) trail-food))
+                (< (:eaten @ant-state) trail-food))
       (func))
     (let [{:keys [eaten moves]} @ant-state]
       {:eaten eaten
@@ -109,7 +109,7 @@
 
 ;;;; Helpers
 
-;;; These are a bit messy and too tightly integrated with the ant-state var,
+;;; These are a bit messy and too tightly integrated with the ant-state var
 ;;; hard to use in repl
 
 (defn place
@@ -140,24 +140,24 @@
   [turning facing]
   (condp = turning
     :right (condp = facing
-	     :up :right
-	     :left :up
-	     :down :left
-	     :right :down)
+             :up :right
+             :left :up
+             :down :left
+             :right :down)
     :left  (condp = facing
-	     :up :left
-	     :left :down
-	     :down :right
-	     :right :up)))
+             :up :left
+             :left :down
+             :down :right
+             :right :up)))
 
 (defn perform-turn
   "Mutates the ant-state :dir to turn in the given direction."
   [direction]
   (let [state @ant-state
-	newdir (turn direction (:dir state))
-	newmoves (inc (:moves state))] 
-    (swap! ant-state 
-	   assoc :dir newdir, :moves newmoves)))
+        newdir (turn direction (:dir state))
+        newmoves (inc (:moves state))]
+    (swap! ant-state
+           assoc :dir newdir, :moves newmoves)))
 
 (defn food-ahead?
   "Returns whether there is food ahead of the current position of the ant."
@@ -185,20 +185,20 @@
   (perform-turn :right))
 
 (defn move
-  "Moves the ant into the position ahead of it. If the position contains food,
+  "Moves the ant into the position ahead of it. If the position contains food
   marks it as eaten and increments :eaten count."
   []
   (let [{:keys [pos dir trail eaten moves]} @ant-state
-	newpos (pos-ahead pos dir)]
+        newpos (pos-ahead pos dir)]
     (if (has-food? (place newpos))
-      (swap! ant-state assoc 
-	     :pos newpos
-	     :eaten (inc eaten)
-	     :moves (inc moves)
-	     :trail (assoc-in trail (rseq newpos) 3)) ; 3 = eaten
-      (swap! ant-state assoc 
-	     :pos newpos
-	     :moves (inc moves)))))
+      (swap! ant-state assoc
+             :pos newpos
+             :eaten (inc eaten)
+             :moves (inc moves)
+             :trail (assoc-in trail (rseq newpos) 3)) ; 3 = eaten
+      (swap! ant-state assoc
+             :pos newpos
+             :moves (inc moves)))))
 
 
 ;;; Experiment configuration:
@@ -208,40 +208,40 @@
 (derive ::action ::any)
 
 (def config-ant
-     { 
+     {
       :function-set [(primitive `if-food-ahead
-				{:gp-type ::cond
-				 :gp-arg-types [::action
-						::action]})
+                                {:gp-type ::cond
+                                 :gp-arg-types [::action
+                                                ::action]})
 
-		     ;; "progn2"
-		     (primitive `do
-				{:gp-type ::action
-				 :gp-arg-types [::any
-						::any]})
+                     ;; "progn2"
+                     (primitive `do
+                                {:gp-type ::action
+                                 :gp-arg-types [::any
+                                                ::any]})
 
-		     ;; "progn3"
-		     ;;;; Does not necessarily help in finding a solution
-		     ;; (primitive `do
-		     ;; 		{:gp-type ::action
-		     ;; 		 :gp-arg-types [::any 
-		     ;; 				::any
-		     ;; 				::any]})
+                     ;; "progn3"
+                     ;; Does not necessarily help in finding a solution
+                     ;; (primitive `do
+                     ;;            {:gp-type ::action
+                     ;;             :gp-arg-types [::any
+                     ;;                            ::any
+                     ;;                            ::any]})
 
-		     ;; move/left/right are side-effect functions that do not
-		     ;; take arguments but do need to be applied (hence they are
-		     ;; not in the terminal set)
-		     (primitive `move
-				{:gp-type ::action
-				 :gp-arg-types []})
+                     ;; move/left/right are side-effect functions that do not
+                     ;; take arguments but do need to be applied (hence they are
+                     ;; not in the terminal set)
+                     (primitive `move
+                                {:gp-type ::action
+                                 :gp-arg-types []})
 
-		     (primitive `left
-				{:gp-type ::action
-				 :gp-arg-types []})
+                     (primitive `left
+                                {:gp-type ::action
+                                 :gp-arg-types []})
 
-		     (primitive `right
-				{:gp-type ::action
-				 :gp-arg-types []})]
+                     (primitive `right
+                                {:gp-type ::action
+                                 :gp-arg-types []})]
 
       :terminal-set []
 
@@ -252,13 +252,13 @@
       :population-size 1024
       :end-condition-fn (make-end 50)
       :validate-tree-fn #(and (<= (tree-depth %) 15)
-			      (<= (tree-size %) 30))
-      
+                              (<= (tree-size %) 30))
+
       :threads 2
       :rand-seeds (seeds-from-time true)
 
       ;; Succesful seeds for 2 threads, without the "progn3" version of 'do in
-      ;; the function set: 
+      ;; the function set:
       ;;   [298593938264 975401385660]
       })
 
@@ -271,7 +271,7 @@
   ([print-type]
      (reduce-to-summary
       (map #(print-stats print-type %)
-	   (generate-run config-ant)))))
+           (generate-run config-ant)))))
 
 
 ;;;; Debugging and visualisation of results
@@ -281,13 +281,13 @@
   food."
   []
   (let [{:keys [pos dir trail eaten moves]} @ant-state
-	newpos (pos-ahead pos dir)
-	hasfood (has-food? (place newpos))]
-    (swap! ant-state assoc 
-	   :pos newpos
-	   :eaten (if hasfood (inc eaten) eaten)
-	   :moves (inc moves)
-	   :trail (assoc-in trail (rseq newpos) (if hasfood 3 4)))))
+        newpos (pos-ahead pos dir)
+        hasfood (has-food? (place newpos))]
+    (swap! ant-state assoc
+           :pos newpos
+           :eaten (if hasfood (inc eaten) eaten)
+           :moves (inc moves)
+           :trail (assoc-in trail (rseq newpos) (if hasfood 3 4)))))
 
 (defn trace-ant
   "Like evaluate-ant, but traces the ant's movements on the map by placing \"4\"
@@ -295,13 +295,13 @@
   be traced by following the path of \"3\" and \"4\" markers on the map."
   [max-moves func]
   (binding [ant-state (atom {:trail reference-trail
-			     :moves 0
-			     :eaten 0
-			     :pos [0 0]
-			     :dir :right})
-	    move traced-move]
+                             :moves 0
+                             :eaten 0
+                             :pos [0 0]
+                             :dir :right})
+            move traced-move]
     (while (and (< (:moves @ant-state) max-moves)
-		(< (:eaten @ant-state) trail-food))
+                (< (:eaten @ant-state) trail-food))
       (func))
     (let [{:keys [trail eaten moves]} @ant-state]
       {:trail trail
@@ -314,60 +314,60 @@
 (def ideal-solution
      (fn []
        (if-food-ahead
-	(move)
-	(do
-	  (left)
-	  (do
-	    (if-food-ahead
-	     (move)
-	     (right))
-	    (do (right)
-		(do (left)
-		    (right))))
-	  (do (if-food-ahead
-	       (move)
-	       (left))
-	      (move))))))
+        (move)
+        (do
+          (left)
+          (do
+            (if-food-ahead
+             (move)
+             (right))
+            (do (right)
+                (do (left)
+                    (right))))
+          (do (if-food-ahead
+               (move)
+               (left))
+              (move))))))
 
 ;; The following program evolved using the above configuration (see the example
 ;; seeds) also solves it in 600 steps
 (def evolved-solution
      (fn []
        (do
-	 (do
-	   (do
-	     (left)
-	     (if-food-ahead
-	      (do
-		(if-food-ahead
-		 (do (if-food-ahead (move) 
-				    (right)) 
-		     (move))
-		 (right))
-		(move))
-	      (do 
-		(if-food-ahead (move) 
-			       (right)) 
-		(move))))
-	   (right))
-	 (if-food-ahead (move) 
-			(left)))))
+         (do
+           (do
+             (left)
+             (if-food-ahead
+              (do
+                (if-food-ahead
+                 (do (if-food-ahead (move)
+                                    (right))
+                     (move))
+                 (right))
+                (move))
+              (do
+                (if-food-ahead (move)
+                               (right))
+                (move))))
+           (right))
+         (if-food-ahead (move)
+                        (left)))))
 
 
 ;; Simplified version of the evolved solution with excess code removed
 (def evolved-simplified
      (fn []
        (do
-	 (left)
-	 (if-food-ahead
-	  (do			
-	    (move) 
-	    (move)
-	    (move))
-	  (do			
-	    (right) 
-	    (move)))
-	 (right)
-	 (if-food-ahead 
-	  (move) 
-	  (left)))))
+         (left)
+         (if-food-ahead
+          (do
+            (move)
+            (move)
+            (move))
+          (do
+            (right)
+            (move)))
+         (right)
+         (if-food-ahead
+          (move)
+          (left)))))
