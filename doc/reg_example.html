@@ -6,7 +6,7 @@ lang="en" xml:lang="en">
 <title>ClojureGP: Experiment example</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-07-27 21:06:29 "/>
+<meta name="generated" content="2009-07-30 15:05:14 "/>
 <meta name="author" content="Stefan van der Meer"/>
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
@@ -134,10 +134,10 @@ technical requirement. Still, for this tutorial, let's do it properly:
 <pre class="src src-clojure">
 (<span style="color: #4477FF; font-weight: bold;">ns</span> regression
   (<span style="color: #AABBFF;">:use</span> [cljgp.core <span style="color: #AABBFF;">:only</span> [generate-run]]
-        [cljgp.config <span style="color: #AABBFF;">:only</span> [prim, make-func-template]]
-        [cljgp.random <span style="color: #AABBFF;">:only</span> [gp-rand]]
-        [cljgp.util <span style="color: #AABBFF;">:only</span> [tree-depth]]
-        [cljgp.tools.logging <span style="color: #AABBFF;">:only</span> [print-stats, reduce-to-summary]]))
+    [cljgp.config <span style="color: #AABBFF;">:only</span> [prim, make-func-template]]
+    [cljgp.random <span style="color: #AABBFF;">:only</span> [gp-rand]]
+    [cljgp.util <span style="color: #AABBFF;">:only</span> [tree-depth]]
+    [cljgp.tools.logging <span style="color: #AABBFF;">:only</span> [print-stats, reduce-to-summary]]))
 </pre>
 
 
@@ -180,10 +180,10 @@ The following function evaluates a given evolved function on a single random <co
   <span style="color: #AA44AA; background-color: #231323;">"Evaluate the given function on a single result, returning the abs error."</span>
   [func]
   (<span style="color: #4477FF; font-weight: bold;">let</span> [x (gp-rand)
-        y (gp-rand)
-        target (+ 
-                (+ (* (* x x) (* y y)) (* (* x x) (* x x)))
-                (* x y))                <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">z = x^2 * y^2 + x^4 + xy
+    y (gp-rand)
+    target (+
+        (+ (* (* x x) (* y y)) (* (* x x) (* x x)))
+        (* x y))        <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">z = x^2 * y^2 + x^4 + xy
 </span>        result (func x y)]
     (Math/abs (<span style="color: #AABBFF;">float</span> (- target result)))))
 </pre>
@@ -311,22 +311,22 @@ evaluation function to use, to how many threads it should run in.
 (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
      {
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Some mathematical operators
-</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> Number 
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> Number
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
 
-                     (prim `+ {<span style="color: #AABBFF;">:gp-type</span> Number 
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+             (prim `+ {<span style="color: #AABBFF;">:gp-type</span> Number
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
 
-                     (prim `* {<span style="color: #AABBFF;">:gp-type</span> Number 
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})]
+             (prim `* {<span style="color: #AABBFF;">:gp-type</span> Number
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">The two variables in the equation
 </span>      <span style="color: #AABBFF;">:terminal-set</span> [(prim 'x {<span style="color: #AABBFF;">:gp-type</span> Number})
 
-                     (prim 'y {<span style="color: #AABBFF;">:gp-type</span> Number})]
+             (prim 'y {<span style="color: #AABBFF;">:gp-type</span> Number})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">More to come...
-</span>      ... 
+</span>      ...
       })
 </pre>
 
@@ -516,19 +516,19 @@ arbitrary integers.
 (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
      {
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Some mathematical operators
-</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> Number 
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> Number
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
 
-                     (prim `+ {<span style="color: #AABBFF;">:gp-type</span> Number 
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+             (prim `+ {<span style="color: #AABBFF;">:gp-type</span> Number
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
 
-                     (prim `* {<span style="color: #AABBFF;">:gp-type</span> Number 
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})]
+             (prim `* {<span style="color: #AABBFF;">:gp-type</span> Number
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">The two variables in the equation
 </span>      <span style="color: #AABBFF;">:terminal-set</span> [(prim 'x {<span style="color: #AABBFF;">:gp-type</span> Number})
 
-                     (prim 'y {<span style="color: #AABBFF;">:gp-type</span> Number})]
+             (prim 'y {<span style="color: #AABBFF;">:gp-type</span> Number})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Evolved functions must return a number
 </span>      <span style="color: #AABBFF;">:root-type</span> Number
@@ -597,7 +597,7 @@ interesting information on the way:
   []
   (reduce-to-summary
    (<span style="color: #AABBFF;">map</span> print-stats
-        (generate-run config-reg))))
+    (generate-run config-reg))))
 </pre>
 
 
@@ -641,7 +641,9 @@ java -cp .;../src/;../lib/* clojure.lang.Repl reg_exp.clj
 
 
 
-
+<p>
+(Replacing <code>;</code> with <code>:</code> in the classpath when on Linux.)
+</p>
 <p>
 The ClojureGP source should be in <b>../src/</b> (relative to the examples
 directory), and the required .jar packages (<b>clojure.jar</b> and
@@ -680,7 +682,7 @@ Gen 015: Best: 0.18 -- Worst: 13.83 -- Avg: 1.99
 Gen 016: Best: 0.00 -- Worst: 9.96 -- Avg: 1.59
 
 #################
-  Run complete   
+  Run complete
 #################
 Best individual of entire run:
 Data of individual:
@@ -695,7 +697,7 @@ Run statistics:
 #################
 
 nil
-user=&gt; 
+user=&gt;
 </pre>
 
 
@@ -743,7 +745,7 @@ to 0.
 <div id="postamble"><p class="author"> Author: Stefan van der Meer
 <a href="mailto:stefanvandermeerREMOVE@THISgmail.com">&lt;stefanvandermeerREMOVE@THISgmail.com&gt;</a>
 </p>
-<p class="date"> Date: 2009-07-27 21:06:29 </p>
+<p class="date"> Date: 2009-07-30 15:05:14 </p>
 <p>HTML generated by org-mode 6.21b in emacs 23</p>
 </div></body>
 </html>
