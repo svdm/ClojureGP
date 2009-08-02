@@ -23,9 +23,12 @@
   (int (* n (gp-rand))))
 
 (defn pick-rand
-  "Returns a random item from the given collection."
+  "Returns a random item from the given list, vector, seq or set."
   [coll]
-  (nth (seq coll) (gp-rand-int (count coll)) nil))
+  (nth (if (sequential? coll)
+         coll
+         (seq coll))
+       (gp-rand-int (count coll))))
 
 (defmacro rand-fn
   "Macro that takes a method name and an expression returning a new instance of
@@ -42,7 +45,7 @@
 
   Also useful, for easily creating several seeded PRNG-fns for a threaded
   experiment: (map #(rand-fn nextDouble (Random. %)) [1234 8472 9000])."
-  ([method rng] 
+  ([method rng]
      `(let [r# ~rng]
         (fn [] (. r# ~method))))
   ([rng]
