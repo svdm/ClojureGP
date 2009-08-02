@@ -14,15 +14,15 @@
         cljgp.random
         cljgp.util))
 
-(declare crossover-individuals crossover-uniform 
+(declare crossover-individuals crossover-uniform
          mutate-individual reproduce-individual)
 
 ;;;; Breeder-fns
 
 (defn crossover-breeder
   "Selects two individuals from pop by applying the selection-fn specified in
-   run-config to it twice, performs crossover and returns seq of two resulting
-   new trees."
+   run-config to it twice, performs subtree crossover and returns seq of two
+   resulting new trees."
   [pop {:as run-config,
         select :selection-fn}]
   (crossover-individuals crossover-uniform
@@ -31,9 +31,10 @@
 
 (defn mutation-breeder
   "Selects an individual from pop by applying selection-fn specified in the
-  run-config to it, performs mutation and returns seq with the single resulting
-  tree in it. Mutation will pull nodes from the function and terminal sets
-  specified in run-config. Generated (sub)tree will be at most max-depth deep."
+  run-config to it, performs subtree mutation and returns seq with the single
+  resulting tree in it. Mutation will use nodes from the function and terminal
+  sets specified in run-config. Generated (sub)tree will be at most max-depth
+  deep."
   ([{max-depth :max-depth, :or {max-depth 17}} ; extra configuration
     pop {:as run-config,
          select :selection-fn}]
@@ -63,13 +64,13 @@
   (loop [typestack (list root-type)
          i (int index)
          nodes treeseq]
-    (cond 
+    (cond
       (== i 0) (first typestack)
       (seq nodes) (recur (concat (gp-arg-type (first nodes))
                                  (rest typestack))
                          (dec i)
                          (rest nodes))
-      :else (throw (IndexOutOfBoundsException. 
+      :else (throw (IndexOutOfBoundsException.
                     "Index out of bounds of treeseq.")))))
 
 ;;; Some of the low-level tree handling functions use a somewhat ugly
@@ -161,7 +162,7 @@
   'crossover-fn. Returns seq of two new individuals. If crossover-fn returns
   nil after the number of breeding retries configured in the 'run-config, then
   the given individuals are reproduced directly."
-  [crossover-fn inds {:as run-config
+  [crossover-fn inds {:as run-config,
                       :keys [validate-tree-fn func-template-fn
                              breeding-retries root-type]}]
   (let [orig-trees (map (comp get-fn-body get-func) inds)
@@ -176,16 +177,16 @@
 (defn mutate-individual
   "Performs mutation on given individual's tree. Returns seq with the new
   individual as single element (for easy compatibility with crossover-ind)."
-  [ind max-depth {:as run-config
+  [ind max-depth {:as run-config,
                   :keys [validate-tree-fn breeding-retries func-template-fn
                          function-set terminal-set root-type]}]
-  (let [orig (get-fn-body (get-func ind))
-        new (get-valid validate-tree-fn breeding-retries
-                       #(mutate orig 
+  (let [parent (get-fn-body (get-func ind))
+        child (get-valid validate-tree-fn breeding-retries
+                       #(mutate parent
                                 max-depth
                                 function-set terminal-set
                                 root-type))
-        tree (if (nil? new) orig new)
+        tree (if (nil? child) parent child)
         gen (inc (get-gen ind))]
     [(make-individual (func-template-fn tree) gen)]))
 
@@ -212,7 +213,7 @@
   increasing summation, eg. three sources with probabilities [0.1 0.5 0.4] will
   become [0.1 0.6 1.0]. This makes source selection fast and easy. Probabilities
   have to add up to 1.0."
-  [breeders] 
+  [breeders]
   (let [pr (fn process [bs p]
              (when-let [s (seq bs)]
                (let [b (first bs)
@@ -239,7 +240,7 @@
         breed-generator (fn breed-new []
                           (lazy-seq
                             (when-let [breed (:breeder-fn (select-breeder bs))]
-                              (concat (breed pop-evaluated run-config) 
+                              (concat (breed pop-evaluated run-config)
                                       (breed-new)))))]
     (mapcat deref
             (doall
