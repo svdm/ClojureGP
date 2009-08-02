@@ -71,6 +71,13 @@
                      rtype)]
     (full-tree-test tree)))
 
+(deftest test-hoist-mutate
+  (let [parent (my-gen 4 :full rtype)
+        tree (hoist-mutate parent rtype)]
+    (full-tree-test tree)
+    (is (some #{tree} (make-tree-seq parent))
+        "Hoisted tree must be subtree of parent.")))
+
 (defn test-inds
   [inds gen-old num-expected]
   (let [trees (map #(get-fn-body (:func %)) inds)]
@@ -99,6 +106,13 @@
         ind (mutate-individual 
              (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
              17
+             config-maths)]
+    (test-inds ind gen-old 1)))
+
+(deftest test-hoist-ind
+  (let [gen-old 0
+        ind (hoist-individual
+             (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
              config-maths)]
     (test-inds ind gen-old 1)))
 

@@ -50,6 +50,17 @@
         select :selection-fn}]
   (reproduce-individual (select pop) run-config))
 
+(defn hoist-breeder
+  "Selects an individual from pop by applying the selection-fn specified in the
+  given run-config to it. Performs a hoist mutation and returns seq with the
+  single resulting individual in it.
+
+  Hoist mutation will create a new individual which is a copy of a randomly
+  selected subtree of the parent. Essentially picks a random point in the tree
+  and \"hoists\" it into the root position. The aim is to reduce tree size."
+  [pop {:as run-config
+        select :selection-fn}]
+  (hoist-individual (select pop) run-config))
 
 ;;;; Breeder internals
 
@@ -157,6 +168,30 @@
       nil
       (tree-replace idx subtree tree))))
 
+(defn hoist-mutate
+  "Performs hoist mutation on the given tree, selecting a random subtree (never
+  the current root) and returning it as the new tree."
+  [tree root-type]
+  (let [tree-seq (make-tree-seq tree)
+        subtrees (filter #(isa? (gp-type %) root-type) 
+                         (drop 1 tree-seq))]
+    (if-let [options (seq subtrees)]
+      (pick-rand subtrees)
+      nil)))
+
+(defn hoist-individual
+  "Performs hoist mutation using the given individual's tree. Returns seq with a
+  new individual as its only element. The new individual's tree will be a
+  randomly selected subtree of the parent."
+  [ind {:as run-config
+        :keys [validate-tree-fn breeding-retries func-template-fn root-type]}]
+  (let [parent (get-fn-body (get-func ind))
+        child (get-valid validate-tree-fn breeding-retries
+                         #(hoist-mutate parent root-type))
+        tree (if (nil? child) parent child)
+        gen (inc (get-gen ind))]
+    [(make-individual (func-template-fn tree) gen)]))
+
 (defn crossover-individuals
   "Performs a crossover operation on the given individuals using given
   'crossover-fn. Returns seq of two new individuals. If crossover-fn returns
@@ -182,19 +217,19 @@
                          function-set terminal-set root-type]}]
   (let [parent (get-fn-body (get-func ind))
         child (get-valid validate-tree-fn breeding-retries
-                       #(mutate parent
-                                max-depth
-                                function-set terminal-set
-                                root-type))
+                         #(mutate parent
+                                  max-depth
+                                  function-set terminal-set
+                                  root-type))
         tree (if (nil? child) parent child)
         gen (inc (get-gen ind))]
     [(make-individual (func-template-fn tree) gen)]))
 
 
-; The reason why we can't just assoc a new gen into the individual is that
-; other keys may have been added earlier (eg. a :fitness value) that should
-; not exist on a newly bred individual. We could explicitly unset those but
-; that would take otherwise unnecessary maintenance if more keys turn up.
+;;; The reason why we can't just assoc a new gen into the individual is that
+;;; other keys may have been added earlier (eg. a :fitness value) that should
+;;; not exist on a newly bred individual. We could explicitly unset those but
+;;; that would take otherwise unnecessary maintenance if more keys turn up.
 (defn reproduce-individual
   "Performs direct reproduction, ie. breeds a new individual by directly copying
   the given individual's tree. Returns seq with new individual as single
