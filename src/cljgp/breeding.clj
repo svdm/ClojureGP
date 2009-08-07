@@ -15,7 +15,7 @@
         cljgp.util))
 
 (declare crossover-individuals crossover-uniform
-         mutate-individual reproduce-individual)
+         mutate-individual reproduce-individual hoist-individual)
 
 ;;;; Breeder-fns
 
@@ -58,7 +58,7 @@
   Hoist mutation will create a new individual which is a copy of a randomly
   selected subtree of the parent. Essentially picks a random point in the tree
   and \"hoists\" it into the root position. The aim is to reduce tree size."
-  [pop {:as run-config
+  [pop {:as run-config,
         select :selection-fn}]
   (hoist-individual (select pop) run-config))
 

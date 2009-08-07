@@ -25,7 +25,8 @@
 (defn pick-rand
   "Returns a random item from the given list, vector, seq or set."
   [coll]
-  (nth (if (sequential? coll)
+  (nth (if (and (sequential? coll) 
+                (seq coll))             ; because nth errors for (nth [] 0)
          coll
          (seq coll))
        (gp-rand-int (count coll))))

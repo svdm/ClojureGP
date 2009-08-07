@@ -69,7 +69,8 @@
                      func-set-maths
                      term-set-maths
                      rtype)]
-    (full-tree-test tree)))
+    (when (not (nil? tree)) 
+      (full-tree-test tree))))
 
 (deftest test-hoist-mutate
   (let [parent (my-gen 4 :full rtype)
