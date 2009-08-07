@@ -109,7 +109,7 @@
                  {:prob 0.1    :breeder-fn mutation-breeder}
                  {:prob 0.1    :breeder-fn reproduction-breeder}]
 
-      :breeding-retries 5
+      :breeding-retries 50
 
       :validate-tree-fn identity
 

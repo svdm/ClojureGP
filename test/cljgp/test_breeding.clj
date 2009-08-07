@@ -64,12 +64,15 @@
         (doseq [tree typetrees]
           (full-tree-test tree))))))
 
+;;; These breeder fns that may validly return nil depending on rand, should
+;;; really be tested multiple times...
+
 (deftest test-mutate
   (let [tree (mutate (my-gen 4 :full rtype) 17
                      func-set-maths
                      term-set-maths
                      rtype)]
-    (when (not (nil? tree)) 
+    (when (seq tree) 
       (full-tree-test tree))))
 
 (deftest test-hoist-mutate
@@ -78,6 +81,17 @@
     (full-tree-test tree)
     (is (some #{tree} (make-tree-seq parent))
         "Hoisted tree must be subtree of parent.")))
+
+(deftest test-point-mutate
+  (let [parent (my-gen 6 :full rtype)
+        tree (point-mutate parent func-set-maths term-set-maths rtype)]
+    (when (seq tree)
+      (full-tree-test tree)
+      (is (not= parent tree)
+          "New tree must differ from parent.")
+      (is (== (tree-size parent) (tree-size tree))
+          "New tree must have the same structure as parent, and therefore be of
+          the same size."))))
 
 (defn test-inds
   [inds gen-old num-expected]
@@ -113,6 +127,13 @@
 (deftest test-hoist-ind
   (let [gen-old 0
         ind (hoist-individual
+             (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
+             config-maths)]
+    (test-inds ind gen-old 1)))
+
+(deftest test-point-mutate-ind
+  (let [gen-old 0
+        ind (point-mutate-individual
              (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
              config-maths)]
     (test-inds ind gen-old 1)))

@@ -15,7 +15,8 @@
         cljgp.util))
 
 (declare crossover-individuals crossover-uniform
-         mutate-individual reproduce-individual hoist-individual)
+         mutate-individual reproduce-individual 
+         hoist-individual point-mutate-individual)
 
 ;;;; Breeder-fns
 
@@ -61,6 +62,18 @@
   [pop {:as run-config,
         select :selection-fn}]
   (hoist-individual (select pop) run-config))
+
+(defn point-mutation-breeder
+  "Selects an individual from pop by applying the selection-fn specified in the
+  given run-config to it. Performs a point mutation and returns seq with the
+  single resulting individual in it.
+
+  Point mutation will replace a node in the tree with a different one without
+  modifying the rest of the tree. This is only useful if multiple function and
+  terminal nodes exist with identical (gp-)types, arg counts and arg types."
+  [pop {:as run-config,
+        select :selection-fn}]
+  (point-mutate-individual (select pop) run-config))
 
 ;;;; Breeder internals
 
@@ -178,6 +191,53 @@
     (if-let [options (seq subtrees)]
       (pick-rand subtrees)
       nil)))
+
+(defn point-mutate
+  "Performs point mutation on the given tree, selecting a random node and
+  attempting to replace it with a different one, without modifying the rest of
+  the tree."
+  [tree function-set terminal-set root-type]
+  (let [tree-seq (make-tree-seq tree)
+        idx (gp-rand-int (count tree-seq))
+        pick (nth tree-seq idx)
+        pick-type (parent-arg-type idx root-type tree-seq)
+        pick-argtypes (gp-arg-type pick)
+        pick-sym (if (coll? pick) (first pick) pick)
+        same-types? (fn [sym]
+                      (let [sym-type (gp-type sym)
+                            sym-argtypes (gp-arg-type sym)]
+                        (and (not= pick-sym sym) ; never pick same symbol!
+                             (isa? (gp-type sym) pick-type)
+                             (== (count sym-argtypes) (count pick-argtypes))
+                             (every? true? (map isa? 
+                                                sym-argtypes 
+                                                pick-argtypes)))))]
+    (when-let [options (seq (filter same-types? (if (coll? pick)
+                                                  function-set
+                                                  terminal-set)))]
+      (let [selected (pick-rand options)
+            ;; cons the original node's subtree back on
+            replacement (if (coll? pick)
+                          (cons selected (next pick))
+                          selected)] 
+        (tree-replace idx replacement tree)))))
+
+
+(defn point-mutate-individual
+  "Performs point mutation using the given individual's tree. Returns seq with a
+  new individual as its only element. The new individual's tree will have a
+  single node replaced with a different one without modifying the rest of the
+  tree."
+  [ind {:as run-config
+        :keys [validate-tree-fn breeding-retries func-template-fn 
+               function-set terminal-set root-type]}]
+  (let [parent (get-fn-body (get-func ind))
+        child (get-valid validate-tree-fn breeding-retries
+                         #(point-mutate parent 
+                                        function-set terminal-set root-type))
+        tree (if (nil? child) parent child)
+        gen (inc (get-gen ind))]
+    [(make-individual (func-template-fn tree) gen)]))
 
 (defn hoist-individual
   "Performs hoist mutation using the given individual's tree. Returns seq with a
