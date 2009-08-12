@@ -40,7 +40,7 @@
   [seed]
   (if (number? seed)
     (make-unc-math-rand (long-to-random-bytes seed))
-    (rand-fn nextDouble (new MersenneTwisterRNG seed))))
+    (rand-fn nextDouble (new MersenneTwisterRNG #^bytes seed))))
 
 ; Where all rand-fn does is create a closure with the seeded PRNG: 
 ;(let [rng (new MersenneTwisterRNG seed)] 
