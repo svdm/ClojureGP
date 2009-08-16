@@ -20,7 +20,7 @@
 (defn gp-rand-int
   "Identical to clojure.core/rand-int, but using gp-rand internally."
   [n]
-  (int (* n (gp-rand))))
+  (long (* n (gp-rand))))
 
 (defn pick-rand
   "Returns a random item from the given list, vector, seq or set."
