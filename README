@@ -13,6 +13,20 @@ Usage
 Please refer to the included documentation and examples in the `./doc/` and
 `./examples/` directories.
 
+To see a basic genetic programming run in action, load one of the example
+experiments as follows, using a terminal/command prompt at the repository root:
+
+`$ java -cp ./examples/;./src/;./lib/* clojure.lang.Repl examples/reg_exp.clj `
+
+Then call the `run` function from the Clojure REPL:
+
+`  Clojure 1.0.0 `  
+`  user=> (reg-exp/run)  `  
+
+This same example experiment is discussed in `./doc/reg_example.html`.
+
+*NOTE:* On Linux versions of the JVM, replace the ; in the classpath with : (so
+ semicolons to colons).
 
 Dependencies
 ------------
