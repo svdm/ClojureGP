@@ -16,7 +16,8 @@
 
 (declare crossover-individuals crossover-uniform
          mutate-individual reproduce-individual 
-         hoist-individual point-mutate-individual)
+         hoist-individual point-mutate-individual
+         shrink-individual)
 
 ;;;; Breeder-fns
 
@@ -74,6 +75,17 @@
   [pop {:as run-config,
         select :selection-fn}]
   (point-mutate-individual (select pop) run-config))
+
+(defn shrink-breeder
+  "Selects an individual from pop by applying the selection-fn specified in the
+  given run-config to it. Performs a shrink mutation and returns seq with the
+  single resulting individual in it.
+
+  Shrink mutation will replace a non-terminal (function) node with a new
+  terminal node selected from the terminal set. The aim is to shrink the tree."
+  [pop {:as run-config,
+        select :selection-fn}]
+  (shrink-individual (select pop) run-config))
 
 ;;;; Breeder internals
 
@@ -222,13 +234,47 @@
                           selected)] 
         (tree-replace idx replacement tree)))))
 
+(defn shrink-mutate
+  "Performs shrink mutation on the given tree, selecting a random node with
+  children (non-terminal), and replacing it with a terminal without children."
+  [tree terminal-set root-type]
+  (let [tree-seq (make-tree-seq tree)
+        nonterm-indices (filter number?
+                                (map (fn [node idx] (when (and (coll? node)
+                                                               (next node))
+                                                      idx)) 
+                                     tree-seq
+                                     (range (count tree-seq))))
+        idx (pick-rand nonterm-indices)
+        pick (nth tree-seq idx)
+        pick-type (parent-arg-type idx root-type tree-seq)]
+    (when-let [options (seq (filter #(isa? (gp-type %) pick-type)
+                                    terminal-set))]
+      (tree-replace idx (pick-rand options) tree))))
+
+;;; TODO: the mutation -individual fns have significant amounts of identical
+;;; code that should be extracted
+
+(defn shrink-individual
+  "Performs shrink mutation on the given individual's tree. Returns seq with a
+  new individual as its only element. The new individual's tree will have one
+  non-terminal node replaced with a new terminal node."
+  [ind {:as run-config,
+        :keys [validate-tree-fn breeding-retries func-template-fn
+               terminal-set root-type]}]
+  (let [parent (get-fn-body (get-func ind))
+        child (get-valid validate-tree-fn breeding-retries
+                         #(shrink-mutate parent terminal-set root-type))
+        tree (if (nil? child) parent child)
+        gen (inc (get-gen ind))]
+    [(make-individual (func-template-fn tree) gen)]))
 
 (defn point-mutate-individual
   "Performs point mutation using the given individual's tree. Returns seq with a
   new individual as its only element. The new individual's tree will have a
   single node replaced with a different one without modifying the rest of the
   tree."
-  [ind {:as run-config
+  [ind {:as run-config,
         :keys [validate-tree-fn breeding-retries func-template-fn 
                function-set terminal-set root-type]}]
   (let [parent (get-fn-body (get-func ind))
@@ -243,7 +289,7 @@
   "Performs hoist mutation using the given individual's tree. Returns seq with a
   new individual as its only element. The new individual's tree will be a
   randomly selected subtree of the parent."
-  [ind {:as run-config
+  [ind {:as run-config,
         :keys [validate-tree-fn breeding-retries func-template-fn root-type]}]
   (let [parent (get-fn-body (get-func ind))
         child (get-valid validate-tree-fn breeding-retries

@@ -93,6 +93,16 @@
           "New tree must have the same structure as parent, and therefore be of
           the same size."))))
 
+(deftest test-shrink-mutate
+  (let [parent (my-gen 6 :full rtype)
+        tree (shrink-mutate parent term-set-maths rtype)]
+    (when (seq tree)
+      (full-tree-test tree)
+      (is (not= parent tree)
+          "New tree must differ from parent.")
+      (is (> (tree-size parent) (tree-size tree))
+          "New tree must be smaller than parent."))))
+
 (defn test-inds
   [inds gen-old num-expected]
   (let [trees (map #(get-fn-body (:func %)) inds)]
@@ -134,6 +144,13 @@
 (deftest test-point-mutate-ind
   (let [gen-old 0
         ind (point-mutate-individual
+             (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
+             config-maths)]
+    (test-inds ind gen-old 1)))
+
+(deftest test-shrink-ind
+  (let [gen-old 0
+        ind (shrink-individual
              (make-individual (my-tpl (my-gen 4 :full rtype)) gen-old)
              config-maths)]
     (test-inds ind gen-old 1)))
