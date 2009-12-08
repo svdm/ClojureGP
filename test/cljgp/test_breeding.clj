@@ -72,7 +72,7 @@
                      func-set-maths
                      term-set-maths
                      rtype)]
-    (when (seq tree) 
+    (when (not (nil? tree)) 
       (full-tree-test tree))))
 
 (deftest test-hoist-mutate
@@ -85,7 +85,7 @@
 (deftest test-point-mutate
   (let [parent (my-gen 6 :full rtype)
         tree (point-mutate parent func-set-maths term-set-maths rtype)]
-    (when (seq tree)
+    (when (not (nil? tree))
       (full-tree-test tree)
       (is (not= parent tree)
           "New tree must differ from parent.")
@@ -96,7 +96,7 @@
 (deftest test-shrink-mutate
   (let [parent (my-gen 6 :full rtype)
         tree (shrink-mutate parent term-set-maths rtype)]
-    (when (seq tree)
+    (when (not (nil? tree))
       (full-tree-test tree)
       (is (not= parent tree)
           "New tree must differ from parent.")

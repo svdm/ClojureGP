@@ -99,7 +99,7 @@
 
       :root-type Number
       
-      :evaluation-fn (fn [x] (rand))
+      :evaluation-fn (fn [func ind] (rand))
       :selection-fn (partial tournament-select {:size 3})
 
       :end-condition-fn (make-end 50)

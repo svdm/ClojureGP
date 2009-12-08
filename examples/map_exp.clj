@@ -109,7 +109,7 @@
 (defn evaluate-map
   "Evaluates a given map function on the trials. Returns a fitness equal to the
   sum of the scores obtained for each trial using score-result."
-  [gp-map]
+  [gp-map ind]
   (let [results (map #(evaluate-map-single gp-map %) trials)
         errs (doall (map #(score-result %1 %2) results solutions))]
     (reduce + errs)))

@@ -58,7 +58,7 @@
 (defn evaluate-stgp-nth
   "Evaluates the performance of an evolved function and returns a fitness
   value."
-  [stgpnth]
+  [stgpnth ind]
   (binding [var-1 (atom [])]            ; local atom storage "variable"
     (let [c (vec (range 0 50))
           evl (fn [idx]

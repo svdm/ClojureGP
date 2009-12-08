@@ -30,7 +30,7 @@
 
 (defn evaluate-reg
   "Evaluate the given function on multiple results and return a fitness."
-  [func]
+  [func ind]
   (reduce + (take 10 (repeatedly #(test-reg-once func)))))
 
 ;;; The only values we will need for regression are numbers, hence we can simply

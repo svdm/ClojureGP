@@ -93,7 +93,7 @@
   - :eaten    the number of food bits eaten
   - :moves    the number of actions performed
   - :fitness  the fitness value, defined as the number of food items remaining."
-  [max-moves func]
+  [max-moves func ind]
   (binding [ant-state (atom {:trail reference-trail
                              :moves 0
                              :eaten 0
@@ -247,7 +247,7 @@
 
       :root-type ::any
 
-      :evaluation-fn #(evaluate-ant 600 %)
+      :evaluation-fn #(evaluate-ant 600 %1 %2)
 
       :population-size 1024
       :end-condition-fn (make-end 50)
@@ -293,21 +293,23 @@
   "Like evaluate-ant, but traces the ant's movements on the map by placing \"4\"
   markers on points it visits that do not contain food. The ant's route can then
   be traced by following the path of \"3\" and \"4\" markers on the map."
-  [max-moves func]
-  (binding [ant-state (atom {:trail reference-trail
-                             :moves 0
-                             :eaten 0
-                             :pos [0 0]
-                             :dir :right})
-            move traced-move]
-    (while (and (< (:moves @ant-state) max-moves)
-                (< (:eaten @ant-state) trail-food))
-      (func))
-    (let [{:keys [trail eaten moves]} @ant-state]
-      {:trail trail
-       :eaten eaten
-       :moves moves
-       :fitness (- trail-food eaten)})))
+  ([max-moves func]
+     (binding [ant-state (atom {:trail reference-trail
+                                :moves 0
+                                :eaten 0
+                                :pos [0 0]
+                                :dir :right})
+               move traced-move]
+       (while (and (< (:moves @ant-state) max-moves)
+                   (< (:eaten @ant-state) trail-food))
+         (func))
+       (let [{:keys [trail eaten moves]} @ant-state]
+         {:trail trail
+          :eaten eaten
+          :moves moves
+          :fitness (- trail-food eaten)})))
+  ([max-moves func ind]
+     (trace-ant max-moves func)))
 
 ;;; The following program solves the problem in 600 steps. It's the solution
 ;;; given by Koza in his description of the experiment.

@@ -42,7 +42,7 @@
                 (report-exception e ind 
                                   "Exception in (eval ..) of individual: ")))
         result (try 
-                (evaluator func)        ; execute user's evaluation
+                (evaluator func ind)    ; execute user's evaluation
                 (catch Exception e 
                   (report-exception e ind
                                     "Exception during evaluation: ")))]

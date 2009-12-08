@@ -23,7 +23,7 @@
 (defn evaluate-minimal
   "Evaluate how well a given function fits the target of returning the square of
   the number 5."
-  [func]
+  [func ind]
   (let [result (func 5)
         target (Math/pow 5 2)] 
     (Math/abs (float (- target result)))))

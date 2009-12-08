@@ -15,7 +15,7 @@
         cljgp.random))
 
 (defn- excepting-evaluator
-  [func]
+  [func ind]
   (println "Throwing test exception...")
   (throw (RuntimeException. "Except! I should be reported on stdout!")))
 
@@ -26,28 +26,28 @@
   (let [struct-ind (make-individual (my-tpl '(+ 1 2)) 99)
         ind (into {} struct-ind)
         given-fitness 3.33
-        evaluator (fn [func] given-fitness)
+        evaluator (fn [func ind] given-fitness)
         eval-ind (into {} (evaluate-individual struct-ind evaluator))
 
         given-score 10
-        evaluator-map (fn [func] {:fitness given-fitness :raw-score 10})
+        evaluator-map (fn [func ind] {:fitness given-fitness :raw-score 10})
         eval-map-ind (into {} (evaluate-individual struct-ind evaluator-map))]
     (testing "evaluator returning numeric value"
-             (is (= (dissoc eval-ind :fitness) (dissoc ind :fitness))
-                 "Apart from fitness, individuals should be identical")
-             (is (= (:fitness eval-ind) given-fitness)
-                 "Fitness should be as returned by evaluator"))
+      (is (= (dissoc eval-ind :fitness) (dissoc ind :fitness))
+          "Apart from fitness, individuals should be identical")
+      (is (= (:fitness eval-ind) given-fitness)
+          "Fitness should be as returned by evaluator"))
     (testing "evaluator returning map"
-             (is (= (dissoc eval-map-ind :fitness :raw-score)
-                    (dissoc ind :fitness :raw-score))
-                 "Apart from new keys, individuals should be identical")
-             (is (and (= (:fitness eval-map-ind) given-fitness)
-                      (= (:raw-score eval-map-ind) given-score))
-                 "Key values should be as returned by evaluator"))
+      (is (= (dissoc eval-map-ind :fitness :raw-score)
+             (dissoc ind :fitness :raw-score))
+          "Apart from new keys, individuals should be identical")
+      (is (and (= (:fitness eval-map-ind) given-fitness)
+               (= (:raw-score eval-map-ind) given-score))
+          "Key values should be as returned by evaluator"))
     (is (thrown-with-msg? RuntimeException #"Except!.*"
-                          (with-out-str ; silence output for cleanliness
-                            (evaluate-individual struct-ind 
-                                                 excepting-evaluator)))
+          (with-out-str                 ; silence output for cleanliness
+            (evaluate-individual struct-ind 
+                                 excepting-evaluator)))
         "Exceptions not caught by evaluator should be reported and re-thrown")))
 
 (def mini-config
