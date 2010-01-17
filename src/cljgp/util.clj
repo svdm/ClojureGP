@@ -94,8 +94,8 @@
   (let [is-symbol clojure.lang.Symbol
         is-coll clojure.lang.IPersistentCollection]
     (condp instance? node
-      is-symbol (:gp-type ^node)
-      is-coll   (:gp-type ^(first node))
+      is-symbol (:gp-type (meta node))
+      is-coll   (:gp-type (meta (first node)))
       ;; else:
       (type node))))
 
@@ -128,7 +128,7 @@
                (every? true? 
                        (map valid-types? 
                             (next node) 
-                            (:gp-arg-types ^(first node)))))))
+                            (:gp-arg-types (meta (first node))))))))
 
 ;;; Can be useful for debugging typing problems
 (defn print-types
@@ -136,7 +136,7 @@
   and their arg-type metadata."
   [node]
   (cond
-    (not (coll? node)) [(gp-type node) (:gp-arg-types ^node)]
+    (not (coll? node)) [(gp-type node) (:gp-arg-types (meta node))]
     :else (cons 
-           [(gp-type node) (:gp-arg-types ^(first node))]
+           [(gp-type node) (:gp-arg-types (meta (first node)))]
             (doall (map print-types (next node))))))

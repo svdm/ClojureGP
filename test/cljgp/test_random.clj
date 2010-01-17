@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns test.cljgp.test-random
-  (:use clojure.contrib.test-is
+  (:use clojure.test
         cljgp.random))
 
 (deftest test-gp-rand

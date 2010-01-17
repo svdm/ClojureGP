@@ -60,8 +60,9 @@
                  gui frame
                  ;; QN Plot wants BigDecimals for everything
                  gen-num (bigdec (:gen (first gen-seq)))
-                 stats (:stats-map ^gen-seq)
-                 {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
+                 stats (:stats-map (meta gen-seq))
+                 {:keys [fit-min fit-max fit-avg]} (get-stat stats
+                                                             :fitness-all)]
              (.addPoint min-fit-func gen-num (bigdec fit-min))
              (when (not draw-min-only)
                (.addPoint avg-fit-func gen-num (bigdec fit-avg))

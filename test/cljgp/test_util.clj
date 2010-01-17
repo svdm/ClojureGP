@@ -7,7 +7,7 @@
 ;; this software.
 
 (ns test.cljgp.test-util
-  (:use clojure.contrib.test-is
+  (:use clojure.test
         cljgp.util))
 
 ; mock expression tree, for the util functions the actual tree does not affect
@@ -42,5 +42,5 @@
 
 (deftest test-gp-type
   (let [sym (with-meta 'x {:gp-type Number})]
-    (is (= (:gp-type ^sym) (gp-type sym)))
-    (is (= (:gp-type ^sym) (gp-type [sym 1 2])))))
+    (is (= (:gp-type (meta sym)) (gp-type sym)))
+    (is (= (:gp-type (meta sym)) (gp-type [sym 1 2])))))

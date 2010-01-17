@@ -29,12 +29,12 @@
   (if (not (or (map? best-yet) (nil? best-yet)))
     ;; handle reduce with no start val, ie. both initial params are generations
     (let [gen (setup-stats-map best-yet)
-          stats (:stats-map ^gen)
+          stats (:stats-map (meta gen))
           best-gen (get-stat stats :best-fitness)]
       (find-best-of-run best-gen generation))
     ;; handle standard case
     (let [gen (setup-stats-map generation)
-          stats (:stats-map ^gen)
+          stats (:stats-map (meta gen))
           best-gen (get-stat stats :best-fitness)
           best-new (if best-yet
                      (min-key :fitness best-yet best-gen)
@@ -147,7 +147,7 @@
   used directly in when-let/if-let."
   [generation]
   (when-let [gen (seq generation)]
-    (let [gen-meta ^gen]
+    (let [gen-meta (meta gen)]
       (if (contains? gen-meta :stats-map)
         gen
         (with-meta gen (conj {:stats-map (make-stats-map gen)} 

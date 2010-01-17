@@ -90,7 +90,7 @@
   "Prints best individual of a given generation/population verbosely."
   [generation]
   (when-let [gen-seq (setup-stats-map generation)]
-    (let [stats (:stats-map ^gen-seq)]
+    (let [stats (:stats-map (meta gen-seq))]
       (print-individual (get-stat stats :best-fitness)))))
 
 ;;;;
@@ -107,7 +107,7 @@
   ([generation treestats?]
      (if-let [gen-seq (seq generation)]
        (let [gen-num (:gen (first gen-seq))
-             stats (:stats-map ^gen-seq)
+             stats (:stats-map (meta gen-seq))
              {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
          (str 
           (format "Gen %1$03d: Best: %2$.2f -- Worst: %3$.2f -- Avg: %4$.2f\n"
@@ -123,7 +123,7 @@
   [generation]
   (if-let [gen-seq (seq generation)]
     (let [gen-num (:gen (first gen-seq))
-          stats (:stats-map ^gen-seq)
+          stats (:stats-map (meta gen-seq))
           {:keys [fit-min fit-max fit-avg]} (get-stat stats :fitness-all)]
       (format (str 
                "=================\n"
@@ -184,11 +184,11 @@
           (.write writer #^String (stat-string-fn gen))
           (when flush-every? 
             (.flush writer))
-          (when (:final ^gen)
+          (when (:final (meta gen))
             (.write writer "\n\nBest individual of final generation:\n")
             (.write writer 
                     (stringify-ind-verbose false 
-                                           (get-stat (:stats-map ^gen) 
+                                           (get-stat (:stats-map (meta gen)) 
                                                      :best-fitness)))
             (.close writer))
           gen)))))
@@ -275,7 +275,7 @@
     (fn [summary generation]
       (if-let [gen (setup-stats-map generation)]
         (let [{:keys [best-ind, total-inds, start-time]} summary
-              stats (:stats-map ^gen)
+              stats (:stats-map (meta gen))
               best-gen (get-stat stats :best-fitness)
               best-new (if best-ind
                          (min-key :fitness best-ind best-gen)
@@ -283,7 +283,7 @@
               summary-new (assoc summary 
                             :best-ind best-new
                             :total-inds (+ total-inds (count gen)))]
-          (if (:final ^gen)             ; if end of run, print summary
+          (if (:final (meta gen))       ; if end of run, print summary
             (finalize (assoc summary-new
                         :running-time (/ (double (- (System/nanoTime) 
                                                     start-time))

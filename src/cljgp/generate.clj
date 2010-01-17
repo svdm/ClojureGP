@@ -57,7 +57,7 @@
               (str "No available terminal of type " node-type))))
     (if-let [fnode (pick-rand-typed node-type func-set)]
       (cons fnode (doall     ; force seq to realize inside try/catch
-                   (for [cur-type (:gp-arg-types ^fnode)]
+                   (for [cur-type (:gp-arg-types (meta fnode))]
                      (generate-tree (dec max-depth) method 
                                     func-set term-set 
                                     cur-type))))
