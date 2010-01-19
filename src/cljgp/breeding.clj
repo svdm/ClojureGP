@@ -170,10 +170,6 @@
         [(tree-replace idx-a pick-b tree-a)
          (tree-replace idx-b pick-a tree-b)]))))
 
-;;; Mutate used to return the unmodified tree if generating a subtree
-;;; failed. However, this did not fit in well with the higher level breeder
-;;; functions, as they should be the ones to decide whether to retry the
-;;; mutation or return the original tree (based on eg. :breeding-retries).
 (defn mutate
   "Performs a subtree mutation operation on the given tree, selecting a mutation
   point uniformly and generating a new subtree to replace it (from the given
