@@ -20,7 +20,7 @@ experiments as follows, using a terminal/command prompt at the repository root:
 
 Then call the `run` function from the Clojure REPL:
 
-`  Clojure 1.0.0 `  
+`  Clojure 1.1.0 `  
 `  user=> (reg-exp/run)  `  
 
 This same example experiment is discussed in `./doc/reg_example.html`.
@@ -31,15 +31,15 @@ This same example experiment is discussed in `./doc/reg_example.html`.
 Dependencies
 ------------
 
-ClojureGP only *requires* Clojure 1.0 and the Clojure Contrib (1.0 compatible)
+ClojureGP only *requires* Clojure 1.1.0 and the Clojure Contrib 1.1.0
 library. For additional features such as plotting and improved random number
 generation, the QN Plot library and Uncommons Maths library are needed.
 
 Compatible versions of all four libraries are included in the `./lib/`
 directory.
 
-- Clojure 1.0 and Clojure Contrib:
-    * Included as `./lib/clojure-1.0.0.jar` and `./lib/clojure-contrib.jar`
+- Clojure 1.1.0 and Clojure Contrib 1.1.0:
+    * Included as `./lib/clojure-1.1.0.jar` and `./lib/clojure-contrib.jar`
     * Available through <http://www.clojure.org/>
     * Licensed under the EPL 1.0, included as `./epl_v10.html`
 
