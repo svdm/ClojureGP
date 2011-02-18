@@ -35,24 +35,13 @@ ClojureGP only *requires* Clojure 1.1.0 and the Clojure Contrib 1.1.0
 library. For additional features such as plotting and improved random number
 generation, the QN Plot library and Uncommons Maths library are needed.
 
-Compatible versions of all four libraries are included in the `./lib/`
-directory.
+Both Clojure and Uncommons Maths can be pulled in using Leiningen, via
+`lein deps`.
 
-- Clojure 1.1.0 and Clojure Contrib 1.1.0:
-    * Included as `./lib/clojure-1.1.0.jar` and `./lib/clojure-contrib.jar`
-    * Available through <http://www.clojure.org/>
-    * Licensed under the EPL 1.0, included as `./epl_v10.html`
-
-- Uncommons Maths 1.2:
-    * Included as `./lib/uncommons-maths-1.2.jar`
-    * Available through <http://uncommons-maths.dev.java.net/>
-    * Licensed under the APL 2.0, included as `./lib/UNCOMMONS-MATHS-LICENSE`
-
-- QN Plot 1.6:
-    * Included as `./lib/qnplot-1.6.jar`
-    * Available through <http://quies.net/java/math/plot/>
-    * Licensed under the BSD license, included as `./lib/QNPLOT-LICENSE`
-
+QN Plot will have to be manually downloaded if you want to use the graphing
+features. It can be found at the following locations:
+- <http://quies.net/java/math/plot/>
+- <http://sourceforge.net/projects/qn-plot/>
 
 License
 -------
