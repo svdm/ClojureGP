@@ -1,0 +1,7 @@
+*~
+*#
+lib
+*.class
+classes
+*.jar
+
