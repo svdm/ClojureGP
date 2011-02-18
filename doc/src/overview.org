@@ -1,0 +1,244 @@
+#+TITLE:     ClojureGP: Overview
+#+AUTHOR:    Stefan van der Meer
+#+EMAIL:     stefanvandermeerREMOVE@THISgmail.com
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:2 \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+STYLE: <link rel="stylesheet" type="text/css" href="docstyle.css" />
+#+STYLE: <style type="text/css">
+#+STYLE: .outline-2 { border: 1px solid #EEE; margin-bottom: 0.2em; }
+#+STYLE: .outline-3 { padding-left: 1em; }
+#+STYLE: .outline-3 p { margin-top: 0.5em; padding-left: 0.25em; }
+#+STYLE: h2 { margin-top: 0; padding: 0.1em; background: #CEF;
+#+STYLE:    }
+#+STYLE: h3 { font-size: 10pt; margin-bottom: 1pt; }
+#+STYLE: </style>
+
+This document aims to give a high-level overview of how ClojureGP works. It
+assumes some familiarity with Clojure, including the basic idea of the sequence
+model and concepts such as lazy sequences.
+
+It also assumes familiarity with the basics of Genetic Programming. The GP Field
+Guide[fn:gpfg] gets you up to speed in about thirty pages and is freely
+available, so that is the source that will be referred to most often here and
+elsewhere in the documentation. Of course there exists a large amount of more
+in-depth literature, and on the more basic side there is always [[http://en.wikipedia.org/wiki/Genetic_programming][the Wikipedia
+article]].
+
+* Core concepts
+ClojureGP's representations of GP runs and the evolved individuals makes use of
+Clojure's strengths (both as a Lisp and otherwise) to let you do powerful things
+in a natural way.
+
+** Representation of a GP run
+ClojureGP represents a GP /run/ as a lazy sequence of populations. A "run"
+refers here to one full execution of the GP process from start (initialising the
+starting population) to finish (reaching an end condition). The initial
+population forms generation 0, and is evaluated to determine its quality and
+then bred into a fitter population, which is generation 1. This process repeats
+until an end condition is reached in some generation N.
+
+If we consider the evaluation step as the hypothetical function =evaluate=, and
+the breeding step as =breed=, the series of generations of a run can be seen as
+follows:
+#+BEGIN_SRC clojure
+(def generations
+     (cons initial-population
+	   (cons (breed (evaluate initial-population))
+		 (cons (breed (evaluate (breed (evaluate initial-population))))
+		       ...))))
+#+END_SRC
+
+ClojureGP performs a GP run by constructing a sequence of generations not unlike
+this example. Of course, actually storing many potentially large populations in
+memory is not feasible, hence the sequence is lazy.
+
+Inside this sequence, each element is simply a collection (seq) of individuals. A
+"generation" is equivalent to a "population", and both terms when used in the
+context of ClojureGP refer to a collection of individuals.
+
+This representation ends up being very convenient. As you can see from the
+high-level functions in =cljgp.core= in the source, it is easy to express a run
+in such a way.
+
+More importantly, it allows a very natural manipulation of runs (especially from
+a Clojure standpoint). Finding the population with the best individual can be
+done by simply calling =last= on the seq of generations. Then finding the best
+individual can be done naively as =(first (sort-by :fitness last-population))=
+(a faster way is provided in =cljgp.tools.analyse/best-fitness=).
+
+Printing statistics about each generation during or after a run is also
+easy. Define a function that given a population computes and prints the stats
+you are interested in, and then returns the population again. You can then =map=
+this function over the seq of generations, essentially turning it into a new
+lazy seq with the stats printing added on. Then when inside a function like
+=last= each element of the lazy seq is actually realised, the information is
+printed as soon as each generation has been computed.
+
+Using some of the functions provided in ClojureGP, that ends up looking like
+this:
+#+BEGIN_SRC clojure
+(print-best
+ (last
+  (map print-stats 
+       (generate-run experiment-config))))
+#+END_SRC
+
+Other side-effect-based functions can be similarly applied with =map=. Included
+in =cljgp.tools.*= are functions for logging statistics to a file, and
+displaying a graph with a live plot of some fitness statistics. Because all
+these functions return the population they were given, they can be freely
+chained together. (There are even some optimisations for this usage[fn:statopt]).
+
+Here is the above example with some additional analysis functions chained in: [fn:clsr]
+#+BEGIN_SRC clojure
+(print-best
+ (last
+  (map (create-fitness-plotter)
+       (map (log-stats "mylog.log" :verbose)
+	    (map print-stats
+		 (generate-run experiment-config))))))
+#+END_SRC
+
+Composing functions using =clojure.core/comp= and then performing one =map= of
+the resulting composed function is also possible.
+
+More advanced output than simply printing the best individual is also provided,
+in for example =cljgp.logging/reduce-to-summary= (check its docstring or the
+example experiments for details).
+
+** Representation of an individual
+In ClojureGP, each individual is a hashmap (strictly speaking a structmap) with
+three keys:
+- =:func= -- The evolved function.
+- =:gen= -- The generation of the individual.
+- =:fitness= -- The fitness value of the individual (nil if not evaluated yet).
+
+The generation and fitness are straightforward numeric values as you'd
+expect. The function needs some additional clarification.
+
+ClojureGP implements tree-based genetic programming, where the programs being
+evolved are S-expressions, which are of course trees represented as nested
+lists. These trees are stored in the =:func= key, inside a quoted =fn= form.
+
+The =fn= [[http://clojure.org/special_forms][special form]] creates a Clojure function. It has the basic form of =(fn
+name [params] expression-tree)=. In ClojureGP, when a tree has been generated
+for the initial population, it is inserted into a quoted "template" of such an
+fn form as its expression tree. In order to evaluate it, the fn form is compiled
+to a Clojure function using =eval=, and then passed to a user-defined evaluation
+function.
+
+To illustrate the basic steps, consider the following REPL interaction:
+#+BEGIN_SRC clojure
+user> (def my-tree '(+ 1 2))
+#'user/my-tree
+user> (def my-fn `(fn foo [] ~my-tree))
+#'user/my-fn
+user> my-fn
+(clojure.core/fn user/foo [] (+ 1 2))
+user> (def my-function (eval my-fn))
+#'user/my-function
+user> (my-function)
+3
+#+END_SRC
+
+So while the trees being evolved are expressions, they are turned into fully
+fledged Clojure functions by inserting them into an =fn= form. You can in fact
+define the name and argument list of the =fn= form (see [[./config_reference.html#:func-template-fn][:func-template-fn in the
+configuration reference]]). By adding the arguments to your terminal set, they can
+be used in the evolution process like any other terminal/variable. This allows
+you to evolve functions that you can =eval= and then use just like you would use
+a handwritten function.
+
+Most of the included example experiments perform their evaluation of each
+individual by calling the function on a variety of arguments.
+
+* Configuration
+ClojureGP aims to be versatile, with many pieces of functionality up for
+configuration or easy replacement, while providing sensible defaults where
+possible.
+
+** Configuration map
+An experiment is specified/configured in its entirety in a (hash-)map, referred
+to as an "experiment configuration", or more often as "run
+configuration". Examples of such a run configuration can be found in the example
+experiments.
+
+A run configuration is turned into an actual run (seq of generations) using
+=(cljgp.core/generate-run the-configuration)=. The =generate-run= function
+performs some preprocessing of the configuration (e.g., inserting defaults where
+necessary), and passes it down into the lower level functions. The lower level
+functions extract relevant values from the run configuration by explicit
+destructuring in their argument list, to show exactly what they will be using.
+
+Passing around a map of parameters like this ends up being much more concise and
+readable than using positional arguments, due to the large number of parameters
+that are required.
+
+** Functions and closures
+Many options are configured by specifying what function to use for a certain bit
+of functionality. One of the most important keys is [[./config_reference.html#:evaluation-fn][:evaluation-fn]], which
+specifies the function that will be used to compute a fitness value for each
+individual. Any function that takes the right number of arguments and returns
+the right kind of value can be specified.
+
+Some of the provided functions have their own set of parameters that need to be
+configured. Rather than specifying these in the run configuration, they are
+configured using partial application on a map of the parameters.
+
+For example, the key [[./config_reference.html#:pop-generation-fn][:pop-generation-fn]], which configures what function to use
+for generating trees in the initial population, is configured by passing in a
+function that generates a tree. The default is an implementation of the widely
+used ramped half-and-half algorithm. To configure the maximum depth of the
+generated trees, for example, you could do the following:
+#+BEGIN_SRC clojure
+(def my-config
+     {...
+      :pop-generation-fn (partial generate-ramped {:max-depth 14})
+      ...})
+#+END_SRC
+
+Partially applying on a map may seem a bit strange, but it is much clearer and
+readable than positional arguments, and prevents ordering mistakes. Think of it
+like specifying keyword arguments.
+
+For more examples of this type of configuration, and all other configurable
+options, take a look at the included example experiments, and the
+[[./config_reference.html][configuration key reference]] document.
+
+* Organization
+ClojureGP's functionality is subdivided into the following namespace structure:
+
+- /cljgp/
+  * *breeding* -- Breeding new individuals from old ones.
+  * *config* -- Configuration helpers and preprocessing.
+  * *core* -- Core functions that create a GP run.
+  * *evaluation* -- Evaluation of individuals.
+  * *generate* -- Generating trees/individuals and populations of individuals.
+  * *random* -- Random number generation.
+  * *selection* -- Selection for breeding.
+  * *util* -- Various helper functions.
+  * /tools/
+    * *analyse* -- Statistics for use by logging et al.
+    * *graph* -- Example graphing implementation using [[http://quies.net/java/math/plot/][QN Plot]].
+    * *logging* -- Logging to stdout and file.
+    * *unc-math-random* -- Example RNG replacement using [[https://uncommons-maths.dev.java.net/][Uncommons Maths]].
+
+[fn:gpfg] R. Poli, W.B. Langdon, N.F. McPhee, and J.R. Koza. @<em>[[http://www.gp-field-guide.org.uk/][A Field Guide to
+Genetic Programming]]@</em>, 2008.
+
+[fn:statopt] Most logging/stats related functions will pass on statistics about
+a given population by only calculating them once and then attaching them as
+metadata for use by subsequent functions. See =cljgp.tools.analyse= and
+=cljgp.tools.logging= for details.
+
+[fn:clsr] For plotting and logging a closure is created, capturing instances of Java
+classes as needed to perform the intended side-effects. For this reason the
+provided logging and plotting functions /return/ the actual function that should
+be mapped over the seq of generations. So =(map (log-stats "test.log") gen-seq)=
+instead of =(map log-stats gen-seq)=.

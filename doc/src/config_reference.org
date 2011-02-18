@@ -1,0 +1,559 @@
+#+TITLE:     ClojureGP: Experiment configuration key reference
+#+AUTHOR:    Stefan van der Meer
+#+EMAIL:     stefanvandermeerREMOVE@THISgmail.com
+#+LANGUAGE:  en
+#+OPTIONS:   H:2 num:nil toc:1 \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+STYLE: <link rel="stylesheet" type="text/css" href="docstyle.css" />
+#+STYLE: <style type="text/css">
+#+STYLE: .outline-2 { border: 1px solid #EEE; margin-bottom: 0.2em; }
+#+STYLE: .outline-3 { padding-left: 1em; }
+#+STYLE: .outline-3 p { margin-top: 0.5em; padding-left: 0.25em; }
+#+STYLE: h2 { margin-top: 0; padding: 0.1em; background: #CEF;
+#+STYLE:    }
+#+STYLE: h3 { font-size: 10pt; margin-bottom: 1pt; }
+#+STYLE: </style>
+
+This document is intended as a reference of every key in an experiment
+configuration that is used by the ClojureGP functions during a GP run. Examples,
+default values, background information and customisation advice is included.
+
+It is not the best place to start learning about the basics of experiment
+configurations, being intended as a reference. Looking at the included examples
+first is recommended.
+
+* :arg-list
+# <<:arg-list>>
+** Purpose
+Defines the argument list of evolved functions. Config preprocessing uses
+=make-func-template= internally to turn the value of this key into an
+appropriate [[:func-template-fn]] function.
+** Requirements
+Must be a vector of zero or more symbols.
+** Default value
+None, as there is a default for [[:func-template-fn]].
+** Details
+This is a simple shortcut for when [[:func-template-fn]] looks scary. Setting
+={:arg-list '[x y z]}= is essentially equivalent to setting ={:func-template-fn
+(make-func-template '[x y z])}=. If a value for [[:func-template-fn]] is set, this
+key will be ignored.
+
+* :breeders
+# <<:breeders>>
+** Purpose
+Defines the breeding functions that will be used, and the likelihood of their
+being used when breeding a new individual.
+** Requirements
+Must be a collection (vector recommended) of maps with two keys:
+- =:breeder-fn=, specifying a breeding function
+- =:prob=, specifying the probability of that breeding function being used
+
+Probabilities for all breeders must add up to 1.
+** Default value
+#+BEGIN_SRC clojure
+[{:prob 0.8  :breeder-fn crossover-breeder}
+ {:prob 0.1  :breeder-fn mutation-breeder}
+ {:prob 0.1  :breeder-fn reproduction-breeder}]
+#+END_SRC
+** Details
+The default value illustrates the form this value should take, and shows a
+configuration with three included breeder functions.
+
+Of more interest is the form a custom breeder function should take. Such a
+function should take two arguments: a population, and the experiment
+configuration map. It should return a seq of (newly bred) individuals. This seq
+can contain any number of individuals (not all of them are guaranteed to be
+used, especially if it is very long), and may also be =nil=.
+
+The breeders that are provided are (at the time of writing):
+  - =crossover-breeder=
+  - =mutation-breeder=
+  - =reproduction-breeder=
+
+Take a look at their docstring (or GP literature[fn:gpfg]) for details of their
+operation, and their source for examples of how to write your own breeders.
+
+* :breeding-retries
+# <<:breeding-retries>>
+** Purpose
+Defines the number of retries a breeder should attempt in generating a valid
+tree.
+** Requirements
+Must be a non-decimal number.
+** Default value
+1
+** Details
+The breeders included with cljgp will use this setting to determine how many
+times to attempt generating a valid tree if the first one fails.
+
+This can be useful when dealing with strict type structures, or breeders that
+fail often.
+
+
+* :end-condition-fn
+# <<:end-condition-fn>>
+** Purpose
+Defines the function (predicate) that will be used to determine when the
+evolution process is complete.
+** Requirements
+Must be a function that takes a population (= a generation) as its only
+argument, and returns a true or false value. True means the evolution process
+should stop.
+** Default value
+=(cljgp.config/make-end 100)=
+** Details
+This function will be called after each generation has been evaluated, in order
+to test if the evolution process is complete. The default end condition function
+tests if either the maximum number of generations has been reached, or there
+exists an individual with perfect fitness.
+
+The provided =cljgp.config/make-end= function can be used to easily generate a
+predicate that performs those tests, for example:
+#+BEGIN_SRC clojure
+(def my-config
+     {...
+      :end-condition-fn (make-end 50)
+      ...})
+#+END_SRC
+
+In this example the experiment will run until a perfect individual is found, or
+the limit of 50 generations is reached. Check the source of =make-end= if you
+wish to implement a different kind of test.
+
+
+* :evaluation-fn
+# <<:evaluation-fn>>
+** Purpose
+Defines the function that will be used to evaluate evolved functions.
+** Requirements
+Must be a function that takes a single argument, namely a function.
+Must return either a fitness value in the form of a number, or a map that
+includes a :fitness key and any additional information you may want to include.
+** Default value
+*Required key*, no default available.
+** Details
+The function configured as value of this key will be called on every evolved
+function in order to generate a fitness value for it.
+
+Fitness values should follow the "lower is better" rule. The default end
+condition predicate considers a fitness of 0 to mean that the individual is
+perfect.
+
+If the evaluation function returns a number, it will be used as the individual's
+=:fitness= value (as individuals are represented as maps). If a map is returned,
+it will be merged into the individual. This allows you to store additional
+values you may be interested in, such as "hits" or raw fitness.
+
+For examples of fitness functions, see the included example experiments, as they
+are of course very domain specific.
+
+* :func-template-fn
+# <<:func-template-fn>>
+** Purpose
+Defines the function that will be used to wrap the S-expression trees (trees
+represented as quoted nested lists) generated by the GP process in =fn= forms,
+so that they will evaluate to functions.
+** Requirements
+Must be a function that takes a tree as argument and returns a =(fn ...)=
+expression (i.e., a list).
+** Default value
+=(cljgp.config/make-func-template)=
+** Details
+This is a complex configuration option, but for most uses the provided
+=cljgp.config/make-func-template= function can be used to easily generate a
+function that can be used as the value for it.
+
+The background of this option is the following: all individuals consist of a
+function expression (and some other values), which is compiled to a function
+using =eval= during the evaluation phase of the GP process. This function is
+passed to the user-defined evaluation function, which can then apply it to test
+its fitness. It can be useful to customise the function expression, for example
+to define an argument list, or to name the function.
+
+By defining an argument list, it becomes very easy to pass in values to the
+evolved function, and basically treat it as a "real" Clojure function. Naming
+the function could be useful for evolving recursive functions. These two
+possibilities are easy to access by using the previously mentioned
+=make-func-template= function. It is used as follows:
+#+BEGIN_SRC clojure
+(def my-config
+     {...
+      :func-template-fn (make-func-template foo '[x y])
+      ...})
+#+END_SRC
+
+When using the function-templating function (what a name...) generated there,
+all individuals will compile to a function called =foo=, with =x= and =y= as
+arguments. Their function expression will look something like =(fn foo [x y]
+...)=.
+
+In your evaluation function, you could then call them
+as follows:
+#+BEGIN_SRC clojure
+(defn my-evaluation
+  [evolved-func]
+  (let [result (evolved-func 100 3.14)]
+    ...))
+#+END_SRC
+
+This is much more convenient than using =binding= to pass in values.
+
+An advanced usage could be to wrap each individual's expression tree in a macro
+that performs some sort of preprocessing, for example. See the source of
+=make-func-template= for details of what a custom template-fn should return.
+
+* :function-set
+# <<:function-set>>
+** Purpose
+Defines the set of functions available to the GP process, and their relevant
+properties.
+** Requirements
+Must be a sequence of symbols. The symbols must have metadata that defines the
+=:gp-type= and =:gp-arg-types= keys. The value for =:gp-type= must be a valid
+type (keyword, Java class, or nil), and the value for =:gp-arg-types= must be a
+sequence of valid types.
+** Default value
+*Required key*, no default available.
+** Details
+The =:function-set= key defines a collection of symbols. These symbols will be
+used by the GP process at function positions in the generated trees (in tree
+terms: non-terminal or non-leaf nodes). To do this, the type of the function
+symbol, the number of arguments, and the required type of the arguments has to
+be defined. This is achieved through the =:gp-type= metadata key, which defines
+the type of the function, and the =:gp-arg-types= metadata key, which must
+define a positional sequence of argument types. This is best illustrated with an
+example.
+
+Let's say we want to use Clojure's standard =nth= function in an experiment. We
+could define it as follows in the experiment configuration:
+#+BEGIN_SRC clojure
+(def my-config
+     {:function-set [(primitive `nth {:gp-type ::element
+				      :gp-arg-types [::index ::seq]})
+		     ...]})
+#+END_SRC
+
+The =primitive= function simply takes a symbol and map as argument, and returns
+the symbol with the map as metadata (think =with-meta= with a more fitting name
+for this purpose).
+
+Note the backquoting of the symbol: using just =nth= will not work, as that
+would be the /value/ of =nth=, i.e., the function itself. Using a normal quote,
+@<code>'nth@</code>, would work in this case, but keep in mind that the symbol
+is resolved to its namespace in an =eval= call in the =cljgp.evaluation=
+namespace. This will not cause problems for Clojure functions, but any functions
+you define will not be available, causing errors. For that reason it is a good
+habit to always backtick symbols so that they are namespaced correctly, unless
+they will be locals (i.e., they will be passed in as argument).
+
+Back to the function arguments. Clojure's =nth= function takes an index as first
+argument, and a sequence as second, and returns the element in the sequence at
+the index. Using the given definition, the GP process will only use =nth= in a
+tree at a position where a node of type =::element= is allowed. Then, as its
+first argument only nodes of type =::index= will be used, and any node that may
+be considered as its second argument must be of type =::seq=.
+
+These type relations are tested using =isa?=, which means you can use Clojure's
+powerful ad hoc hierarchy functionality to define your own type hierarchy. Java
+class identifiers can also be used.
+
+The value of =nil= can also be used as type, though it is only useful for
+performing a GP run without any type restrictions, by using =nil= for all
+types. Because =isa?= is used for type checking, and the only combination with
+=nil= for which it returns true is =(isa? nil nil)=, its use is identical to
+using a keyword that is not part of a hierarchy. Hence, it is almost always a
+better idea to use a keyword (for example, =::any=) so that it is easier to
+define a type hierarchy later on. For an untyped GP experiment, the above
+definition could look like this:
+#+BEGIN_SRC clojure
+(def my-untyped-config
+     {:function-set [(primitive `nth {:gp-type ::any
+				      :gp-arg-types [::any ::any]})
+		     ...]})
+#+END_SRC
+
+If you have a function that does not take arguments, but does need to be
+applied, use an empty vector for =:gp-arg-types=.
+
+Note that although the key is called a /set/, it is not recommended that you use
+a Clojure set to define it. Due to implementation details (involving the use of
+=nth=) these will be relatively slow. Vectors are a much faster choice.
+
+* :pop-generation-fn
+# <<:pop-generation-fn>>
+** Purpose
+Defines the function used to generate the initial population of individuals (the
+size of which is defined in [[:population-size]].
+** Requirements
+Must be a function that takes an experiment configuration as its argument (from
+which values such as the function and terminal sets can be retrieved), and
+returns a tree or =nil=.
+** Default value
+=#(cljgp.breeding/generate-ramped {:max-depth 7, :grow-chance 0.5} %1)=
+
+/(Equivalent to/ =(partial generate-ramped {:max-depth 7, :grow-chance 0.5})= /)./
+** Details
+In order to perform a GP run, an initial population is required. The function
+defined as value of this key is used to generate the expression trees in the
+population. Note the important difference between the breeding functions (which
+return full individuals) and this function (which return just trees).
+
+When a valid tree has been generated by this function, cljgp will insert the
+tree into the appropriate =fn= form (using [[:func-template-fn]]) which is then
+used as the function expression for a new individual.
+
+The default value is an implementation of the effective standard algorithm used
+to generate GP trees for the initial population: ramped half-and-half. This
+implementation, in the form of =cljgp.breeding/generate-ramped=, must be
+configured by partial application on a map containing =:max-depth= and/or
+=:grow-chance= keys. Respectively, these configure the maximum tree depth, and
+the probability of the /grow/ method being used as opposed to the /full/
+method. Details on these methods can be found in the docstrings of
+=cljgp.breeding/generate-tree= and =generate-ramped= (or various introductory GP
+literature such as [fn:gpfg]).
+
+A custom function to replace =generate-ramped= must take an experiment
+configuration map as its only argument, and return either a valid tree or =nil=
+(if generation failed to produce a valid tree and should be retried). From the
+configuration map the various properties required to generate trees can be
+retrieved (such as the function set).
+
+* :population-size
+# <<:population-size>>
+** Purpose
+As the name suggests, defines the size of the population (constant over the
+course of all generations).
+** Requirements
+Must be a non-decimal number.
+** Default value
+*Required key*, no default available.
+** Details
+Simply defines how many individuals should exist in each generation. The initial
+population and all subsequent ones will have this many individuals.
+
+There is no default, because it will heavily depend on the amount of processing
+power and memory (and therefore time) one is willing to spend, as especially
+with complex evaluation having to be performed this can increase quickly
+(linearly) with the size of the population.
+
+* :rand-seeds
+# <<:rand-seeds>>
+** Purpose
+Defines a seq of the seeds that will be used to initialise the random number
+generator of each thread.
+** Requirements
+Seq must contain at least as many seeds as the number of threads that will be
+used (defined in =:threads=).
+Seeds should be non-decimal, specifically of type Long.
+** Default value
+=(cljgp.config/seeds-from-time)=
+** Details
+The value for this key can be any kind of sequence as long as it contains
+sufficient elements for the number of threads to be used.
+
+The default seq returned by calling =cljgp.config/seeds-from-time= is an
+infinite lazy sequence of integers based on the system time. By calling it as
+=(seeds-from-time true)=, the seeds that are used will be printed to stdout at
+the start of the run.
+
+* :rand-fn-maker
+# <<:rand-fn-maker>>
+** Purpose
+Defines a function that produces functions that return random numbers, typically
+by encapsulating an RNG instance in a closure.
+** Requirements
+Function must take one argument, which is the seed to initialise the RNG with,
+and must return a function that takes no arguments and returns a random number
+of type =double= (or =Double=).
+** Default value
+=make-default-rand=
+** Details
+Some implementation background is of interest here: random numbers are generated
+by calling the function =cljgp.random/gp-rand=, which acts much like
+=clojure.core/rand=. For each thread, =gp-rand= is bound to a separate function,
+so that each thread has its own RNG with its own state and seed. This guarantees
+deterministic results for identical seeds.
+
+Where the [[:rand-seeds]] value is used for said seeds, the function given as the
+value of =:rand-fn-maker= is applied to each seed to produce such a
+thread-specific rand function that will be bound to =gp-rand=. These replacement
+functions are created once during the configuration preprocessing that occurs
+before a run begins in earnest.
+
+Of course, the implementation of this =gp-rand=-replacement producer function
+depends on what RNG is used. An example that uses the [[https://uncommons-maths.dev.java.net/][Uncommons Maths]] library's
+Mersenne Twister implementation is provided in =cljgp.tools.unc-math-random=. If
+you wish to use an RNG that is neither Java's Random nor the above Mersenne
+Twister RNG, take a look at the source code of both the Uncommons Maths example
+and =cljgp.random=.
+
+* :root-type
+# <<:root-type>>
+** Purpose
+Defines the type that the root node of the tree must satisfy.
+** Requirements
+Must be either a keyword, a Java class name, or =nil=.
+** Default value
+=nil=
+** Details
+When a program/tree is generated or transformed, the result must be valid with
+respect to the type constraints defined in the experiment configuration. To do
+this, we need to define what type the root of the tree must be, as it has no
+parents of whom we can check the argument types.
+
+If the value of =:root-type= is a keyword or Java class name, any node
+considered for the root position in the tree must have a type for which =(isa?
+<node-type> <root-type>)= returns true.
+
+For example, if =:root-type= is defined as =java.lang.Number=, all nodes with
+=:gp-type= defined as =java.lang.Integer= could be used as root, as =(isa?
+Integer Number)= is true. Nodes with type =String= however cannot.
+
+When =:root-type= is =nil=, only nodes with type =nil= can be picked as root.
+
+* :selection-fn
+# <<:selection-fn>>
+** Purpose
+Defines the function used (by the provided breeders) to select individuals for
+breeding.
+** Requirements
+Must be a function that takes a population as its only argument, and returns a
+single individual from that population.
+** Default value
+=#(cljgp.selection/tournament-select {:size 7} %1)=
+
+/(Equivalent to/ =(partial tournament-select {:size 7})= /)./
+** Details
+The included breeder functions all use the function defined in =:selection-fn=
+to select the individuals that will reproduce.
+
+The default is an implementation of tournament selection, a method that is
+widely used and documented[fn:gpfg]. The tournament size should be defined by partially
+applying on a map containing a =:size= key (using =partial=, or an anonymous
+function), after which the remaining argument will be a given population. The
+default is configured to size 7, as can be seen in the listing of the default
+value above.
+
+Note that it is not required for a breeding function to use this value to
+perform its selection. As said, all included breeders do use it.
+
+* :terminal-set
+# <<:terminal-set>>
+** Purpose
+Defines the set of symbols to use as terminals/leaves (typically
+variables/values).
+** Requirements
+Must be a sequence of symbols. The symbols must have metadata that defines the
+=:gp-type= key. The value for =:gp-type= must be a valid GP type (keyword, Java
+class, or nil).
+** Default value
+*Required key*, no default available.
+** Details
+The value for the =:terminal-set= key defines the collection of symbols the GP
+process can use as terminal nodes in the program trees. These symbols may
+for example resolve to global vars (that might be bound to a value during
+evaluation), or local arguments to the evolved function. In order to use these
+symbols at valid positions in generated trees, their type must be defined
+through the =:gp-type= key.
+
+Similar to function symbols defined in the [[:function-set]], the type of terminal
+nodes can be a keyword (perhaps from an ad hoc hierarchy), a Java class
+identifier, or =nil= (which functions as a keyword with no hierarchy). Type
+relations are checked using =isa?=.
+
+The following example comes from the included regression example
+(/reg\_exp.clj/):
+#+BEGIN_SRC clojure
+(def my-config
+     {...
+      :terminal-set [(prim 'x {:gp-type Number})
+
+		     (prim 'y {:gp-type Number})]
+      ...
+      :func-template-fn (make-func-template '[x y])
+      ...})
+#+END_SRC
+
+Here =prim= is an abbreviation of =cljgp.config/primitive=, which is a function
+taking a symbol and a map, and returns the symbol with the map attached as
+metadata (like =with-meta=, but with some extra error checks).
+
+The =x= and =y= symbols defined as terminals in the example are not
+namespace-resolved, because they will be passed in as arguments as defined in
+the [[:func-template-fn]] key.
+
+An alternative would be to use Vars as terminals that will be bound to a value
+using =binding= during evaluation:
+#+BEGIN_SRC clojure
+(def myX nil)
+(def myY nil)
+
+(def my-config
+     {...
+      :terminal-set [(prim `myX {:gp-type Number}) ; note the backtick
+
+		     (prim `myY {:gp-type Number})]
+      ...})
+#+END_SRC
+
+If this approach is used, the symbols must be namespace-resolved here using the
+backtick, or errors will occur when compiling the evolved functions for
+evaluation.
+
+Note that although the key is called a /set/, it is not recommended that you use
+a Clojure set to define it. Due to implementation details (involving the use of
+=nth=) these will be relatively slow. Vectors are a much faster choice.
+
+* :threads
+# <<:threads>>
+** Purpose
+Defines the number of threads that the computation will be divided over.
+** Requirements
+Must be a non-decimal number.
+** Default value
+1
+** Details
+GP is data parallel during breeding, evaluation and the generation of the
+initial population. These phases are where the work is divided over the number
+of threads defined here. The threads that are used come from a thread pool,
+using =future= calls (computation is still forced to occur within the relevant
+functions).
+
+* :validate-tree-fn
+# <<:validate-tree-fn>>
+** Purpose
+Defines the predicate function used to check if a tree is valid (if not, a new
+tree must be generated or bred).
+** Requirements
+Must be a predicate (function returning true or false) that takes an expression
+tree as its only argument. When false is returned, the tree will not be used and
+a new one will be created.
+** Default value
+=identity= (returns true for all trees)
+** Details
+A very common issue in GP is that of /bloat/ [fn:gpfg], namely the excessive growth of the
+trees in the population, leading to bad performance in both the results of the
+evolution and the speed of computation. One way to avoid this is to define a
+validation function in this =:validate-tree-fn= key that considers overly large
+trees invalid.
+
+Such a function could look something like =#(< (cljgp.util/tree-depth %1) 10)=
+in order to prevent trees of ten nodes deep or more from being added to the
+population.
+
+Note that by default there is no limit on tree size or depth, as it is highly
+domain dependent. It is highly recommended you configure one with a reasonable
+depth limit for your experiment.
+
+Of course this predicate can be used for other purposes than limiting size. Note
+that when it is applied to a tree, that tree is already validly typed, so checking this 
+not needed.
+
+
+[fn:gpfg] R. Poli, W.B. Langdon, N.F. McPhee, and J.R. Koza. @<em>[[http://www.gp-field-guide.org.uk/][A Field Guide to
+Genetic Programming]]@</em>, 2008. 
