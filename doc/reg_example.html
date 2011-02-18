@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -6,18 +7,23 @@ lang="en" xml:lang="en">
 <title>ClojureGP: Experiment example</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-12-08 15:56:07 "/>
+<meta name="generated" content="2011-02-18 19:33:42 "/>
 <meta name="author" content="Stefan van der Meer"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   html { font-family: Times, serif; font-size: 12pt; }
   .title  { text-align: center; }
   .todo   { color: red; }
   .done   { color: green; }
-  .tag    { background-color:lightblue; font-weight:normal }
+  .tag    { background-color: #add8e6; font-weight:normal }
   .target { }
-  .timestamp { color: grey }
-  .timestamp-kwd { color: CadetBlue }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
   p.verse { margin-left: 3% }
   pre {
 	border: 1pt solid #AEBDCC;
@@ -28,10 +34,17 @@ lang="en" xml:lang="en">
         overflow:auto;
   }
   table { border-collapse: collapse; }
-  td, th { vertical-align: top; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
   dt { font-weight: bold; }
   div.figure { padding: 0.5em; }
   div.figure p { text-align: center; }
+  textarea { overflow-x: auto; }
   .linenr { font-size:smaller }
   .code-highlighted {background-color:#ffff00;}
   .org-info-js_info-navigation { border-style:none; }
@@ -70,18 +83,19 @@ h3 { font-size: 10pt; margin-bottom: 1pt; }
    if(elem.cacheClassTarget)
      target.className = elem.cacheClassTarget;
  }
-/*]]>*/-->
+/*]]>*///-->
 </script>
-</head><body>
+
+</head>
+<body>
+<div id="content">
+
 <h1 class="title">ClojureGP: Experiment example</h1>
 
 <p>In this document we will walk through the construction of the regression
 example, available in <b>/examples/reg_exp.clj</b>. Some familiarity with Clojure
 (or any other Lisp) is assumed. You should also read the <a href="./overview.html">Overview</a> article if you
 have not done so yet.
-</p>
-<p>
-Documentation navigation: <a href="./index.html">Index</a> - <a href="./overview.html">Overview</a> - <a href="./reg_example.html"><b>Example</b></a> - <a href="./config_reference.html">Reference</a>.
 </p>
 
 <div id="table-of-contents">
@@ -90,23 +104,23 @@ Documentation navigation: <a href="./index.html">Index</a> - <a href="./overview
 <ul>
 <li><a href="#sec-1">1 Building a simple regression experiment </a>
 <ul>
-<li><a href="#sec-1.1">1.1 Preparations </a></li>
-<li><a href="#sec-1.2">1.2 Define an evaluation function </a></li>
-<li><a href="#sec-1.3">1.3 Define a type hierarchy </a></li>
-<li><a href="#sec-1.4">1.4 Define an experiment configuration </a>
+<li><a href="#sec-1_1">1.1 Preparations </a></li>
+<li><a href="#sec-1_2">1.2 Define an evaluation function </a></li>
+<li><a href="#sec-1_3">1.3 Define a type hierarchy </a></li>
+<li><a href="#sec-1_4">1.4 Define an experiment configuration </a>
 <ul>
-<li><a href="#sec-1.4.1">1.4.1 Function set and terminal set </a></li>
-<li><a href="#sec-1.4.2">1.4.2 The other bits </a></li>
-<li><a href="#sec-1.4.3">1.4.3 Final configuration </a></li>
+<li><a href="#sec-1_4_1">1.4.1 Function set and terminal set </a></li>
+<li><a href="#sec-1_4_2">1.4.2 The other bits </a></li>
+<li><a href="#sec-1_4_3">1.4.3 Final configuration </a></li>
 </ul>
 </li>
-<li><a href="#sec-1.5">1.5 Run the experiment </a>
+<li><a href="#sec-1_5">1.5 Run the experiment </a>
 <ul>
-<li><a href="#sec-1.5.1">1.5.1 Run function </a></li>
-<li><a href="#sec-1.5.2">1.5.2 Performing a run </a></li>
+<li><a href="#sec-1_5_1">1.5.1 Run function </a></li>
+<li><a href="#sec-1_5_2">1.5.2 Performing a run </a></li>
 </ul>
 </li>
-<li><a href="#sec-1.6">1.6 In conclusion </a></li>
+<li><a href="#sec-1_6">1.6 In conclusion </a></li>
 </ul>
 </li>
 </ul>
@@ -114,18 +128,18 @@ Documentation navigation: <a href="./index.html">Index</a> - <a href="./overview
 </div>
 
 <div id="outline-container-1" class="outline-2">
-<h2 id="sec-1">1 Building a simple regression experiment </h2>
-<div id="text-1">
+<h2 id="sec-1"><span class="section-number-2">1</span> Building a simple regression experiment </h2>
+<div class="outline-text-2" id="text-1">
 
 
 </div>
 
-<div id="outline-container-1.1" class="outline-3">
-<h3 id="sec-1.1">1.1 Preparations </h3>
-<div id="text-1.1">
+<div id="outline-container-1_1" class="outline-3">
+<h3 id="sec-1_1"><span class="section-number-3">1.1</span> Preparations </h3>
+<div class="outline-text-3" id="text-1_1">
 
 <p>Create a <b>.clj</b> file with an appropriate name, like
-<b>regression.clj</b>. Alternatively, open <b>/examples/reg_exp.clj</b> as included in the
+<b>reg_exp.clj</b>. Alternatively, open <b>/examples/reg_exp.clj</b> as included in the
 ClojureGP package and follow along there.
 </p>
 <p>
@@ -134,15 +148,13 @@ technical requirement. Still, for this tutorial, let's do it properly:
 </p>
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">ns</span> regression
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">ns</span> reg-exp
   (<span style="color: #AABBFF;">:use</span> [cljgp.core <span style="color: #AABBFF;">:only</span> [generate-run]]
-        [cljgp.config <span style="color: #AABBFF;">:only</span> [prim, make-func-template]]
-        [cljgp.random <span style="color: #AABBFF;">:only</span> [gp-rand]]
-        [cljgp.util <span style="color: #AABBFF;">:only</span> [tree-depth]]
-        [cljgp.tools.logging <span style="color: #AABBFF;">:only</span> [print-stats, reduce-to-summary]]))
+    [cljgp.config <span style="color: #AABBFF;">:only</span> [prim, make-func-template]]
+    [cljgp.random <span style="color: #AABBFF;">:only</span> [gp-rand]]
+    [cljgp.util <span style="color: #AABBFF;">:only</span> [tree-depth]]
+    [cljgp.tools.logging <span style="color: #AABBFF;">:only</span> [print-stats, reduce-to-summary]]))
 </pre>
-
 
 
 
@@ -159,9 +171,9 @@ trees. Lastly, two logging functions that will generate some useful output.
 
 </div>
 
-<div id="outline-container-1.2" class="outline-3">
-<h3 id="sec-1.2">1.2 Define an evaluation function </h3>
-<div id="text-1.2">
+<div id="outline-container-1_2" class="outline-3">
+<h3 id="sec-1_2"><span class="section-number-3">1.2</span> Define an evaluation function </h3>
+<div class="outline-text-3" id="text-1_2">
 
 <p>We will need to define a evaluation function that compares the results of an
 evolved function to the target results. In context of the regression problem,
@@ -178,19 +190,17 @@ The following function evaluates a given evolved function on a single random <co
 </p>
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">defn</span> <span style="color: #BB3344;">test-reg-once</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">defn</span> <span style="color: #BB3344;">test-reg-once</span>
   <span style="color: #AA44AA; background-color: #231323;">"Evaluate the given function on a single result, returning the abs error."</span>
   [func]
   (<span style="color: #4477FF; font-weight: bold;">let</span> [x (gp-rand)
-        y (gp-rand)
-        target (+
-                (+ (* (* x x) (* y y)) (* (* x x) (* x x)))
-                (* x y))                <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">z = x^2 * y^2 + x^4 + xy
+    y (gp-rand)
+    target (<span style="color: #AABBFF;">+</span> 
+        (<span style="color: #AABBFF;">+</span> (<span style="color: #AABBFF;">*</span> (<span style="color: #AABBFF;">*</span> x x) (<span style="color: #AABBFF;">*</span> y y)) (<span style="color: #AABBFF;">*</span> (<span style="color: #AABBFF;">*</span> x x) (<span style="color: #AABBFF;">*</span> x x)))
+        (<span style="color: #AABBFF;">*</span> x y))        <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">z = x^2 * y^2 + x^4 + xy
 </span>        result (func x y)]
-    (Math/abs (<span style="color: #AABBFF;">float</span> (- target result)))))
+    (<span style="color: #AABBFF;">Math/abs</span> (<span style="color: #AABBFF;">float</span> (<span style="color: #AABBFF;">-</span> target result)))))
 </pre>
-
 
 
 <p>
@@ -211,18 +221,16 @@ Lastly, the absolute error is returned, as a convenient measure of the quality
 of the result.
 </p>
 <p>
-Evaluating on a single random instance is perhaps a bit unreliable, so we will
-instead sum the result of ten such tests, for our final evaluation function:
+Evaluating on a single random instance is a bit unreliable, so we will
+instead sum the result of a number of such tests, for our final evaluation function:
 </p>
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">defn</span> <span style="color: #BB3344;">evaluate-reg</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">defn</span> <span style="color: #BB3344;">evaluate-reg</span>
   <span style="color: #AA44AA; background-color: #231323;">"Evaluate the given function on multiple results and return a fitness."</span>
-  [func ind]
+  [func]
   (<span style="color: #AABBFF;">reduce</span> + (<span style="color: #AABBFF;">take</span> 10 (<span style="color: #AABBFF;">repeatedly</span> #(test-reg-once func)))))
 </pre>
-
 
 
 
@@ -236,12 +244,12 @@ worse fitness.
 
 </div>
 
-<div id="outline-container-1.3" class="outline-3">
-<h3 id="sec-1.3">1.3 Define a type hierarchy </h3>
-<div id="text-1.3">
+<div id="outline-container-1_3" class="outline-3">
+<h3 id="sec-1_3"><span class="section-number-3">1.3</span> Define a type hierarchy </h3>
+<div class="outline-text-3" id="text-1_3">
 
 <p>At this point we would normally consider what types of values are playing a role
-in the experiment, and use Clojure's ad hoc hierarchies wit <code>derive</code> to create
+in the experiment, and use Clojure's ad hoc hierarchies with <code>derive</code> to create
 an appropriate type hierarchy.
 </p>
 <p>
@@ -254,12 +262,10 @@ With some creativity we can still take a look at deriving type hierarchies:
 </p>
 
 
-<pre class="src src-clojure">
-(<span style="color: #AABBFF;">derive</span> <span style="color: #AABBFF;">::number</span> <span style="color: #AABBFF;">::any</span>)
+<pre class="src src-clojure">(<span style="color: #AABBFF;">derive</span> <span style="color: #AABBFF;">::number</span> <span style="color: #AABBFF;">::any</span>)
 (<span style="color: #AABBFF;">derive</span> <span style="color: #AABBFF;">::string</span> <span style="color: #AABBFF;">::any</span>)
-(<span style="color: #AABBFF;">derive</span> Number <span style="color: #AABBFF;">::number</span>)
+(<span style="color: #AABBFF;">derive</span> <span style="color: #AABBFF;">Number</span> <span style="color: #AABBFF;">::number</span>)
 </pre>
-
 
 
 
@@ -291,9 +297,9 @@ In this experiment, we will just define every type as being <code>Number</code>.
 
 </div>
 
-<div id="outline-container-1.4" class="outline-3">
-<h3 id="sec-1.4">1.4 Define an experiment configuration </h3>
-<div id="text-1.4">
+<div id="outline-container-1_4" class="outline-3">
+<h3 id="sec-1_4"><span class="section-number-3">1.4</span> Define an experiment configuration </h3>
+<div class="outline-text-3" id="text-1_4">
 
 <p>The experiment configuration is a hashmap containing all the information the GP
 process needs to run. From the function and terminal sets it should use, to the
@@ -302,37 +308,35 @@ evaluation function to use, to how many threads it should run in.
 
 </div>
 
-<div id="outline-container-1.4.1" class="outline-4">
-<h4 id="sec-1.4.1">1.4.1 Function set and terminal set </h4>
-<div id="text-1.4.1">
+<div id="outline-container-1_4_1" class="outline-4">
+<h4 id="sec-1_4_1"><span class="section-number-4">1.4.1</span> Function set and terminal set </h4>
+<div class="outline-text-4" id="text-1_4_1">
 
 <p>Starting off with the function and terminal sets:
 </p>
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
      {
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Some mathematical operators
-</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> Number
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span> 
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">Number</span> <span style="color: #AABBFF;">Number</span>]})
 
-                     (prim `+ {<span style="color: #AABBFF;">:gp-type</span> Number
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+             (prim `+ {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span> 
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">Number</span> <span style="color: #AABBFF;">Number</span>]})
 
-                     (prim `* {<span style="color: #AABBFF;">:gp-type</span> Number
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})]
+             (prim `* {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span> 
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">Number</span> <span style="color: #AABBFF;">Number</span>]})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">The two variables in the equation
-</span>      <span style="color: #AABBFF;">:terminal-set</span> [(prim 'x {<span style="color: #AABBFF;">:gp-type</span> Number})
+</span>      <span style="color: #AABBFF;">:terminal-set</span> [(prim 'x {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>})
 
-                     (prim 'y {<span style="color: #AABBFF;">:gp-type</span> Number})]
+             (prim 'y {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">More to come...
-</span>      ...
+</span>      ... 
       })
 </pre>
-
 
 
 
@@ -401,9 +405,9 @@ define our evolved functions' argument list to include these two symbols.
 
 </div>
 
-<div id="outline-container-1.4.2" class="outline-4">
-<h4 id="sec-1.4.2">1.4.2 The other bits </h4>
-<div id="text-1.4.2">
+<div id="outline-container-1_4_2" class="outline-4">
+<h4 id="sec-1_4_2"><span class="section-number-4">1.4.2</span> The other bits </h4>
+<div class="outline-text-4" id="text-1_4_2">
 
 <p>With the function and terminal sets defined, most of our work is done. We only
 need to define a few more things, and can let the rest fall back to defaults.
@@ -426,23 +430,21 @@ individuals during the evaluation phase.
 
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
      {
-      ... <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">snip
+      ... <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">snip
 </span>
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Evolved functions must return a number
-</span>      <span style="color: #AABBFF;">:root-type</span> Number
+</span>      <span style="color: #AABBFF;">:root-type</span> <span style="color: #AABBFF;">Number</span>
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Basic template for a fn with our arguments
 </span>      <span style="color: #AABBFF;">:func-template-fn</span> (make-func-template '[x y])
 
       <span style="color: #AABBFF;">:evaluation-fn</span> evaluate-reg
 
-      ... <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">snip
+      ... <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">snip
 </span>      })
 </pre>
-
 
 
 
@@ -482,13 +484,12 @@ arbitrary integers.
 
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
      {
-      ... <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">snip
+      ... <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">snip
 </span>
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Keep tree size sane
-</span>      <span style="color: #AABBFF;">:validate-tree-fn</span> #(&lt; (tree-depth %) 10)
+</span>      <span style="color: #AABBFF;">:validate-tree-fn</span> #(<span style="color: #AABBFF;">&lt;</span> (tree-depth %) 10)
 
       <span style="color: #AABBFF;">:population-size</span> 128
 
@@ -501,40 +502,38 @@ arbitrary integers.
 
 
 
-
 </div>
 
 </div>
 
-<div id="outline-container-1.4.3" class="outline-4">
-<h4 id="sec-1.4.3">1.4.3 Final configuration </h4>
-<div id="text-1.4.3">
+<div id="outline-container-1_4_3" class="outline-4">
+<h4 id="sec-1_4_3"><span class="section-number-4">1.4.3</span> Final configuration </h4>
+<div class="outline-text-4" id="text-1_4_3">
 
 <p>This hard work results in the following configuration:
 </p>
 
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">config-reg</span>
      {
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Some mathematical operators
-</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> Number
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+</span>      <span style="color: #AABBFF;">:function-set</span> [(prim `- {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span> 
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">Number</span> <span style="color: #AABBFF;">Number</span>]})
 
-                     (prim `+ {<span style="color: #AABBFF;">:gp-type</span> Number
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})
+             (prim `+ {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span> 
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">Number</span> <span style="color: #AABBFF;">Number</span>]})
 
-                     (prim `* {<span style="color: #AABBFF;">:gp-type</span> Number
-                               <span style="color: #AABBFF;">:gp-arg-types</span> [Number Number]})]
+             (prim `* {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span> 
+                   <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">Number</span> <span style="color: #AABBFF;">Number</span>]})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">The two variables in the equation
-</span>      <span style="color: #AABBFF;">:terminal-set</span> [(prim 'x {<span style="color: #AABBFF;">:gp-type</span> Number})
+</span>      <span style="color: #AABBFF;">:terminal-set</span> [(prim 'x {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>})
 
-                     (prim 'y {<span style="color: #AABBFF;">:gp-type</span> Number})]
+             (prim 'y {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>})]
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Evolved functions must return a number
-</span>      <span style="color: #AABBFF;">:root-type</span> Number
+</span>      <span style="color: #AABBFF;">:root-type</span> <span style="color: #AABBFF;">Number</span>
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Basic template for a fn with our arguments
 </span>      <span style="color: #AABBFF;">:func-template-fn</span> (make-func-template '[x y])
@@ -542,7 +541,7 @@ arbitrary integers.
       <span style="color: #AABBFF;">:evaluation-fn</span> evaluate-reg
 
       <span style="color: #119933; background-color: #132313;">;; </span><span style="color: #119933; background-color: #132313;">Keep tree size sane
-</span>      <span style="color: #AABBFF;">:validate-tree-fn</span> #(&lt; (tree-depth %) 10)
+</span>      <span style="color: #AABBFF;">:validate-tree-fn</span> #(<span style="color: #AABBFF;">&lt;</span> (tree-depth %) 10)
 
       <span style="color: #AABBFF;">:population-size</span> 128
 
@@ -551,7 +550,6 @@ arbitrary integers.
       <span style="color: #AABBFF;">:rand-seeds</span> [9234 5327]
       })
 </pre>
-
 
 
 
@@ -566,9 +564,9 @@ defaults, as we will see in a moment.
 
 </div>
 
-<div id="outline-container-1.5" class="outline-3">
-<h3 id="sec-1.5">1.5 Run the experiment </h3>
-<div id="text-1.5">
+<div id="outline-container-1_5" class="outline-3">
+<h3 id="sec-1_5"><span class="section-number-3">1.5</span> Run the experiment </h3>
+<div class="outline-text-3" id="text-1_5">
 
 <p>To finish off this tutorial we will define a <code>run</code> function so we can
 conveniently run the experiment from the REPL when we want to, and we'll take a
@@ -577,9 +575,9 @@ look at the output it generates.
 
 </div>
 
-<div id="outline-container-1.5.1" class="outline-4">
-<h4 id="sec-1.5.1">1.5.1 Run function </h4>
-<div id="text-1.5.1">
+<div id="outline-container-1_5_1" class="outline-4">
+<h4 id="sec-1_5_1"><span class="section-number-4">1.5.1</span> Run function </h4>
+<div class="outline-text-4" id="text-1_5_1">
 
 <p>If you have read the <a href="./overview.html">Overview</a>, you may recall that performing a GP run in ClojureGP entails
 constructing a lazy seq of successive generations using <code>generate-run</code>, and then
@@ -594,15 +592,13 @@ interesting information on the way:
 
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">defn</span> <span style="color: #BB3344;">run</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">defn</span> <span style="color: #BB3344;">run</span>
   <span style="color: #AA44AA; background-color: #231323;">"Run experiment and print summary when done."</span>
   []
   (reduce-to-summary
    (<span style="color: #AABBFF;">map</span> print-stats
-        (generate-run config-reg))))
+    (generate-run config-reg))))
 </pre>
-
 
 
 
@@ -621,9 +617,9 @@ experiment.
 
 </div>
 
-<div id="outline-container-1.5.2" class="outline-4">
-<h4 id="sec-1.5.2">1.5.2 Performing a run </h4>
-<div id="text-1.5.2">
+<div id="outline-container-1_5_2" class="outline-4">
+<h4 id="sec-1_5_2"><span class="section-number-4">1.5.2</span> Performing a run </h4>
+<div class="outline-text-4" id="text-1_5_2">
 
 <p>Personally, I find it convenient to simply run experiments in a REPL. It is
 usually possible to use <code>clojure.core/load</code> to quickly and easily reload the
@@ -634,19 +630,15 @@ experiment, which is virtually identical to the experiment we defined in this
 tutorial.
 </p>
 <p>
-From the <b>examples</b> directory, we run:
+From inside the <b>examples</b> directory, we run:
 </p>
 
 
-<pre class="example">
-java -cp .;../src/;../lib/* clojure.lang.Repl reg_exp.clj
+<pre class="example">java -cp .;../src/;../lib/* clojure.main -i reg_exp.clj --repl
 </pre>
 
 
 
-<p>
-(Replacing <code>;</code> with <code>:</code> in the classpath when on Linux.)
-</p>
 <p>
 The ClojureGP source should be in <b>../src/</b> (relative to the examples
 directory), and the required .jar packages (<b>clojure.jar</b> and
@@ -660,8 +652,7 @@ then simply run the experiment as follows:
 
 
 
-<pre class="example">
-user=&gt; (reg-exp/run)
+<pre class="example">user=&gt; (reg-exp/run)
 Run configuration preprocessing report:
   NOTE: The following keys were missing, using default values:
      (:rand-fn-maker :pop-generation-fn :end-condition-fn :breeding-retries :selection-fn :breeders)
@@ -685,7 +676,7 @@ Gen 015: Best: 0.18 -- Worst: 13.83 -- Avg: 1.99
 Gen 016: Best: 0.00 -- Worst: 9.96 -- Avg: 1.59
 
 #################
-  Run complete
+  Run complete   
 #################
 Best individual of entire run:
 Data of individual:
@@ -700,9 +691,8 @@ Run statistics:
 #################
 
 nil
-user=&gt;
+user=&gt; 
 </pre>
-
 
 
 
@@ -716,9 +706,9 @@ best individual, and reports the time it took.
 
 </div>
 
-<div id="outline-container-1.6" class="outline-3">
-<h3 id="sec-1.6">1.6 In conclusion </h3>
-<div id="text-1.6">
+<div id="outline-container-1_6" class="outline-3">
+<h3 id="sec-1_6"><span class="section-number-3">1.6</span> In conclusion </h3>
+<div class="outline-text-3" id="text-1_6">
 
 <p>In this tutorial we have taken all the basic steps that one needs to take in
 order to run a ClojureGP experiment, discussing a lot of different points of
@@ -745,10 +735,12 @@ to 0.
 </p>
 </div>
 </div>
-<div id="postamble"><p class="author"> Author: Stefan van der Meer
-<a href="mailto:stefanvandermeerREMOVE@THISgmail.com">&lt;stefanvandermeerREMOVE@THISgmail.com&gt;</a>
+<div id="postamble">
+<p class="author"> Author: Stefan van der Meer
 </p>
-<p class="date"> Date: 2009-12-08 15:56:07 </p>
-<p>HTML generated by org-mode 6.21b in emacs 23</p>
-</div></body>
+<p class="date"> Date: 2011-02-18 19:33:42 </p>
+<p class="creator">HTML generated by org-mode 7.4 in emacs 24</p>
+</div>
+</div>
+</body>
 </html>

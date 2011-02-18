@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -6,18 +7,23 @@ lang="en" xml:lang="en">
 <title>ClojureGP: Overview</title>
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2009-10-07 15:44:24 "/>
+<meta name="generated" content="2011-02-18 19:42:28 "/>
 <meta name="author" content="Stefan van der Meer"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   html { font-family: Times, serif; font-size: 12pt; }
   .title  { text-align: center; }
   .todo   { color: red; }
   .done   { color: green; }
-  .tag    { background-color:lightblue; font-weight:normal }
+  .tag    { background-color: #add8e6; font-weight:normal }
   .target { }
-  .timestamp { color: grey }
-  .timestamp-kwd { color: CadetBlue }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
   p.verse { margin-left: 3% }
   pre {
 	border: 1pt solid #AEBDCC;
@@ -28,10 +34,17 @@ lang="en" xml:lang="en">
         overflow:auto;
   }
   table { border-collapse: collapse; }
-  td, th { vertical-align: top; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
   dt { font-weight: bold; }
   div.figure { padding: 0.5em; }
   div.figure p { text-align: center; }
+  textarea { overflow-x: auto; }
   .linenr { font-size:smaller }
   .code-highlighted {background-color:#ffff00;}
   .org-info-js_info-navigation { border-style:none; }
@@ -70,9 +83,13 @@ h3 { font-size: 10pt; margin-bottom: 1pt; }
    if(elem.cacheClassTarget)
      target.className = elem.cacheClassTarget;
  }
-/*]]>*/-->
+/*]]>*///-->
 </script>
-</head><body>
+
+</head>
+<body>
+<div id="content">
+
 <h1 class="title">ClojureGP: Overview</h1>
 
 <p>This document aims to give a high-level overview of how ClojureGP works. It
@@ -86,9 +103,6 @@ available, so that is the source that will be referred to most often here and
 elsewhere in the documentation. Of course there exists a large amount of more
 in-depth literature, and on the more basic side there is always <a href="http://en.wikipedia.org/wiki/Genetic_programming">the Wikipedia article</a>.
 </p>
-<p>
-Documentation navigation: <a href="./index.html">Index</a> - <a href="./overview.html"><b>Overview</b></a> - <a href="./reg_example.html">Example</a> - <a href="./config_reference.html">Reference</a>.
-</p>
 
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
@@ -96,14 +110,14 @@ Documentation navigation: <a href="./index.html">Index</a> - <a href="./overview
 <ul>
 <li><a href="#sec-1">1 Core concepts </a>
 <ul>
-<li><a href="#sec-1.1">1.1 Representation of a GP run </a></li>
-<li><a href="#sec-1.2">1.2 Representation of an individual </a></li>
+<li><a href="#sec-1_1">1.1 Representation of a GP run </a></li>
+<li><a href="#sec-1_2">1.2 Representation of an individual </a></li>
 </ul>
 </li>
 <li><a href="#sec-2">2 Configuration </a>
 <ul>
-<li><a href="#sec-2.1">2.1 Configuration map </a></li>
-<li><a href="#sec-2.2">2.2 Functions and closures </a></li>
+<li><a href="#sec-2_1">2.1 Configuration map </a></li>
+<li><a href="#sec-2_2">2.2 Functions and closures </a></li>
 </ul>
 </li>
 <li><a href="#sec-3">3 Organization </a></li>
@@ -112,8 +126,8 @@ Documentation navigation: <a href="./index.html">Index</a> - <a href="./overview
 </div>
 
 <div id="outline-container-1" class="outline-2">
-<h2 id="sec-1">1 Core concepts </h2>
-<div id="text-1">
+<h2 id="sec-1"><span class="section-number-2">1</span> Core concepts </h2>
+<div class="outline-text-2" id="text-1">
 
 <p>ClojureGP's representations of GP runs and the evolved individuals makes use of
 Clojure's strengths (both as a Lisp and otherwise) to let you do powerful things
@@ -122,9 +136,9 @@ in a natural way.
 
 </div>
 
-<div id="outline-container-1.1" class="outline-3">
-<h3 id="sec-1.1">1.1 Representation of a GP run </h3>
-<div id="text-1.1">
+<div id="outline-container-1_1" class="outline-3">
+<h3 id="sec-1_1"><span class="section-number-3">1.1</span> Representation of a GP run </h3>
+<div class="outline-text-3" id="text-1_1">
 
 <p>ClojureGP represents a GP <i>run</i> as a lazy sequence of populations. A "run"
 refers here to one full execution of the GP process from start (initialising the
@@ -140,14 +154,12 @@ follows:
 </p>
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">generations</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">generations</span>
      (<span style="color: #AABBFF;">cons</span> initial-population
-           (<span style="color: #AABBFF;">cons</span> (breed (evaluate initial-population))
-                 (<span style="color: #AABBFF;">cons</span> (breed (evaluate (breed (evaluate initial-population))))
-                       ...))))
+       (<span style="color: #AABBFF;">cons</span> (breed (evaluate initial-population))
+         (<span style="color: #AABBFF;">cons</span> (breed (evaluate (breed (evaluate initial-population))))
+               ...))))
 </pre>
-
 
 
 
@@ -174,13 +186,13 @@ individual can be done naively as <code>(first (sort-by :fitness last-population
 (a faster way is provided in <code>cljgp.tools.analyse/best-fitness</code>).
 </p>
 <p>
-Printing statistics about each generation even as the run is also easy. Define a
-function that given a population computes and prints the stats you are interested
-in, and then returns the population again. You can then <code>map</code> this function over
-the seq of generations, essentially turning it into a new lazy seq with the
-stats printing added on. Then when in a function like <code>last</code> each element of the
-lazy seq is actually realised, the information is printed as soon as each
-generation has been computed.
+Printing statistics about each generation during or after a run is also
+easy. Define a function that given a population computes and prints the stats
+you are interested in, and then returns the population again. You can then <code>map</code>
+this function over the seq of generations, essentially turning it into a new
+lazy seq with the stats printing added on. Then when inside a function like
+<code>last</code> each element of the lazy seq is actually realised, the information is
+printed as soon as each generation has been computed.
 </p>
 <p>
 Using some of the functions provided in ClojureGP, that ends up looking like
@@ -188,13 +200,11 @@ this:
 </p>
 
 
-<pre class="src src-clojure">
-(print-best
+<pre class="src src-clojure">(print-best
  (<span style="color: #AABBFF;">last</span>
   (<span style="color: #AABBFF;">map</span> print-stats 
        (generate-run experiment-config))))
 </pre>
-
 
 
 
@@ -210,15 +220,13 @@ Here is the above example with some additional analysis functions chained in: <s
 </p>
 
 
-<pre class="src src-clojure">
-(print-best
+<pre class="src src-clojure">(print-best
  (<span style="color: #AABBFF;">last</span>
   (<span style="color: #AABBFF;">map</span> (create-fitness-plotter)
        (<span style="color: #AABBFF;">map</span> (log-stats <span style="color: #AA44AA; background-color: #231323;">"mylog.log"</span> <span style="color: #AABBFF;">:verbose</span>)
-            (<span style="color: #AABBFF;">map</span> print-stats
-                 (generate-run experiment-config))))))
+        (<span style="color: #AABBFF;">map</span> print-stats
+         (generate-run experiment-config))))))
 </pre>
-
 
 
 
@@ -235,9 +243,9 @@ example experiments for details).
 
 </div>
 
-<div id="outline-container-1.2" class="outline-3">
-<h3 id="sec-1.2">1.2 Representation of an individual </h3>
-<div id="text-1.2">
+<div id="outline-container-1_2" class="outline-3">
+<h3 id="sec-1_2"><span class="section-number-3">1.2</span> Representation of an individual </h3>
+<div class="outline-text-3" id="text-1_2">
 
 <p>In ClojureGP, each individual is a hashmap (strictly speaking a structmap) with
 three keys:
@@ -250,11 +258,12 @@ three keys:
 </li>
 <li>
 <code>:fitness</code> &ndash; The fitness value of the individual (nil if not evaluated yet).
-
 </li>
 </ul>
 
-<p>The generation and fitness are straightforward numeric values as you'd
+
+<p>
+The generation and fitness are straightforward numeric values as you'd
 expect. The function needs some additional clarification.
 </p>
 <p>
@@ -274,19 +283,17 @@ To illustrate the basic steps, consider the following REPL interaction:
 </p>
 
 
-<pre class="src src-clojure">
-user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-tree</span> '(+ 1 2))
-,#'user/my-tree
-user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-fn</span> `(<span style="color: #4477FF; font-weight: bold;">fn</span> <span style="color: #BB3344;">foo</span> [] ~my-tree))
-,#'user/my-fn
+<pre class="src src-clojure">user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-tree</span> '(<span style="color: #AABBFF;">+</span> 1 2))
+#'user/my-tree
+user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-fn</span> `(<span style="color: #AABBFF;">fn</span> <span style="color: #BB3344;">foo</span> [] ~my-tree))
+#'user/my-fn
 user&gt; my-fn
-(clojure.core/fn user/foo [] (+ 1 2))
-user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-function</span> (eval my-fn))
-,#'user/my-function
+(clojure.core/<span style="color: #AABBFF;">fn</span> <span style="color: #BB3344;">user/foo</span> [] (<span style="color: #AABBFF;">+</span> 1 2))
+user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-function</span> (<span style="color: #AABBFF;">eval</span> my-fn))
+#'user/my-function
 user&gt; (my-function)
 3
 </pre>
-
 
 
 
@@ -308,8 +315,8 @@ individual by calling the function on a variety of arguments.
 </div>
 
 <div id="outline-container-2" class="outline-2">
-<h2 id="sec-2">2 Configuration </h2>
-<div id="text-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Configuration </h2>
+<div class="outline-text-2" id="text-2">
 
 <p>ClojureGP aims to be versatile, with many pieces of functionality up for
 configuration or easy replacement, while providing sensible defaults where
@@ -318,9 +325,9 @@ possible.
 
 </div>
 
-<div id="outline-container-2.1" class="outline-3">
-<h3 id="sec-2.1">2.1 Configuration map </h3>
-<div id="text-2.1">
+<div id="outline-container-2_1" class="outline-3">
+<h3 id="sec-2_1"><span class="section-number-3">2.1</span> Configuration map </h3>
+<div class="outline-text-3" id="text-2_1">
 
 <p>An experiment is specified/configured in its entirety in a (hash-)map, referred
 to as an "experiment configuration", or more often as "run
@@ -344,9 +351,9 @@ that are required.
 
 </div>
 
-<div id="outline-container-2.2" class="outline-3">
-<h3 id="sec-2.2">2.2 Functions and closures </h3>
-<div id="text-2.2">
+<div id="outline-container-2_2" class="outline-3">
+<h3 id="sec-2_2"><span class="section-number-3">2.2</span> Functions and closures </h3>
+<div class="outline-text-3" id="text-2_2">
 
 <p>Many options are configured by specifying what function to use for a certain bit
 of functionality. One of the most important keys is <a href="./config_reference.html#:evaluation-fn">:evaluation-fn</a>, which
@@ -368,13 +375,11 @@ generated trees, for example, you could do the following:
 </p>
 
 
-<pre class="src src-clojure">
-(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
      {...
       <span style="color: #AABBFF;">:pop-generation-fn</span> (<span style="color: #AABBFF;">partial</span> generate-ramped {<span style="color: #AABBFF;">:max-depth</span> 14})
       ...})
 </pre>
-
 
 
 
@@ -394,8 +399,8 @@ options, take a look at the included example experiments, and the
 </div>
 
 <div id="outline-container-3" class="outline-2">
-<h2 id="sec-3">3 Organization </h2>
-<div id="text-3">
+<h2 id="sec-3"><span class="section-number-2">3</span> Organization </h2>
+<div class="outline-text-2" id="text-3">
 
 <p>ClojureGP's functionality is subdivided into the following namespace structure:
 </p>
@@ -441,13 +446,13 @@ options, take a look at the included example experiments, and the
 </li>
 <li>
 <b>unc-math-random</b> &ndash; Example RNG replacement using <a href="https://uncommons-maths.dev.java.net/">Uncommons Maths</a>.
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
 
 
 
@@ -472,10 +477,12 @@ instead of <code>(map log-stats gen-seq)</code>.
 </p>
 </div>
 </div>
-<div id="postamble"><p class="author"> Author: Stefan van der Meer
-<a href="mailto:stefanvandermeerREMOVE@THISgmail.com">&lt;stefanvandermeerREMOVE@THISgmail.com&gt;</a>
+<div id="postamble">
+<p class="author"> Author: Stefan van der Meer
 </p>
-<p class="date"> Date: 2009-10-07 15:44:24 </p>
-<p>HTML generated by org-mode 6.21b in emacs 23</p>
-</div></body>
+<p class="date"> Date: 2011-02-18 19:42:28 </p>
+<p class="creator">HTML generated by org-mode 7.4 in emacs 24</p>
+</div>
+</div>
+</body>
 </html>
