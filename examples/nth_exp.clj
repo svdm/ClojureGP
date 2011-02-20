@@ -83,9 +83,9 @@
 ;;; The ::seq type is derived here so that we can guarantee that the 'next
 ;;; function in the function set cannot be chained endlessly onto
 ;;; itself. Without this, the evolution process can be tempted into a (terrible)
-;;; local maximum with long chains of (first (next (next (next ...). By
+;;; local maximum with long chains of (first (next (next (next ...)))). By
 ;;; specialising ::seq, 'next can be configured to only take ::seq-orig while
-;;; returning a ::seq, which makes (next (next ..) illegal.
+;;; returning a ::seq, which makes (next (next ..)) illegal.
 (derive ::seq ::val)
 (derive ::seq-orig ::seq)
 

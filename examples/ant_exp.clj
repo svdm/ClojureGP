@@ -79,7 +79,7 @@
 ;;;; Evaluation
 
 (defunbound ant-state
-  "Var to be bound during evaluation a map containing:
+  "Var to be bound during evaluation to a map containing:
    - :trail    the trail state of the current ant
    - :pos      the position of the ant on the trail map
    - :dir      the direction in which the ant is facing
