@@ -16,12 +16,12 @@ Please refer to the included documentation and examples in the `./doc/` and
 To see a basic genetic programming run in action, load one of the example
 experiments as follows, using a terminal/command prompt at the repository root:
 
-`$ java -cp ./examples/;./src/;./lib/* clojure.main -i examples/reg_exp.clj --repl`
+    $ java -cp ./examples/;./src/;./lib/* clojure.main -i examples/reg_exp.clj --repl
 
 Then call the `run` function from the Clojure REPL:
 
-`  Clojure 1.2.0 `  
-`  user=> (reg-exp/run)  `  
+    Clojure 1.2.0
+    user=> (reg-exp/run)
 
 This same example experiment is discussed in `./doc/reg_example.html`.
 
@@ -40,8 +40,9 @@ Both Clojure and Uncommons Maths can be pulled in using Leiningen, via
 
 QN Plot will have to be manually downloaded if you want to use the graphing
 features. It can be found at the following locations:
-- <http://quies.net/java/math/plot/>
-- <http://sourceforge.net/projects/qn-plot/>
+
+ - <http://quies.net/java/math/plot/>
+ - <http://sourceforge.net/projects/qn-plot/>
 
 License
 -------
