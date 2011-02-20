@@ -16,11 +16,11 @@ Please refer to the included documentation and examples in the `./doc/` and
 To see a basic genetic programming run in action, load one of the example
 experiments as follows, using a terminal/command prompt at the repository root:
 
-`$ java -cp ./examples/;./src/;./lib/* clojure.lang.Repl examples/reg_exp.clj `
+`$ java -cp ./examples/;./src/;./lib/* clojure.main -i examples/reg_exp.clj --repl`
 
 Then call the `run` function from the Clojure REPL:
 
-`  Clojure 1.1.0 `  
+`  Clojure 1.2.0 `  
 `  user=> (reg-exp/run)  `  
 
 This same example experiment is discussed in `./doc/reg_example.html`.
@@ -31,7 +31,7 @@ This same example experiment is discussed in `./doc/reg_example.html`.
 Dependencies
 ------------
 
-ClojureGP only *requires* Clojure 1.1.0 and the Clojure Contrib 1.1.0
+ClojureGP only *requires* Clojure 1.2.0 and the Clojure-contrib 1.2.0
 library. For additional features such as plotting and improved random number
 generation, the QN Plot library and Uncommons Maths library are needed.
 
