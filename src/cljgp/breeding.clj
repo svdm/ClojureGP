@@ -386,4 +386,3 @@
                        (doall (take %1 (breed-generator)))))
                   per-future
                   rand-fns)))))
-

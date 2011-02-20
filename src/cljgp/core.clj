@@ -61,6 +61,3 @@
         end? (:end-condition-fn final-config)]
     (take-until-end end?
                     (evolve-future-generations pop-initial final-config))))
-
-
-
