@@ -1,0 +1,1306 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>ClojureGP: Experiment configuration key reference</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2011-02-18 19:41:42 "/>
+<meta name="author" content="Stefan van der Meer"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="docstyle.css" />
+<style type="text/css">
+.outline-2 { border: 1px solid #EEE; margin-bottom: 0.2em; }
+.outline-3 { padding-left: 1em; }
+.outline-3 p { margin-top: 0.5em; padding-left: 0.25em; }
+h2 { margin-top: 0; padding: 0.1em; background: #CEF;
+}
+h3 { font-size: 10pt; margin-bottom: 1pt; }
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">ClojureGP: Experiment configuration key reference</h1>
+
+<p>This document is intended as a reference of every key in an experiment
+configuration that is used by the ClojureGP functions during a GP run. Examples,
+default values, background information and customisation advice is included.
+</p>
+<p>
+It is not the best place to start learning about the basics of experiment
+configurations, being intended as a reference. Looking at the included examples
+first is recommended.
+</p>
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">:arg-list </a></li>
+<li><a href="#sec-2">:breeders </a></li>
+<li><a href="#sec-3">:breeding-retries </a></li>
+<li><a href="#sec-4">:end-condition-fn </a></li>
+<li><a href="#sec-5">:evaluation-fn </a></li>
+<li><a href="#sec-6">:func-template-fn </a></li>
+<li><a href="#sec-7">:function-set </a></li>
+<li><a href="#sec-8">:pop-generation-fn </a></li>
+<li><a href="#sec-9">:population-size </a></li>
+<li><a href="#sec-10">:rand-seeds </a></li>
+<li><a href="#sec-11">:rand-fn-maker </a></li>
+<li><a href="#sec-12">:root-type </a></li>
+<li><a href="#sec-13">:selection-fn </a></li>
+<li><a href="#sec-14">:terminal-set </a></li>
+<li><a href="#sec-15">:threads </a></li>
+<li><a href="#sec-16">:validate-tree-fn </a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><a name=":arg-list" id=":arg-list"></a>:arg-list </h2>
+<div class="outline-text-2" id="text-1">
+
+
+</div>
+
+<div id="outline-container-1_1" class="outline-3">
+<h3 id="sec-1_1">Purpose </h3>
+<div class="outline-text-3" id="text-1_1">
+
+<p>Defines the argument list of evolved functions. Config preprocessing uses
+<code>make-func-template</code> internally to turn the value of this key into an
+appropriate <a href="#sec-6">:func-template-fn</a> function.
+</p></div>
+
+</div>
+
+<div id="outline-container-1_2" class="outline-3">
+<h3 id="sec-1_2">Requirements </h3>
+<div class="outline-text-3" id="text-1_2">
+
+<p>Must be a vector of zero or more symbols.
+</p></div>
+
+</div>
+
+<div id="outline-container-1_3" class="outline-3">
+<h3 id="sec-1_3">Default value </h3>
+<div class="outline-text-3" id="text-1_3">
+
+<p>None, as there is a default for <a href="#sec-6">:func-template-fn</a>.
+</p></div>
+
+</div>
+
+<div id="outline-container-1_4" class="outline-3">
+<h3 id="sec-1_4">Details </h3>
+<div class="outline-text-3" id="text-1_4">
+
+<p>This is a simple shortcut for when <a href="#sec-6">:func-template-fn</a> looks scary. Setting
+<code>{:arg-list '[x y z]}</code> is essentially equivalent to setting <code>{:func-template-fn (make-func-template '[x y z])}</code>. If a value for <a href="#sec-6">:func-template-fn</a> is set, this
+key will be ignored.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><a name=":breeders" id=":breeders"></a>:breeders </h2>
+<div class="outline-text-2" id="text-2">
+
+
+</div>
+
+<div id="outline-container-2_1" class="outline-3">
+<h3 id="sec-2_1">Purpose </h3>
+<div class="outline-text-3" id="text-2_1">
+
+<p>Defines the breeding functions that will be used, and the likelihood of their
+being used when breeding a new individual.
+</p></div>
+
+</div>
+
+<div id="outline-container-2_2" class="outline-3">
+<h3 id="sec-2_2">Requirements </h3>
+<div class="outline-text-3" id="text-2_2">
+
+<p>Must be a collection (vector recommended) of maps with two keys:
+</p><ul>
+<li>
+<code>:breeder-fn</code>, specifying a breeding function
+</li>
+<li>
+<code>:prob</code>, specifying the probability of that breeding function being used
+</li>
+</ul>
+
+
+<p>
+Probabilities for all breeders must add up to 1.
+</p></div>
+
+</div>
+
+<div id="outline-container-2_3" class="outline-3">
+<h3 id="sec-2_3">Default value </h3>
+<div class="outline-text-3" id="text-2_3">
+
+
+
+
+<pre class="src src-clojure">[{<span style="color: #AABBFF;">:prob</span> 0.8  <span style="color: #AABBFF;">:breeder-fn</span> crossover-breeder}
+ {<span style="color: #AABBFF;">:prob</span> 0.1  <span style="color: #AABBFF;">:breeder-fn</span> mutation-breeder}
+ {<span style="color: #AABBFF;">:prob</span> 0.1  <span style="color: #AABBFF;">:breeder-fn</span> reproduction-breeder}]
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2_4" class="outline-3">
+<h3 id="sec-2_4">Details </h3>
+<div class="outline-text-3" id="text-2_4">
+
+<p>The default value illustrates the form this value should take, and shows a
+configuration with three included breeder functions.
+</p>
+<p>
+Of more interest is the form a custom breeder function should take. Such a
+function should take two arguments: a population, and the experiment
+configuration map. It should return a seq of (newly bred) individuals. This seq
+can contain any number of individuals (not all of them are guaranteed to be
+used, especially if it is very long), and may also be <code>nil</code>.
+</p>
+<p>
+The breeders that are provided are (at the time of writing):
+</p><ul>
+<li>
+<code>crossover-breeder</code>
+</li>
+<li>
+<code>mutation-breeder</code>
+</li>
+<li>
+<code>reproduction-breeder</code>
+</li>
+</ul>
+
+
+<p>
+Take a look at their docstring (or GP literature<sup><a class="footref" name="fnr.1" href="#fn.1">1</a></sup>) for details of their
+operation, and their source for examples of how to write your own breeders.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><a name=":breeding-retries" id=":breeding-retries"></a>:breeding-retries </h2>
+<div class="outline-text-2" id="text-3">
+
+
+</div>
+
+<div id="outline-container-3_1" class="outline-3">
+<h3 id="sec-3_1">Purpose </h3>
+<div class="outline-text-3" id="text-3_1">
+
+<p>Defines the number of retries a breeder should attempt in generating a valid
+tree.
+</p></div>
+
+</div>
+
+<div id="outline-container-3_2" class="outline-3">
+<h3 id="sec-3_2">Requirements </h3>
+<div class="outline-text-3" id="text-3_2">
+
+<p>Must be a non-decimal number.
+</p></div>
+
+</div>
+
+<div id="outline-container-3_3" class="outline-3">
+<h3 id="sec-3_3">Default value </h3>
+<div class="outline-text-3" id="text-3_3">
+
+<p>1
+</p></div>
+
+</div>
+
+<div id="outline-container-3_4" class="outline-3">
+<h3 id="sec-3_4">Details </h3>
+<div class="outline-text-3" id="text-3_4">
+
+<p>The breeders included with cljgp will use this setting to determine how many
+times to attempt generating a valid tree if the first one fails.
+</p>
+<p>
+This can be useful when dealing with strict type structures, or breeders that
+fail often.
+</p>
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><a name=":end-condition-fn" id=":end-condition-fn"></a>:end-condition-fn </h2>
+<div class="outline-text-2" id="text-4">
+
+
+</div>
+
+<div id="outline-container-4_1" class="outline-3">
+<h3 id="sec-4_1">Purpose </h3>
+<div class="outline-text-3" id="text-4_1">
+
+<p>Defines the function (predicate) that will be used to determine when the
+evolution process is complete.
+</p></div>
+
+</div>
+
+<div id="outline-container-4_2" class="outline-3">
+<h3 id="sec-4_2">Requirements </h3>
+<div class="outline-text-3" id="text-4_2">
+
+<p>Must be a function that takes a population (= a generation) as its only
+argument, and returns a true or false value. True means the evolution process
+should stop.
+</p></div>
+
+</div>
+
+<div id="outline-container-4_3" class="outline-3">
+<h3 id="sec-4_3">Default value </h3>
+<div class="outline-text-3" id="text-4_3">
+
+<p><code>(cljgp.config/make-end 100)</code>
+</p></div>
+
+</div>
+
+<div id="outline-container-4_4" class="outline-3">
+<h3 id="sec-4_4">Details </h3>
+<div class="outline-text-3" id="text-4_4">
+
+<p>This function will be called after each generation has been evaluated, in order
+to test if the evolution process is complete. The default end condition function
+tests if either the maximum number of generations has been reached, or there
+exists an individual with perfect fitness.
+</p>
+<p>
+The provided <code>cljgp.config/make-end</code> function can be used to easily generate a
+predicate that performs those tests, for example:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
+     {...
+      <span style="color: #AABBFF;">:end-condition-fn</span> (make-end 50)
+      ...})
+</pre>
+
+
+
+<p>
+In this example the experiment will run until a perfect individual is found, or
+the limit of 50 generations is reached. Check the source of <code>make-end</code> if you
+wish to implement a different kind of test.
+</p>
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><a name=":evaluation-fn" id=":evaluation-fn"></a>:evaluation-fn </h2>
+<div class="outline-text-2" id="text-5">
+
+
+</div>
+
+<div id="outline-container-5_1" class="outline-3">
+<h3 id="sec-5_1">Purpose </h3>
+<div class="outline-text-3" id="text-5_1">
+
+<p>Defines the function that will be used to evaluate evolved functions.
+</p></div>
+
+</div>
+
+<div id="outline-container-5_2" class="outline-3">
+<h3 id="sec-5_2">Requirements </h3>
+<div class="outline-text-3" id="text-5_2">
+
+<p>Must be a function that takes a single argument, namely a function.
+Must return either a fitness value in the form of a number, or a map that
+includes a :fitness key and any additional information you may want to include.
+</p></div>
+
+</div>
+
+<div id="outline-container-5_3" class="outline-3">
+<h3 id="sec-5_3">Default value </h3>
+<div class="outline-text-3" id="text-5_3">
+
+<p><b>Required key</b>, no default available.
+</p></div>
+
+</div>
+
+<div id="outline-container-5_4" class="outline-3">
+<h3 id="sec-5_4">Details </h3>
+<div class="outline-text-3" id="text-5_4">
+
+<p>The function configured as value of this key will be called on every evolved
+function in order to generate a fitness value for it.
+</p>
+<p>
+Fitness values should follow the "lower is better" rule. The default end
+condition predicate considers a fitness of 0 to mean that the individual is
+perfect.
+</p>
+<p>
+If the evaluation function returns a number, it will be used as the individual's
+<code>:fitness</code> value (as individuals are represented as maps). If a map is returned,
+it will be merged into the individual. This allows you to store additional
+values you may be interested in, such as "hits" or raw fitness.
+</p>
+<p>
+For examples of fitness functions, see the included example experiments, as they
+are of course very domain specific.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6"><a name=":func-template-fn" id=":func-template-fn"></a>:func-template-fn </h2>
+<div class="outline-text-2" id="text-6">
+
+
+</div>
+
+<div id="outline-container-6_1" class="outline-3">
+<h3 id="sec-6_1">Purpose </h3>
+<div class="outline-text-3" id="text-6_1">
+
+<p>Defines the function that will be used to wrap the S-expression trees (trees
+represented as quoted nested lists) generated by the GP process in <code>fn</code> forms,
+so that they will evaluate to functions.
+</p></div>
+
+</div>
+
+<div id="outline-container-6_2" class="outline-3">
+<h3 id="sec-6_2">Requirements </h3>
+<div class="outline-text-3" id="text-6_2">
+
+<p>Must be a function that takes a tree as argument and returns a <code>(fn ...)</code>
+expression (i.e., a list).
+</p></div>
+
+</div>
+
+<div id="outline-container-6_3" class="outline-3">
+<h3 id="sec-6_3">Default value </h3>
+<div class="outline-text-3" id="text-6_3">
+
+<p><code>(cljgp.config/make-func-template)</code>
+</p></div>
+
+</div>
+
+<div id="outline-container-6_4" class="outline-3">
+<h3 id="sec-6_4">Details </h3>
+<div class="outline-text-3" id="text-6_4">
+
+<p>This is a complex configuration option, but for most uses the provided
+<code>cljgp.config/make-func-template</code> function can be used to easily generate a
+function that can be used as the value for it.
+</p>
+<p>
+The background of this option is the following: all individuals consist of a
+function expression (and some other values), which is compiled to a function
+using <code>eval</code> during the evaluation phase of the GP process. This function is
+passed to the user-defined evaluation function, which can then apply it to test
+its fitness. It can be useful to customise the function expression, for example
+to define an argument list, or to name the function.
+</p>
+<p>
+By defining an argument list, it becomes very easy to pass in values to the
+evolved function, and basically treat it as a "real" Clojure function. Naming
+the function could be useful for evolving recursive functions. These two
+possibilities are easy to access by using the previously mentioned
+<code>make-func-template</code> function. It is used as follows:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
+     {...
+      <span style="color: #AABBFF;">:func-template-fn</span> (make-func-template foo '[x y])
+      ...})
+</pre>
+
+
+
+<p>
+When using the function-templating function (what a name&hellip;) generated there,
+all individuals will compile to a function called <code>foo</code>, with <code>x</code> and <code>y</code> as
+arguments. Their function expression will look something like <code>(fn foo [x y] ...)</code>.
+</p>
+<p>
+In your evaluation function, you could then call them
+as follows:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">defn</span> <span style="color: #BB3344;">my-evaluation</span>
+  [evolved-func]
+  (<span style="color: #4477FF; font-weight: bold;">let</span> [result (evolved-func 100 3.14)]
+    ...))
+</pre>
+
+
+
+<p>
+This is much more convenient than using <code>binding</code> to pass in values.
+</p>
+<p>
+An advanced usage could be to wrap each individual's expression tree in a macro
+that performs some sort of preprocessing, for example. See the source of
+<code>make-func-template</code> for details of what a custom template-fn should return.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-7" class="outline-2">
+<h2 id="sec-7"><a name=":function-set" id=":function-set"></a>:function-set </h2>
+<div class="outline-text-2" id="text-7">
+
+
+</div>
+
+<div id="outline-container-7_1" class="outline-3">
+<h3 id="sec-7_1">Purpose </h3>
+<div class="outline-text-3" id="text-7_1">
+
+<p>Defines the set of functions available to the GP process, and their relevant
+properties.
+</p></div>
+
+</div>
+
+<div id="outline-container-7_2" class="outline-3">
+<h3 id="sec-7_2">Requirements </h3>
+<div class="outline-text-3" id="text-7_2">
+
+<p>Must be a sequence of symbols. The symbols must have metadata that defines the
+<code>:gp-type</code> and <code>:gp-arg-types</code> keys. The value for <code>:gp-type</code> must be a valid
+type (keyword, Java class, or nil), and the value for <code>:gp-arg-types</code> must be a
+sequence of valid types.
+</p></div>
+
+</div>
+
+<div id="outline-container-7_3" class="outline-3">
+<h3 id="sec-7_3">Default value </h3>
+<div class="outline-text-3" id="text-7_3">
+
+<p><b>Required key</b>, no default available.
+</p></div>
+
+</div>
+
+<div id="outline-container-7_4" class="outline-3">
+<h3 id="sec-7_4">Details </h3>
+<div class="outline-text-3" id="text-7_4">
+
+<p>The <code>:function-set</code> key defines a collection of symbols. These symbols will be
+used by the GP process at function positions in the generated trees (in tree
+terms: non-terminal or non-leaf nodes). To do this, the type of the function
+symbol, the number of arguments, and the required type of the arguments has to
+be defined. This is achieved through the <code>:gp-type</code> metadata key, which defines
+the type of the function, and the <code>:gp-arg-types</code> metadata key, which must
+define a positional sequence of argument types. This is best illustrated with an
+example.
+</p>
+<p>
+Let's say we want to use Clojure's standard <code>nth</code> function in an experiment. We
+could define it as follows in the experiment configuration:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
+     {<span style="color: #AABBFF;">:function-set</span> [(primitive `nth {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">::element</span>
+                      <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">::index</span> <span style="color: #AABBFF;">::seq</span>]})
+             ...]})
+</pre>
+
+
+
+<p>
+The <code>primitive</code> function simply takes a symbol and map as argument, and returns
+the symbol with the map as metadata (think <code>with-meta</code> with a more fitting name
+for this purpose).
+</p>
+<p>
+Note the backquoting of the symbol: using just <code>nth</code> will not work, as that
+would be the <i>value</i> of <code>nth</code>, i.e., the function itself. Using a normal quote,
+<code>'nth</code>, would work in this case, but keep in mind that the symbol
+is resolved to its namespace in an <code>eval</code> call in the <code>cljgp.evaluation</code>
+namespace. This will not cause problems for Clojure functions, but any functions
+you define will not be available, causing errors. For that reason it is a good
+habit to always backtick symbols so that they are namespaced correctly, unless
+they will be locals (i.e., they will be passed in as argument).
+</p>
+<p>
+Back to the function arguments. Clojure's <code>nth</code> function takes an index as first
+argument, and a sequence as second, and returns the element in the sequence at
+the index. Using the given definition, the GP process will only use <code>nth</code> in a
+tree at a position where a node of type <code>::element</code> is allowed. Then, as its
+first argument only nodes of type <code>::index</code> will be used, and any node that may
+be considered as its second argument must be of type <code>::seq</code>.
+</p>
+<p>
+These type relations are tested using <code>isa?</code>, which means you can use Clojure's
+powerful ad hoc hierarchy functionality to define your own type hierarchy. Java
+class identifiers can also be used.
+</p>
+<p>
+The value of <code>nil</code> can also be used as type, though it is only useful for
+performing a GP run without any type restrictions, by using <code>nil</code> for all
+types. Because <code>isa?</code> is used for type checking, and the only combination with
+<code>nil</code> for which it returns true is <code>(isa? nil nil)</code>, its use is identical to
+using a keyword that is not part of a hierarchy. Hence, it is almost always a
+better idea to use a keyword (for example, <code>::any</code>) so that it is easier to
+define a type hierarchy later on. For an untyped GP experiment, the above
+definition could look like this:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-untyped-config</span>
+     {<span style="color: #AABBFF;">:function-set</span> [(primitive `nth {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">::any</span>
+                      <span style="color: #AABBFF;">:gp-arg-types</span> [<span style="color: #AABBFF;">::any</span> <span style="color: #AABBFF;">::any</span>]})
+             ...]})
+</pre>
+
+
+
+<p>
+If you have a function that does not take arguments, but does need to be
+applied, use an empty vector for <code>:gp-arg-types</code>.
+</p>
+<p>
+Note that although the key is called a <i>set</i>, it is not recommended that you use
+a Clojure set to define it. Due to implementation details (involving the use of
+<code>nth</code>) these will be relatively slow. Vectors are a much faster choice.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-8" class="outline-2">
+<h2 id="sec-8"><a name=":pop-generation-fn" id=":pop-generation-fn"></a>:pop-generation-fn </h2>
+<div class="outline-text-2" id="text-8">
+
+
+</div>
+
+<div id="outline-container-8_1" class="outline-3">
+<h3 id="sec-8_1">Purpose </h3>
+<div class="outline-text-3" id="text-8_1">
+
+<p>Defines the function used to generate the initial population of individuals (the
+size of which is defined in <a href="#sec-9">:population-size</a>.
+</p></div>
+
+</div>
+
+<div id="outline-container-8_2" class="outline-3">
+<h3 id="sec-8_2">Requirements </h3>
+<div class="outline-text-3" id="text-8_2">
+
+<p>Must be a function that takes an experiment configuration as its argument (from
+which values such as the function and terminal sets can be retrieved), and
+returns a tree or <code>nil</code>.
+</p></div>
+
+</div>
+
+<div id="outline-container-8_3" class="outline-3">
+<h3 id="sec-8_3">Default value </h3>
+<div class="outline-text-3" id="text-8_3">
+
+<p><code>#(cljgp.breeding/generate-ramped {:max-depth 7, :grow-chance 0.5} %1)</code>
+</p>
+<p>
+<i>(Equivalent to</i> <code>(partial generate-ramped {:max-depth 7, :grow-chance 0.5})</code> <i>).</i>
+</p></div>
+
+</div>
+
+<div id="outline-container-8_4" class="outline-3">
+<h3 id="sec-8_4">Details </h3>
+<div class="outline-text-3" id="text-8_4">
+
+<p>In order to perform a GP run, an initial population is required. The function
+defined as value of this key is used to generate the expression trees in the
+population. Note the important difference between the breeding functions (which
+return full individuals) and this function (which return just trees).
+</p>
+<p>
+When a valid tree has been generated by this function, cljgp will insert the
+tree into the appropriate <code>fn</code> form (using <a href="#sec-6">:func-template-fn</a>) which is then
+used as the function expression for a new individual.
+</p>
+<p>
+The default value is an implementation of the effective standard algorithm used
+to generate GP trees for the initial population: ramped half-and-half. This
+implementation, in the form of <code>cljgp.breeding/generate-ramped</code>, must be
+configured by partial application on a map containing <code>:max-depth</code> and/or
+<code>:grow-chance</code> keys. Respectively, these configure the maximum tree depth, and
+the probability of the <i>grow</i> method being used as opposed to the <i>full</i>
+method. Details on these methods can be found in the docstrings of
+<code>cljgp.breeding/generate-tree</code> and <code>generate-ramped</code> (or various introductory GP
+literature such as <sup><a class="footref" name="fnr.1.2" href="#fn.1">1</a></sup>).
+</p>
+<p>
+A custom function to replace <code>generate-ramped</code> must take an experiment
+configuration map as its only argument, and return either a valid tree or <code>nil</code>
+(if generation failed to produce a valid tree and should be retried). From the
+configuration map the various properties required to generate trees can be
+retrieved (such as the function set).
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-9" class="outline-2">
+<h2 id="sec-9"><a name=":population-size" id=":population-size"></a>:population-size </h2>
+<div class="outline-text-2" id="text-9">
+
+
+</div>
+
+<div id="outline-container-9_1" class="outline-3">
+<h3 id="sec-9_1">Purpose </h3>
+<div class="outline-text-3" id="text-9_1">
+
+<p>As the name suggests, defines the size of the population (constant over the
+course of all generations).
+</p></div>
+
+</div>
+
+<div id="outline-container-9_2" class="outline-3">
+<h3 id="sec-9_2">Requirements </h3>
+<div class="outline-text-3" id="text-9_2">
+
+<p>Must be a non-decimal number.
+</p></div>
+
+</div>
+
+<div id="outline-container-9_3" class="outline-3">
+<h3 id="sec-9_3">Default value </h3>
+<div class="outline-text-3" id="text-9_3">
+
+<p><b>Required key</b>, no default available.
+</p></div>
+
+</div>
+
+<div id="outline-container-9_4" class="outline-3">
+<h3 id="sec-9_4">Details </h3>
+<div class="outline-text-3" id="text-9_4">
+
+<p>Simply defines how many individuals should exist in each generation. The initial
+population and all subsequent ones will have this many individuals.
+</p>
+<p>
+There is no default, because it will heavily depend on the amount of processing
+power and memory (and therefore time) one is willing to spend, as especially
+with complex evaluation having to be performed this can increase quickly
+(linearly) with the size of the population.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-10" class="outline-2">
+<h2 id="sec-10"><a name=":rand-seeds" id=":rand-seeds"></a>:rand-seeds </h2>
+<div class="outline-text-2" id="text-10">
+
+
+</div>
+
+<div id="outline-container-10_1" class="outline-3">
+<h3 id="sec-10_1">Purpose </h3>
+<div class="outline-text-3" id="text-10_1">
+
+<p>Defines a seq of the seeds that will be used to initialise the random number
+generator of each thread.
+</p></div>
+
+</div>
+
+<div id="outline-container-10_2" class="outline-3">
+<h3 id="sec-10_2">Requirements </h3>
+<div class="outline-text-3" id="text-10_2">
+
+<p>Seq must contain at least as many seeds as the number of threads that will be
+used (defined in <code>:threads</code>).
+Seeds should be non-decimal, specifically of type Long.
+</p></div>
+
+</div>
+
+<div id="outline-container-10_3" class="outline-3">
+<h3 id="sec-10_3">Default value </h3>
+<div class="outline-text-3" id="text-10_3">
+
+<p><code>(cljgp.config/seeds-from-time)</code>
+</p></div>
+
+</div>
+
+<div id="outline-container-10_4" class="outline-3">
+<h3 id="sec-10_4">Details </h3>
+<div class="outline-text-3" id="text-10_4">
+
+<p>The value for this key can be any kind of sequence as long as it contains
+sufficient elements for the number of threads to be used.
+</p>
+<p>
+The default seq returned by calling <code>cljgp.config/seeds-from-time</code> is an
+infinite lazy sequence of integers based on the system time. By calling it as
+<code>(seeds-from-time true)</code>, the seeds that are used will be printed to stdout at
+the start of the run.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-11" class="outline-2">
+<h2 id="sec-11"><a name=":rand-fn-maker" id=":rand-fn-maker"></a>:rand-fn-maker </h2>
+<div class="outline-text-2" id="text-11">
+
+
+</div>
+
+<div id="outline-container-11_1" class="outline-3">
+<h3 id="sec-11_1">Purpose </h3>
+<div class="outline-text-3" id="text-11_1">
+
+<p>Defines a function that produces functions that return random numbers, typically
+by encapsulating an RNG instance in a closure.
+</p></div>
+
+</div>
+
+<div id="outline-container-11_2" class="outline-3">
+<h3 id="sec-11_2">Requirements </h3>
+<div class="outline-text-3" id="text-11_2">
+
+<p>Function must take one argument, which is the seed to initialise the RNG with,
+and must return a function that takes no arguments and returns a random number
+of type <code>double</code> (or <code>Double</code>).
+</p></div>
+
+</div>
+
+<div id="outline-container-11_3" class="outline-3">
+<h3 id="sec-11_3">Default value </h3>
+<div class="outline-text-3" id="text-11_3">
+
+<p><code>make-default-rand</code>
+</p></div>
+
+</div>
+
+<div id="outline-container-11_4" class="outline-3">
+<h3 id="sec-11_4">Details </h3>
+<div class="outline-text-3" id="text-11_4">
+
+<p>Some implementation background is of interest here: random numbers are generated
+by calling the function <code>cljgp.random/gp-rand</code>, which acts much like
+<code>clojure.core/rand</code>. For each thread, <code>gp-rand</code> is bound to a separate function,
+so that each thread has its own RNG with its own state and seed. This guarantees
+deterministic results for identical seeds.
+</p>
+<p>
+Where the <a href="#sec-10">:rand-seeds</a> value is used for said seeds, the function given as the
+value of <code>:rand-fn-maker</code> is applied to each seed to produce such a
+thread-specific rand function that will be bound to <code>gp-rand</code>. These replacement
+functions are created once during the configuration preprocessing that occurs
+before a run begins in earnest.
+</p>
+<p>
+Of course, the implementation of this <code>gp-rand</code>-replacement producer function
+depends on what RNG is used. An example that uses the <a href="https://uncommons-maths.dev.java.net/">Uncommons Maths</a> library's
+Mersenne Twister implementation is provided in <code>cljgp.tools.unc-math-random</code>. If
+you wish to use an RNG that is neither Java's Random nor the above Mersenne
+Twister RNG, take a look at the source code of both the Uncommons Maths example
+and <code>cljgp.random</code>.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-12" class="outline-2">
+<h2 id="sec-12"><a name=":root-type" id=":root-type"></a>:root-type </h2>
+<div class="outline-text-2" id="text-12">
+
+
+</div>
+
+<div id="outline-container-12_1" class="outline-3">
+<h3 id="sec-12_1">Purpose </h3>
+<div class="outline-text-3" id="text-12_1">
+
+<p>Defines the type that the root node of the tree must satisfy.
+</p></div>
+
+</div>
+
+<div id="outline-container-12_2" class="outline-3">
+<h3 id="sec-12_2">Requirements </h3>
+<div class="outline-text-3" id="text-12_2">
+
+<p>Must be either a keyword, a Java class name, or <code>nil</code>.
+</p></div>
+
+</div>
+
+<div id="outline-container-12_3" class="outline-3">
+<h3 id="sec-12_3">Default value </h3>
+<div class="outline-text-3" id="text-12_3">
+
+<p><code>nil</code>
+</p></div>
+
+</div>
+
+<div id="outline-container-12_4" class="outline-3">
+<h3 id="sec-12_4">Details </h3>
+<div class="outline-text-3" id="text-12_4">
+
+<p>When a program/tree is generated or transformed, the result must be valid with
+respect to the type constraints defined in the experiment configuration. To do
+this, we need to define what type the root of the tree must be, as it has no
+parents of whom we can check the argument types.
+</p>
+<p>
+If the value of <code>:root-type</code> is a keyword or Java class name, any node
+considered for the root position in the tree must have a type for which <code>(isa? &lt;node-type&gt; &lt;root-type&gt;)</code> returns true.
+</p>
+<p>
+For example, if <code>:root-type</code> is defined as <code>java.lang.Number</code>, all nodes with
+<code>:gp-type</code> defined as <code>java.lang.Integer</code> could be used as root, as <code>(isa? Integer Number)</code> is true. Nodes with type <code>String</code> however cannot.
+</p>
+<p>
+When <code>:root-type</code> is <code>nil</code>, only nodes with type <code>nil</code> can be picked as root.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-13" class="outline-2">
+<h2 id="sec-13"><a name=":selection-fn" id=":selection-fn"></a>:selection-fn </h2>
+<div class="outline-text-2" id="text-13">
+
+
+</div>
+
+<div id="outline-container-13_1" class="outline-3">
+<h3 id="sec-13_1">Purpose </h3>
+<div class="outline-text-3" id="text-13_1">
+
+<p>Defines the function used (by the provided breeders) to select individuals for
+breeding.
+</p></div>
+
+</div>
+
+<div id="outline-container-13_2" class="outline-3">
+<h3 id="sec-13_2">Requirements </h3>
+<div class="outline-text-3" id="text-13_2">
+
+<p>Must be a function that takes a population as its only argument, and returns a
+single individual from that population.
+</p></div>
+
+</div>
+
+<div id="outline-container-13_3" class="outline-3">
+<h3 id="sec-13_3">Default value </h3>
+<div class="outline-text-3" id="text-13_3">
+
+<p><code>#(cljgp.selection/tournament-select {:size 7} %1)</code>
+</p>
+<p>
+<i>(Equivalent to</i> <code>(partial tournament-select {:size 7})</code> <i>).</i>
+</p></div>
+
+</div>
+
+<div id="outline-container-13_4" class="outline-3">
+<h3 id="sec-13_4">Details </h3>
+<div class="outline-text-3" id="text-13_4">
+
+<p>The included breeder functions all use the function defined in <code>:selection-fn</code>
+to select the individuals that will reproduce.
+</p>
+<p>
+The default is an implementation of tournament selection, a method that is
+widely used and documented<sup><a class="footref" name="fnr.1.3" href="#fn.1">1</a></sup>. The tournament size should be defined by partially
+applying on a map containing a <code>:size</code> key (using <code>partial</code>, or an anonymous
+function), after which the remaining argument will be a given population. The
+default is configured to size 7, as can be seen in the listing of the default
+value above.
+</p>
+<p>
+Note that it is not required for a breeding function to use this value to
+perform its selection. As said, all included breeders do use it.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-14" class="outline-2">
+<h2 id="sec-14"><a name=":terminal-set" id=":terminal-set"></a>:terminal-set </h2>
+<div class="outline-text-2" id="text-14">
+
+
+</div>
+
+<div id="outline-container-14_1" class="outline-3">
+<h3 id="sec-14_1">Purpose </h3>
+<div class="outline-text-3" id="text-14_1">
+
+<p>Defines the set of symbols to use as terminals/leaves (typically
+variables/values).
+</p></div>
+
+</div>
+
+<div id="outline-container-14_2" class="outline-3">
+<h3 id="sec-14_2">Requirements </h3>
+<div class="outline-text-3" id="text-14_2">
+
+<p>Must be a sequence of symbols. The symbols must have metadata that defines the
+<code>:gp-type</code> key. The value for <code>:gp-type</code> must be a valid GP type (keyword, Java
+class, or nil).
+</p></div>
+
+</div>
+
+<div id="outline-container-14_3" class="outline-3">
+<h3 id="sec-14_3">Default value </h3>
+<div class="outline-text-3" id="text-14_3">
+
+<p><b>Required key</b>, no default available.
+</p></div>
+
+</div>
+
+<div id="outline-container-14_4" class="outline-3">
+<h3 id="sec-14_4">Details </h3>
+<div class="outline-text-3" id="text-14_4">
+
+<p>The value for the <code>:terminal-set</code> key defines the collection of symbols the GP
+process can use as terminal nodes in the program trees. These symbols may
+for example resolve to global vars (that might be bound to a value during
+evaluation), or local arguments to the evolved function. In order to use these
+symbols at valid positions in generated trees, their type must be defined
+through the <code>:gp-type</code> key.
+</p>
+<p>
+Similar to function symbols defined in the <a href="#sec-7">:function-set</a>, the type of terminal
+nodes can be a keyword (perhaps from an ad hoc hierarchy), a Java class
+identifier, or <code>nil</code> (which functions as a keyword with no hierarchy). Type
+relations are checked using <code>isa?</code>.
+</p>
+<p>
+The following example comes from the included regression example
+(<i>reg_exp.clj</i>):
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
+     {...
+      <span style="color: #AABBFF;">:terminal-set</span> [(prim 'x {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>})
+
+             (prim 'y {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>})]
+      ...
+      <span style="color: #AABBFF;">:func-template-fn</span> (make-func-template '[x y])
+      ...})
+</pre>
+
+
+
+<p>
+Here <code>prim</code> is an abbreviation of <code>cljgp.config/primitive</code>, which is a function
+taking a symbol and a map, and returns the symbol with the map attached as
+metadata (like <code>with-meta</code>, but with some extra error checks).
+</p>
+<p>
+The <code>x</code> and <code>y</code> symbols defined as terminals in the example are not
+namespace-resolved, because they will be passed in as arguments as defined in
+the <a href="#sec-6">:func-template-fn</a> key.
+</p>
+<p>
+An alternative would be to use Vars as terminals that will be bound to a value
+using <code>binding</code> during evaluation:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">myX</span> nil)
+(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">myY</span> nil)
+
+(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
+     {...
+      <span style="color: #AABBFF;">:terminal-set</span> [(prim `myX {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>}) <span style="color: #119933; background-color: #132313;">; </span><span style="color: #119933; background-color: #132313;">note the backtick
+</span>
+             (prim `myY {<span style="color: #AABBFF;">:gp-type</span> <span style="color: #AABBFF;">Number</span>})]
+      ...})
+</pre>
+
+
+
+<p>
+If this approach is used, the symbols must be namespace-resolved here using the
+backtick, or errors will occur when compiling the evolved functions for
+evaluation.
+</p>
+<p>
+Note that although the key is called a <i>set</i>, it is not recommended that you use
+a Clojure set to define it. Due to implementation details (involving the use of
+<code>nth</code>) these will be relatively slow. Vectors are a much faster choice.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-15" class="outline-2">
+<h2 id="sec-15"><a name=":threads" id=":threads"></a>:threads </h2>
+<div class="outline-text-2" id="text-15">
+
+
+</div>
+
+<div id="outline-container-15_1" class="outline-3">
+<h3 id="sec-15_1">Purpose </h3>
+<div class="outline-text-3" id="text-15_1">
+
+<p>Defines the number of threads that the computation will be divided over.
+</p></div>
+
+</div>
+
+<div id="outline-container-15_2" class="outline-3">
+<h3 id="sec-15_2">Requirements </h3>
+<div class="outline-text-3" id="text-15_2">
+
+<p>Must be a non-decimal number.
+</p></div>
+
+</div>
+
+<div id="outline-container-15_3" class="outline-3">
+<h3 id="sec-15_3">Default value </h3>
+<div class="outline-text-3" id="text-15_3">
+
+<p>1
+</p></div>
+
+</div>
+
+<div id="outline-container-15_4" class="outline-3">
+<h3 id="sec-15_4">Details </h3>
+<div class="outline-text-3" id="text-15_4">
+
+<p>GP is data parallel during breeding, evaluation and the generation of the
+initial population. These phases are where the work is divided over the number
+of threads defined here. The threads that are used come from a thread pool,
+using <code>future</code> calls (computation is still forced to occur within the relevant
+functions).
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-16" class="outline-2">
+<h2 id="sec-16"><a name=":validate-tree-fn" id=":validate-tree-fn"></a>:validate-tree-fn </h2>
+<div class="outline-text-2" id="text-16">
+
+
+</div>
+
+<div id="outline-container-16_1" class="outline-3">
+<h3 id="sec-16_1">Purpose </h3>
+<div class="outline-text-3" id="text-16_1">
+
+<p>Defines the predicate function used to check if a tree is valid (if not, a new
+tree must be generated or bred).
+</p></div>
+
+</div>
+
+<div id="outline-container-16_2" class="outline-3">
+<h3 id="sec-16_2">Requirements </h3>
+<div class="outline-text-3" id="text-16_2">
+
+<p>Must be a predicate (function returning true or false) that takes an expression
+tree as its only argument. When false is returned, the tree will not be used and
+a new one will be created.
+</p></div>
+
+</div>
+
+<div id="outline-container-16_3" class="outline-3">
+<h3 id="sec-16_3">Default value </h3>
+<div class="outline-text-3" id="text-16_3">
+
+<p><code>identity</code> (returns true for all trees)
+</p></div>
+
+</div>
+
+<div id="outline-container-16_4" class="outline-3">
+<h3 id="sec-16_4">Details </h3>
+<div class="outline-text-3" id="text-16_4">
+
+<p>A very common issue in GP is that of <i>bloat</i> <sup><a class="footref" name="fnr.1.4" href="#fn.1">1</a></sup>, namely the excessive growth of the
+trees in the population, leading to bad performance in both the results of the
+evolution and the speed of computation. One way to avoid this is to define a
+validation function in this <code>:validate-tree-fn</code> key that considers overly large
+trees invalid.
+</p>
+<p>
+Such a function could look something like <code>#(&lt; (cljgp.util/tree-depth %1) 10)</code>
+in order to prevent trees of ten nodes deep or more from being added to the
+population.
+</p>
+<p>
+Note that by default there is no limit on tree size or depth, as it is highly
+domain dependent. It is highly recommended you configure one with a reasonable
+depth limit for your experiment.
+</p>
+<p>
+Of course this predicate can be used for other purposes than limiting size. Note
+that when it is applied to a tree, that tree is already validly typed, so checking this 
+not needed.
+</p>
+
+</div>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+<p class="footnote"><sup><a class="footnum" name="fn.1" href="#fnr.1">1</a></sup> R. Poli, W.B. Langdon, N.F. McPhee, and J.R. Koza. <em><a href="http://www.gp-field-guide.org.uk/">A Field Guide to Genetic Programming</a></em>, 2008.
+</p>
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: Stefan van der Meer
+</p>
+<p class="date"> Date: 2011-02-18 19:41:42 </p>
+<p class="creator">HTML generated by org-mode 7.4 in emacs 24</p>
+</div>
+</div>
+</body>
+</html>

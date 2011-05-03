@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>ClojureGP: Overview</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2011-02-18 19:42:28 "/>
+<meta name="author" content="Stefan van der Meer"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="docstyle.css" />
+<style type="text/css">
+.outline-2 { border: 1px solid #EEE; margin-bottom: 0.2em; }
+.outline-3 { padding-left: 1em; }
+.outline-3 p { margin-top: 0.5em; padding-left: 0.25em; }
+h2 { margin-top: 0; padding: 0.1em; background: #CEF;
+}
+h3 { font-size: 10pt; margin-bottom: 1pt; }
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">ClojureGP: Overview</h1>
+
+<p>This document aims to give a high-level overview of how ClojureGP works. It
+assumes some familiarity with Clojure, including the basic idea of the sequence
+model and concepts such as lazy sequences.
+</p>
+<p>
+It also assumes familiarity with the basics of Genetic Programming. The GP Field
+Guide<sup><a class="footref" name="fnr.1" href="#fn.1">1</a></sup> gets you up to speed in about thirty pages and is freely
+available, so that is the source that will be referred to most often here and
+elsewhere in the documentation. Of course there exists a large amount of more
+in-depth literature, and on the more basic side there is always <a href="http://en.wikipedia.org/wiki/Genetic_programming">the Wikipedia article</a>.
+</p>
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Core concepts </a>
+<ul>
+<li><a href="#sec-1_1">1.1 Representation of a GP run </a></li>
+<li><a href="#sec-1_2">1.2 Representation of an individual </a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 Configuration </a>
+<ul>
+<li><a href="#sec-2_1">2.1 Configuration map </a></li>
+<li><a href="#sec-2_2">2.2 Functions and closures </a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 Organization </a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Core concepts </h2>
+<div class="outline-text-2" id="text-1">
+
+<p>ClojureGP's representations of GP runs and the evolved individuals makes use of
+Clojure's strengths (both as a Lisp and otherwise) to let you do powerful things
+in a natural way.
+</p>
+
+</div>
+
+<div id="outline-container-1_1" class="outline-3">
+<h3 id="sec-1_1"><span class="section-number-3">1.1</span> Representation of a GP run </h3>
+<div class="outline-text-3" id="text-1_1">
+
+<p>ClojureGP represents a GP <i>run</i> as a lazy sequence of populations. A "run"
+refers here to one full execution of the GP process from start (initialising the
+starting population) to finish (reaching an end condition). The initial
+population forms generation 0, and is evaluated to determine its quality and
+then bred into a fitter population, which is generation 1. This process repeats
+until an end condition is reached in some generation N.
+</p>
+<p>
+If we consider the evaluation step as the hypothetical function <code>evaluate</code>, and
+the breeding step as <code>breed</code>, the series of generations of a run can be seen as
+follows:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">generations</span>
+     (<span style="color: #AABBFF;">cons</span> initial-population
+       (<span style="color: #AABBFF;">cons</span> (breed (evaluate initial-population))
+         (<span style="color: #AABBFF;">cons</span> (breed (evaluate (breed (evaluate initial-population))))
+               ...))))
+</pre>
+
+
+
+<p>
+ClojureGP performs a GP run by constructing a sequence of generations not unlike
+this example. Of course, actually storing many potentially large populations in
+memory is not feasible, hence the sequence is lazy.
+</p>
+<p>
+Inside this sequence, each element is simply a collection (seq) of individuals. A
+"generation" is equivalent to a "population", and both terms when used in the
+context of ClojureGP refer to a collection of individuals.
+</p>
+<p>
+This representation ends up being very convenient. As you can see from the
+high-level functions in <code>cljgp.core</code> in the source, it is easy to express a run
+in such a way.
+</p>
+<p>
+More importantly, it allows a very natural manipulation of runs (especially from
+a Clojure standpoint). Finding the population with the best individual can be
+done by simply calling <code>last</code> on the seq of generations. Then finding the best
+individual can be done naively as <code>(first (sort-by :fitness last-population))</code>
+(a faster way is provided in <code>cljgp.tools.analyse/best-fitness</code>).
+</p>
+<p>
+Printing statistics about each generation during or after a run is also
+easy. Define a function that given a population computes and prints the stats
+you are interested in, and then returns the population again. You can then <code>map</code>
+this function over the seq of generations, essentially turning it into a new
+lazy seq with the stats printing added on. Then when inside a function like
+<code>last</code> each element of the lazy seq is actually realised, the information is
+printed as soon as each generation has been computed.
+</p>
+<p>
+Using some of the functions provided in ClojureGP, that ends up looking like
+this:
+</p>
+
+
+<pre class="src src-clojure">(print-best
+ (<span style="color: #AABBFF;">last</span>
+  (<span style="color: #AABBFF;">map</span> print-stats 
+       (generate-run experiment-config))))
+</pre>
+
+
+
+<p>
+Other side-effect-based functions can be similarly applied with <code>map</code>. Included
+in <code>cljgp.tools.*</code> are functions for logging statistics to a file, and
+displaying a graph with a live plot of some fitness statistics. Because all
+these functions return the population they were given, they can be freely
+chained together. (There are even some optimisations for this usage<sup><a class="footref" name="fnr.2" href="#fn.2">2</a></sup>).
+</p>
+<p>
+Here is the above example with some additional analysis functions chained in: <sup><a class="footref" name="fnr.3" href="#fn.3">3</a></sup>
+</p>
+
+
+<pre class="src src-clojure">(print-best
+ (<span style="color: #AABBFF;">last</span>
+  (<span style="color: #AABBFF;">map</span> (create-fitness-plotter)
+       (<span style="color: #AABBFF;">map</span> (log-stats <span style="color: #AA44AA; background-color: #231323;">"mylog.log"</span> <span style="color: #AABBFF;">:verbose</span>)
+        (<span style="color: #AABBFF;">map</span> print-stats
+         (generate-run experiment-config))))))
+</pre>
+
+
+
+<p>
+Composing functions using <code>clojure.core/comp</code> and then performing one <code>map</code> of
+the resulting composed function is also possible.
+</p>
+<p>
+More advanced output than simply printing the best individual is also provided,
+in for example <code>cljgp.logging/reduce-to-summary</code> (check its docstring or the
+example experiments for details).
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1_2" class="outline-3">
+<h3 id="sec-1_2"><span class="section-number-3">1.2</span> Representation of an individual </h3>
+<div class="outline-text-3" id="text-1_2">
+
+<p>In ClojureGP, each individual is a hashmap (strictly speaking a structmap) with
+three keys:
+</p><ul>
+<li>
+<code>:func</code> &ndash; The evolved function.
+</li>
+<li>
+<code>:gen</code> &ndash; The generation of the individual.
+</li>
+<li>
+<code>:fitness</code> &ndash; The fitness value of the individual (nil if not evaluated yet).
+</li>
+</ul>
+
+
+<p>
+The generation and fitness are straightforward numeric values as you'd
+expect. The function needs some additional clarification.
+</p>
+<p>
+ClojureGP implements tree-based genetic programming, where the programs being
+evolved are S-expressions, which are of course trees represented as nested
+lists. These trees are stored in the <code>:func</code> key, inside a quoted <code>fn</code> form.
+</p>
+<p>
+The <code>fn</code> <a href="http://clojure.org/special_forms">special form</a> creates a Clojure function. It has the basic form of <code>(fn name [params] expression-tree)</code>. In ClojureGP, when a tree has been generated
+for the initial population, it is inserted into a quoted "template" of such an
+fn form as its expression tree. In order to evaluate it, the fn form is compiled
+to a Clojure function using <code>eval</code>, and then passed to a user-defined evaluation
+function.
+</p>
+<p>
+To illustrate the basic steps, consider the following REPL interaction:
+</p>
+
+
+<pre class="src src-clojure">user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-tree</span> '(<span style="color: #AABBFF;">+</span> 1 2))
+#'user/my-tree
+user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-fn</span> `(<span style="color: #AABBFF;">fn</span> <span style="color: #BB3344;">foo</span> [] ~my-tree))
+#'user/my-fn
+user&gt; my-fn
+(clojure.core/<span style="color: #AABBFF;">fn</span> <span style="color: #BB3344;">user/foo</span> [] (<span style="color: #AABBFF;">+</span> 1 2))
+user&gt; (<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-function</span> (<span style="color: #AABBFF;">eval</span> my-fn))
+#'user/my-function
+user&gt; (my-function)
+3
+</pre>
+
+
+
+<p>
+So while the trees being evolved are expressions, they are turned into fully
+fledged Clojure functions by inserting them into an <code>fn</code> form. You can in fact
+define the name and argument list of the <code>fn</code> form (see <a href="./config_reference.html#:func-template-fn">:func-template-fn in the configuration reference</a>). By adding the arguments to your terminal set, they can
+be used in the evolution process like any other terminal/variable. This allows
+you to evolve functions that you can <code>eval</code> and then use just like you would use
+a handwritten function.
+</p>
+<p>
+Most of the included example experiments perform their evaluation of each
+individual by calling the function on a variety of arguments.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Configuration </h2>
+<div class="outline-text-2" id="text-2">
+
+<p>ClojureGP aims to be versatile, with many pieces of functionality up for
+configuration or easy replacement, while providing sensible defaults where
+possible.
+</p>
+
+</div>
+
+<div id="outline-container-2_1" class="outline-3">
+<h3 id="sec-2_1"><span class="section-number-3">2.1</span> Configuration map </h3>
+<div class="outline-text-3" id="text-2_1">
+
+<p>An experiment is specified/configured in its entirety in a (hash-)map, referred
+to as an "experiment configuration", or more often as "run
+configuration". Examples of such a run configuration can be found in the example
+experiments.
+</p>
+<p>
+A run configuration is turned into an actual run (seq of generations) using
+<code>(cljgp.core/generate-run the-configuration)</code>. The <code>generate-run</code> function
+performs some preprocessing of the configuration (e.g., inserting defaults where
+necessary), and passes it down into the lower level functions. The lower level
+functions extract relevant values from the run configuration by explicit
+destructuring in their argument list, to show exactly what they will be using.
+</p>
+<p>
+Passing around a map of parameters like this ends up being much more concise and
+readable than using positional arguments, due to the large number of parameters
+that are required.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-2_2" class="outline-3">
+<h3 id="sec-2_2"><span class="section-number-3">2.2</span> Functions and closures </h3>
+<div class="outline-text-3" id="text-2_2">
+
+<p>Many options are configured by specifying what function to use for a certain bit
+of functionality. One of the most important keys is <a href="./config_reference.html#:evaluation-fn">:evaluation-fn</a>, which
+specifies the function that will be used to compute a fitness value for each
+individual. Any function that takes the right number of arguments and returns
+the right kind of value can be specified.
+</p>
+<p>
+Some of the provided functions have their own set of parameters that need to be
+configured. Rather than specifying these in the run configuration, they are
+configured using partial application on a map of the parameters.
+</p>
+<p>
+For example, the key <a href="./config_reference.html#:pop-generation-fn">:pop-generation-fn</a>, which configures what function to use
+for generating trees in the initial population, is configured by passing in a
+function that generates a tree. The default is an implementation of the widely
+used ramped half-and-half algorithm. To configure the maximum depth of the
+generated trees, for example, you could do the following:
+</p>
+
+
+<pre class="src src-clojure">(<span style="color: #4477FF; font-weight: bold;">def</span> <span style="color: #BB3344;">my-config</span>
+     {...
+      <span style="color: #AABBFF;">:pop-generation-fn</span> (<span style="color: #AABBFF;">partial</span> generate-ramped {<span style="color: #AABBFF;">:max-depth</span> 14})
+      ...})
+</pre>
+
+
+
+<p>
+Partially applying on a map may seem a bit strange, but it is much clearer and
+readable than positional arguments, and prevents ordering mistakes. Think of it
+like specifying keyword arguments.
+</p>
+<p>
+For more examples of this type of configuration, and all other configurable
+options, take a look at the included example experiments, and the
+<a href="./config_reference.html">configuration key reference</a> document.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Organization </h2>
+<div class="outline-text-2" id="text-3">
+
+<p>ClojureGP's functionality is subdivided into the following namespace structure:
+</p>
+<ul>
+<li>
+<i>cljgp</i>
+<ul>
+<li>
+<b>breeding</b> &ndash; Breeding new individuals from old ones.
+</li>
+<li>
+<b>config</b> &ndash; Configuration helpers and preprocessing.
+</li>
+<li>
+<b>core</b> &ndash; Core functions that create a GP run.
+</li>
+<li>
+<b>evaluation</b> &ndash; Evaluation of individuals.
+</li>
+<li>
+<b>generate</b> &ndash; Generating trees/individuals and populations of individuals.
+</li>
+<li>
+<b>random</b> &ndash; Random number generation.
+</li>
+<li>
+<b>selection</b> &ndash; Selection for breeding.
+</li>
+<li>
+<b>util</b> &ndash; Various helper functions.
+</li>
+<li>
+<i>tools</i>
+<ul>
+<li>
+<b>analyse</b> &ndash; Statistics for use by logging et al.
+</li>
+<li>
+<b>graph</b> &ndash; Example graphing implementation using <a href="http://quies.net/java/math/plot/">QN Plot</a>.
+</li>
+<li>
+<b>logging</b> &ndash; Logging to stdout and file.
+</li>
+<li>
+<b>unc-math-random</b> &ndash; Example RNG replacement using <a href="https://uncommons-maths.dev.java.net/">Uncommons Maths</a>.
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+
+
+
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+<p class="footnote"><sup><a class="footnum" name="fn.1" href="#fnr.1">1</a></sup> R. Poli, W.B. Langdon, N.F. McPhee, and J.R. Koza. <em><a href="http://www.gp-field-guide.org.uk/">A Field Guide to Genetic Programming</a></em>, 2008.
+</p>
+<p class="footnote"><sup><a class="footnum" name="fn.2" href="#fnr.2">2</a></sup> Most logging/stats related functions will pass on statistics about
+a given population by only calculating them once and then attaching them as
+metadata for use by subsequent functions. See <code>cljgp.tools.analyse</code> and
+<code>cljgp.tools.logging</code> for details.
+</p>
+<p class="footnote"><sup><a class="footnum" name="fn.3" href="#fnr.3">3</a></sup> For plotting and logging a closure is created, capturing instances of Java
+classes as needed to perform the intended side-effects. For this reason the
+provided logging and plotting functions <i>return</i> the actual function that should
+be mapped over the seq of generations. So <code>(map (log-stats "test.log") gen-seq)</code>
+instead of <code>(map log-stats gen-seq)</code>.
+</p>
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: Stefan van der Meer
+</p>
+<p class="date"> Date: 2011-02-18 19:42:28 </p>
+<p class="creator">HTML generated by org-mode 7.4 in emacs 24</p>
+</div>
+</div>
+</body>
+</html>

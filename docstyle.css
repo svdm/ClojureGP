@@ -1,0 +1,35 @@
+body { 
+    background: white;
+    font: 10pt verdana, arial, sans-serif;
+}
+
+.src-clojure { 
+    background: #171717; 
+    color: #BBB; 
+    font-family: consolas, courier new, courier, monospace; 
+}
+
+.code-highlighted { 
+    background: #555;
+}
+
+#postamble { 
+    border-top: 1px solid black;
+    font-size: 10px; 
+}
+
+code,pre{
+    font: 10pt courier new, courier, monospace;
+}
+
+#footnotes {
+    font-size: 8pt;
+    border-top: 1px solid black;
+    margin-top: 4em;
+}
+
+h2.footnotes {
+    font-size: 10pt;
+    font-style: italic;
+    background: white;
+}
