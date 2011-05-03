@@ -1,5 +1,3 @@
--*- markdown -*-
-
 ClojureGP
 =========
 
@@ -11,7 +9,7 @@ Usage
 -----
 
 Please refer to the included documentation and examples in the `./doc/` and
-`./examples/` directories.
+`./examples/` directories. The docs are also available at <http://svdm.github.com/ClojureGP>.
 
 To see a basic genetic programming run in action, load one of the example
 experiments as follows, using a terminal/command prompt at the repository root:
