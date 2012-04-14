@@ -12,10 +12,11 @@
   (:import java.util.Random))
 
 
-(defn gp-rand
+(defn ^:dynamic gp-rand
   "Identical to clojure.core/rand, but can be overridden to use a different PRNG
   without affecting clojure's rand."
-  [] (. Math random))
+  []
+  (Math/random))
 
 (defn gp-rand-int
   "Identical to clojure.core/rand-int, but using gp-rand internally."
@@ -25,7 +26,7 @@
 (defn pick-rand
   "Returns a random item from the given list, vector, seq or set."
   [coll]
-  (nth (if (and (sequential? coll) 
+  (nth (if (and (sequential? coll)
                 (seq coll))             ; because nth errors for (nth [] 0)
          coll
          (seq coll))

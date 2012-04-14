@@ -81,7 +81,7 @@
 
 ;;;; Evaluation
 
-(def ant-state
+(def ^:dynamic ant-state
   "Var to be bound during evaluation to a map containing:
    - :trail    the trail state of the current ant
    - :pos      the position of the ant on the trail map

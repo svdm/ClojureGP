@@ -91,11 +91,11 @@
           fmax (float (max fit-max fit-ind))
           ftot (+ fit-tot fit-ind)]
       (if (seq poprest)
-        (recur (float (get-fitness (first poprest))) 
+        (recur (float (get-fitness (first poprest)))
                (rest poprest)
                fmin fmax ftot)
-        {:fit-min fmin 
-         :fit-max fmax 
+        {:fit-min fmin
+         :fit-max fmax
          :fit-avg (/ ftot (count pop))}))))
 
 ; These defs were macro'd, but this seemed to obfuscate things unnecessarily
@@ -116,11 +116,11 @@
 ;;;;
 
 ; List of stats that will be present in the stats-map
-(def *all-stats*
-     `[fitness-avg fitness-min fitness-max fitness-all
-       tree-depth-avg tree-depth-min tree-depth-max
-       tree-size-avg tree-size-min tree-size-max
-       best-fitness])
+(def all-stats
+  `[fitness-avg fitness-min fitness-max fitness-all
+    tree-depth-avg tree-depth-min tree-depth-max
+    tree-size-avg tree-size-min tree-size-max
+    best-fitness])
 
 (defmacro make-stats-map
   "Build a map of stat function names to delayed applications of those functions
@@ -129,10 +129,10 @@
   By storing this map in metadata, we can avoid re-calculating the statistics
   for different logging/output functions that report on the same seq."
   [pop]
-  (reduce (fn [m func] 
-             (conj m [(keyword (name func)) `(delay (~func ~pop))])) 
-           {} 
-           *all-stats*))
+  (reduce (fn [m func]
+             (conj m [(keyword (name func)) `(delay (~func ~pop))]))
+           {}
+           all-stats))
 
 (defn get-stat
   "Gets a key from the stats map, which consists of delays that need forcing."
@@ -150,5 +150,5 @@
     (let [gen-meta (meta gen)]
       (if (contains? gen-meta :stats-map)
         gen
-        (with-meta gen (conj {:stats-map (make-stats-map gen)} 
+        (with-meta gen (conj {:stats-map (make-stats-map gen)}
                              gen-meta))))))

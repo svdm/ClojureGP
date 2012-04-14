@@ -50,7 +50,7 @@
   (doall (map #(doall (map safe-inc (seq %))) trials)))
 
 
-(def wrapped-gp-map
+(def ^:dynamic wrapped-gp-map
   "Var that will be bound to a function during evaluation. The function will
   call an evolved gp-map function while limiting the number of self-calls to
   prevent stack overflow."

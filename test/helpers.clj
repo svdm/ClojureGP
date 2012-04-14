@@ -15,11 +15,14 @@
         cljgp.selection
         cljgp.config
         cljgp.random
-        cljgp.util))
+        cljgp.util)
+  (:import [java.io OutputStreamWriter OutputStream]))
 
 (defmacro quiet
   [form]
-  `(binding [println (constantly nil)]
+  `(binding [*out* (OutputStreamWriter.
+                    (proxy [OutputStream] []
+                      (write [a# b# c#] nil)))]
      ~form))
 
 ; Validity checks

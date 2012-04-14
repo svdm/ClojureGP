@@ -33,7 +33,7 @@
 ;;; the experiment is that the fitness landscape appears to be fairly smooth,
 ;;; with little risk of ending up in a local maximum.
 
-(def var-1
+(def ^:dynamic var-1
   "Storage var provided to the GP process, will be bound to a local atom during
   evaluation."
   nil)
