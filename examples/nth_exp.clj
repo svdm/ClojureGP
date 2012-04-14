@@ -25,8 +25,7 @@
         cljgp.tools.logging
         cljgp.config
         cljgp.random
-        cljgp.util
-        [clojure.contrib.def :only [defvar]]))
+        cljgp.util))
 
 ;;; The canonical STGP nth experiment aims to evolve an iterative solution using
 ;;; a mutable variable to store lists. Though not idiomatic clojure, this
@@ -34,9 +33,10 @@
 ;;; the experiment is that the fitness landscape appears to be fairly smooth,
 ;;; with little risk of ending up in a local maximum.
 
-(defvar var-1 nil
+(def var-1
   "Storage var provided to the GP process, will be bound to a local atom during
-  evaluation.")
+  evaluation."
+  nil)
 
 (defn get-var-1
   "Retrieves the value stored in var-1."
@@ -64,12 +64,12 @@
           evl (fn [idx]
                 (let [result (stgpnth c idx)]
                   (if (number? result)
-                    (Math/abs 
+                    (Math/abs
                      (float (- (nth c idx)
                                result)))
                     100)))]             ; nil, punish as twice as bad as worst
                                         ; case (which would be 50 steps away)
-      (reduce + (map evl 
+      (reduce + (map evl
                      (drop-last c))))))
 
 ;;; Here the type hierarchy is defined.
@@ -90,7 +90,7 @@
 (derive ::seq-orig ::seq)
 
 
-(def config-stgp-nth 
+(def config-stgp-nth
      {
 ;;; cljgp can match the GP system described in STGP in a lot of ways, but
 ;;; polymorphic type checking is not supported. Hence, we have to define
@@ -124,7 +124,7 @@
                      (prim `set-var-1
                            {:gp-type ::void
                             :gp-arg-types [::seq]})
-                     
+
                      ;; get-var-1 could also be seen as a terminal as it does
                      ;; not have children, however it is a function that needs
                      ;; to be applied. A function primitive with zero arguments
@@ -132,16 +132,16 @@
                      (prim `get-var-1
                            {:gp-type ::seq-orig
                             :gp-arg-types []})]
-      
+
 
       ;; The only real terminals are the two arguments to the function. Note
       ;; that these symbols are not resolved here.
-      :terminal-set [(prim 'coll 
+      :terminal-set [(prim 'coll
                            {:gp-type ::seq-orig})
-                     
-                     (prim 'index 
+
+                     (prim 'index
                            {:gp-type ::number})]
-      
+
       ;; nth must return a list element
       :root-type ::el
 
@@ -149,7 +149,7 @@
       ;; argument list, so we use a helper to create an appropriate "templating"
       ;; function here that takes a tree and turns it into such an fn form.
       :func-template-fn (make-func-template 'stgp-nth '[coll index])
-      
+
       :evaluation-fn evaluate-stgp-nth
 
       :population-size 1000
@@ -168,7 +168,7 @@
       :selection-fn (partial tournament-select {:size 14})
 
       :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
-                 {:prob 0.2  :breeder-fn (partial mutation-breeder 
+                 {:prob 0.2  :breeder-fn (partial mutation-breeder
                                            {:max-depth 5})}]
 
       :breeding-retries 500
@@ -177,9 +177,9 @@
 
       ;; Generate new seeds on each run, and report them to stdout for
       ;; later reproduction of the results.
-      :rand-seeds (seeds-from-time true) 
+      :rand-seeds (seeds-from-time true)
 
-      ;; Alternative good seeds: 
+      ;; Alternative good seeds:
       ;; - (repeat 1243761389515) ; same for all threads
       ;; - [593221374086 825095143445]
       })
@@ -193,9 +193,9 @@
   ([]
      (run :basic-trees))
   ([print-type]
-     (print-best 
-      (last 
-       (map #(print-stats print-type %) 
+     (print-best
+      (last
+       (map #(print-stats print-type %)
             (generate-run config-stgp-nth))))))
 
 
@@ -227,6 +227,6 @@
          (set-var-1 coll)
          (first
           (do
-            (do-times index 
+            (do-times index
                       (set-var-1 (next (get-var-1))))
             (get-var-1))))))

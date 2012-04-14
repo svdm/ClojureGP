@@ -24,8 +24,7 @@
         cljgp.tools.logging
         cljgp.config
         cljgp.random
-        cljgp.util
-        [clojure.contrib.def :only [defunbound defvar]]))
+        cljgp.util))
 
 
 ;;;; Evaluation
@@ -38,21 +37,24 @@
     (inc n)))
 
 
-(defvar trials [(list)
-                (list 1)
-                (apply list (range 1 21))]
+(def trials
   "The trials on which the evolved functions will be evaluated. Note that for
   the third trial, all elements are numbers that are equal to their (one-based)
-  index. Based on STGP article.")
+  index. Based on STGP article."
+  [(list)
+   (list 1)
+   (apply list (range 1 21))])
 
-(defvar solutions (doall (map #(doall (map safe-inc (seq %))) trials))
-  "The solutions to the trials of the real map function.")
+(def solutions
+  "The solutions to the trials of the real map function."
+  (doall (map #(doall (map safe-inc (seq %))) trials)))
 
 
-(defunbound wrapped-gp-map
+(def wrapped-gp-map
   "Var that will be bound to a function during evaluation. The function will
   call an evolved gp-map function while limiting the number of self-calls to
-  prevent stack overflow.")
+  prevent stack overflow."
+  nil)
 
 (defn evaluate-map-single
   "Applies the given 'gp-map function to the given 'trial in a safe manner. "
@@ -84,8 +86,8 @@
               (when-let [fst (first l)]
                 (if (== el (int fst))
                   (Math/abs (- pos i))
-                  (recur (next l) (inc i)))))] 
-    (if (nil? dst) 
+                  (recur (next l) (inc i)))))]
+    (if (nil? dst)
       50
       dst)))
 
@@ -208,7 +210,7 @@
      (run :basic-trees))
   ([print-type]
      (reduce-to-summary
-      (map #(print-stats print-type %) 
+      (map #(print-stats print-type %)
            (generate-run config-map)))))
 
 

@@ -9,7 +9,7 @@
 ; Various functions and data structures used in the tests
 
 (ns test.helpers
-  (:use clojure.contrib.test-is
+  (:use clojure.test
         cljgp.breeding
         cljgp.generate
         cljgp.selection
@@ -28,7 +28,7 @@
   "Does this tree fit the most fundamental requirements? That is, is it a seq or
   a valid result?"
   [tree]
-  (or (coll? tree) 
+  (or (coll? tree)
       (number? tree)
       (symbol? tree)))
 
@@ -66,19 +66,19 @@
     0))
 
 (def config-maths
-     {:function-set [(prim `- 
-                           {:gp-type Number 
+     {:function-set [(prim `-
+                           {:gp-type Number
                             :gp-arg-types [Number Number]})
 
-                     (prim `+ 
-                           {:gp-type Number 
+                     (prim `+
+                           {:gp-type Number
                             :gp-arg-types [Number Number]})
 
-                     (prim `* 
-                           {:gp-type Number 
+                     (prim `*
+                           {:gp-type Number
                             :gp-arg-types [Number Number]})
 
-                     (prim `count 
+                     (prim `count
                            {:gp-type Number
                             :gp-arg-types [::seq]})
 
@@ -98,7 +98,7 @@
       :func-template-fn (make-func-template 'gp-mather [])
 
       :root-type Number
-      
+
       :evaluation-fn (fn [func ind] (rand))
       :selection-fn (partial tournament-select {:size 3})
 
@@ -122,7 +122,7 @@
 
                                         ; supply premade rand-fns instead of
                                         ; depending on preproc to do this
-      :rand-fns (map make-default-rand 
+      :rand-fns (map make-default-rand
                      (take 2 (repeatedly #(System/currentTimeMillis))))
       })
 

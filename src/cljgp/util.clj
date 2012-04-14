@@ -8,20 +8,22 @@
 
 (ns cljgp.util
   "Utility functions and macros."
-  (:use [cljgp.random :only (pick-rand)]
-        [clojure.contrib.def :only (defvar defalias)]))
+  (:use [cljgp.random :only (pick-rand)]))
 
 
 (defstruct individual :func :gen :fitness)
 
-(defvar get-func (accessor individual :func)
-  "Accessor for an individual's :func")
+(def get-func
+  "Accessor for an individual's :func"
+  (accessor individual :func))
 
-(defvar get-gen (accessor individual :gen)
-  "Accessor for an individual's :gen")
+(def get-gen
+  "Accessor for an individual's :gen"
+  (accessor individual :gen))
 
-(defvar get-fitness (accessor individual :fitness)
-  "Accessor for an individual's :fitness")
+(def get-fitness
+  "Accessor for an individual's :fitness"
+  (accessor individual :fitness))
 
 (defn make-individual
   "Returns structmap representing an individual in the population. Takes the
@@ -66,7 +68,7 @@
   [node]
   (count (make-tree-seq node)))
 
-;;; I assume there's an easier way to do this, but I can't think of any. 
+;;; I assume there's an easier way to do this, but I can't think of any.
 (defn divide-up
   "Divides some number up into a seq of numbers of length 'pieces, with each
   element at most (ceil (/ num pieces)) in size. Essentially tries to do the
@@ -104,12 +106,12 @@
   "Returns :gp-arg-types val from metadata of node. If node is a coll (ie. a
   function node), uses metadata of (first node)."
   [node]
-  (:gp-arg-types (meta (if (coll? node) 
+  (:gp-arg-types (meta (if (coll? node)
                      (first node)
                      node))))
 
 (defn pick-rand-typed
-  "Returns a random item from the collection that is of the given type. 
+  "Returns a random item from the collection that is of the given type.
 
   As 'pick-rand, but first filters the seq to only include items of the given
   type 't (or a subtype of it)."
@@ -125,9 +127,9 @@
     (nil? node) (nil? satisfies)
     (not (coll? node)) (isa? (gp-type node) satisfies)
     :else (and (isa? (gp-type node) satisfies)
-               (every? true? 
-                       (map valid-types? 
-                            (next node) 
+               (every? true?
+                       (map valid-types?
+                            (next node)
                             (:gp-arg-types (meta (first node))))))))
 
 ;;; Can be useful for debugging typing problems
@@ -137,6 +139,6 @@
   [node]
   (cond
     (not (coll? node)) [(gp-type node) (:gp-arg-types (meta node))]
-    :else (cons 
+    :else (cons
            [(gp-type node) (:gp-arg-types (meta (first node)))]
             (doall (map print-types (next node))))))

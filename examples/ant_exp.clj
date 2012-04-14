@@ -20,7 +20,6 @@
   [1] http://www.cs.gmu.edu/~eclab/projects/ecj/
   [2] http://garage.cse.msu.edu/software/lil-gp/"
   (:use [cljgp.core :only [generate-run]]
-        [clojure.contrib.def :only [defvar defunbound]]
         cljgp.util
         cljgp.config
         cljgp.tools.logging))
@@ -28,7 +27,10 @@
 
 ;;;; Trails
 
-(defvar trail-santa-fe
+(def trail-santa-fe
+"The traditional Santa-Fe trail in 32x32 2D vector. Definition of
+  characters: 0 is empty, 1 is marked as trail, 2 is food."
+
   [[0 2 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
    [0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
    [0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 2 2 2 1 1 0 0]
@@ -61,29 +63,31 @@
    [0 1 0 0 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
    [0 1 2 2 2 2 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
    [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
-
-  "The traditional Santa-Fe trail in 32x32 2D vector. Definition of
-  characters: 0 is empty, 1 is marked as trail, 2 is food.")
+  )
 
 ;;;; Trail config
-(defvar reference-trail trail-santa-fe
+(def reference-trail
   "The trail used in the experiment, in its reference state, ie. with all food
-  present.")
+  present."
+  trail-santa-fe)
 
-(defvar trail-size [(count (reference-trail 0)) (count reference-trail)]
-  "Width and height of the trail")
+(def trail-size
+ "Width and height of the trail"
+  [(count (reference-trail 0)) (count reference-trail)])
 
-(defvar trail-food 89
-  "Number of food items on the trail.")
+(def trail-food
+ "Number of food items on the trail."
+  89)
 
 ;;;; Evaluation
 
-(defunbound ant-state
+(def ant-state
   "Var to be bound during evaluation to a map containing:
    - :trail    the trail state of the current ant
    - :pos      the position of the ant on the trail map
    - :dir      the direction in which the ant is facing
-   - :moves    the number of moves made by the ant")
+   - :moves    the number of moves made by the ant"
+  {})
 
 (defn evaluate-ant
   "Evaluates an evolved ant function by executing it 'max-moves times or until
