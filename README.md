@@ -18,7 +18,7 @@ experiments as follows, using a terminal/command prompt at the repository root:
 
 Then call the `run` function from the Clojure REPL:
 
-    Clojure 1.2.0
+    Clojure 1.3.0
     user=> (reg-exp/run)
 
 This same example experiment is discussed in `./doc/reg_example.html`.
@@ -29,9 +29,9 @@ This same example experiment is discussed in `./doc/reg_example.html`.
 Dependencies
 ------------
 
-ClojureGP only *requires* Clojure 1.2.0 and the Clojure-contrib 1.2.0
-library. For additional features such as plotting and improved random number
-generation, the QN Plot library and Uncommons Maths library are needed.
+ClojureGP only *requires* Clojure 1.3.0. For additional features such as
+plotting and improved random number generation, the QN Plot library and
+Uncommons Maths library are needed.
 
 Both Clojure and Uncommons Maths can be pulled in using Leiningen, via
 `lein deps`.
