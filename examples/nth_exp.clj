@@ -18,14 +18,14 @@
 
   [1] David J. Montana. Strongly typed genetic programming. Evolutionary
       Computation, 3(2):199--230, 1995."
-  (:use [cljgp.core :only [generate-run]]
-        cljgp.selection
-        cljgp.breeding
-        cljgp.generate
-        cljgp.tools.logging
-        cljgp.config
-        cljgp.random
-        cljgp.util))
+  (:require [cljgp.core :refer [generate-run]]
+            [cljgp.selection :refer :all]
+            [cljgp.breeding :refer :all]
+            [cljgp.generate :refer :all]
+            [cljgp.tools.logging :refer :all]
+            [cljgp.config :refer :all]
+            [cljgp.random :refer :all]
+            [cljgp.util :refer :all]))
 
 ;;; The canonical STGP nth experiment aims to evolve an iterative solution using
 ;;; a mutable variable to store lists. Though not idiomatic clojure, this

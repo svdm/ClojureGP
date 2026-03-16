@@ -9,13 +9,13 @@
 
 (ns reg-exp
   "Example 02: evolving a solution to a simple regression problem."
-  (:use [cljgp.core :only [generate-run]]
-        [cljgp.config :only [prim
-                             make-func-template]]
-        [cljgp.random :only [gp-rand]]
-        [cljgp.util :only [tree-depth]]
-        [cljgp.tools.logging :only [print-stats
-                                    reduce-to-summary]]))
+  (:require [cljgp.core :refer [generate-run]]
+            [cljgp.config :refer [prim
+                                  make-func-template]]
+            [cljgp.random :refer [gp-rand]]
+            [cljgp.util :refer [tree-depth]]
+            [cljgp.tools.logging :refer [print-stats
+                                         reduce-to-summary]]))
 
 (defn test-reg-once
   "Evaluate the given function on a single result, returning the abs error."

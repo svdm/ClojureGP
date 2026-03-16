@@ -19,10 +19,10 @@
 
   [1] http://www.cs.gmu.edu/~eclab/projects/ecj/
   [2] http://garage.cse.msu.edu/software/lil-gp/"
-  (:use [cljgp.core :only [generate-run]]
-        cljgp.util
-        cljgp.config
-        cljgp.tools.logging))
+  (:require [cljgp.core :refer [generate-run]]
+            [cljgp.util :refer :all]
+            [cljgp.config :refer :all]
+            [cljgp.tools.logging :refer :all]))
 
 
 ;;;; Trails
