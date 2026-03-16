@@ -26,7 +26,7 @@
 
 (defn- make-style
   "Creates a ChartStyle object of the given Color."
-  [#^Color c]
+  [^Color c]
   (doto (new ChartStyle)
     (.setPaint c)))
 

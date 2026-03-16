@@ -54,7 +54,7 @@
   ([code]
      (print-code true false code)))
 
-(defn #^String stringify-ind-verbose
+(defn ^String stringify-ind-verbose
   "Prints data on given individual to a string. If 'show-ns is true, namespace
   info will be included in the printed tree."
   [show-ns ind]
@@ -97,7 +97,7 @@
 ;;;; PRINTING STATISTICS
 ;;;;
 
-(defn #^String stat-string
+(defn ^String stat-string
   "Returns a string containing basic stats/info on the given
   generation/population. Ends with a newline.
 
@@ -118,7 +118,7 @@
                     (float (get-stat stats :tree-depth-avg))))))
        "")))                            ; generation is nil
 
-(defn #^String stat-string-verbose
+(defn ^String stat-string-verbose
   "Return a formatted multi-line string with stats on fitness and tree size."
   [generation]
   (if-let [gen-seq (seq generation)]
@@ -176,12 +176,12 @@
 (defn- log-stats-writer
   "Returns a function that writes basic information about a given generation to
   a file."
-  [#^String filename stat-string-fn flush-every?]
+  [^String filename stat-string-fn flush-every?]
   (let [writer (BufferedWriter. (FileWriter. filename))]
     (fn file-logger [generation]
       (let [gen (setup-stats-map (seq generation))]
         (when (seq gen)
-          (.write writer #^String (stat-string-fn gen))
+          (.write writer ^String (stat-string-fn gen))
           (when flush-every?
             (.flush writer))
           (when (:final (meta gen))
@@ -204,11 +204,11 @@
     :basic       -> A line of basic fitness data, see 'stat-string. (default)
     :basic-trees -> As basic, but with additional tree statistics.
     :verbose     -> A multi-line formatted listing of fitness and tree stats."
-  ([#^String filename]
+  ([^String filename]
      (log-stats filename :basic true))
-  ([#^String filename stat-type]
+  ([^String filename stat-type]
      (log-stats filename stat-type true))
-  ([#^String filename stat-type flush-every?]
+  ([^String filename stat-type flush-every?]
      (let [statfn (condp = stat-type
                     :basic stat-string
                     :basic-trees #(stat-string % true)
@@ -238,7 +238,7 @@
 (defn- print-and-log
   "Appends given 'text to file designated by 'filename, and prints it to
   *out*. If filename is nil, only prints to *out*."
-  [filename #^String text]
+  [filename ^String text]
   (print text)
   (flush)
   (when (not (nil? filename))

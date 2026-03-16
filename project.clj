@@ -1,10 +1,9 @@
 (defproject cljgp "1.0.1"
-  :dependencies [[org.clojure/clojure
-                  "1.3.0"]
+  :dependencies [[org.clojure/clojure "1.12.4"]
                  ;; For random number generator
-                 [org.uncommons/uncommons-maths
-                  "1.2"]]
-  :dev-dependencies [[swank-clojure "1.2.1"]]
+                 [org.uncommons.maths/uncommons-maths "1.2.2a"]]
 
-  :repositories {"Java.net Repository" "http://download.java.net/maven/2/"}
-  )
+  :profiles {:dev {:dependencies [[nrepl/nrepl "1.3.0"]]}}
+
+  :source-paths ["src" "examples"]
+  :test-paths ["test" "."])
