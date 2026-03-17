@@ -8,7 +8,7 @@ highly configurable and versatile while still being concise and easy to learn.
 Usage
 -----
 
-Please refer to the included documentation and examples in the `./doc/` and
+Please refer to the included documentation and examples in the `./docs/` and
 `./examples/` directories. The docs are also available at <http://svdm.github.com/ClojureGP>.
 
 To see a basic genetic programming run in action, load one of the example
@@ -21,7 +21,7 @@ Then call the `run` function from the Clojure REPL:
     Clojure 1.3.0
     user=> (reg-exp/run)
 
-This same example experiment is discussed in `./doc/reg_example.html`.
+This same example experiment is discussed in `./docs/reg_example.md`.
 
 *NOTE:* On Linux versions of the JVM, replace the ; in the classpath with : (so
  semicolons to colons).
