@@ -19,10 +19,10 @@
 
   [1] http://www.cs.gmu.edu/~eclab/projects/ecj/
   [2] http://garage.cse.msu.edu/software/lil-gp/"
-  (:require [cljgp.core :refer [generate-run]]
-            [cljgp.util :refer :all]
-            [cljgp.config :refer :all]
-            [cljgp.tools.logging :refer :all]))
+  (:require [cljgp.core :as core]
+            [cljgp.util :as util]
+            [cljgp.config :as config :refer [primitive]]
+            [cljgp.tools.logging :as log]))
 
 
 ;;;; Trails
@@ -254,12 +254,12 @@
       :evaluation-fn #(evaluate-ant 600 %1 %2)
 
       :population-size 1024
-      :end-condition-fn (make-end 50)
-      :validate-tree-fn #(and (<= (tree-depth %) 15)
-                              (<= (tree-size %) 30))
+      :end-condition-fn (config/make-end 50)
+      :validate-tree-fn #(and (<= (util/tree-depth %) 15)
+                              (<= (util/tree-size %) 30))
 
       :threads 2
-      :rand-seeds (seeds-from-time true)
+      :rand-seeds (config/seeds-from-time true)
 
       ;; Succesful seeds for 2 threads, without the "progn3" version of 'do in
       ;; the function set:
@@ -273,9 +273,9 @@
   ([]
      (run :basic-trees))
   ([print-type]
-     (reduce-to-summary
-      (map #(print-stats print-type %)
-           (generate-run config-ant)))))
+     (log/reduce-to-summary
+      (map #(log/print-stats print-type %)
+           (core/generate-run config-ant)))))
 
 
 ;;;; Debugging and visualisation of results

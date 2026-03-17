@@ -8,7 +8,7 @@
 
 (ns cljgp.tools.analyse
   "Basic analysis functions, see cljgp.tools.logging for example usage."
-  (:use cljgp.util))
+  (:require [cljgp.util :as util]))
 
 (declare setup-stats-map get-stat)
 
@@ -64,25 +64,25 @@
 (defn best-fitness
   "Returns the individual with the best (lowest) fitness in the population."
   [pop]
-  (apply (partial min-key get-fitness) pop)) ; min-key works fine with accessors
+  (apply (partial min-key util/get-fitness) pop)) ; min-key works fine with accessors
 
 (defn tree-size-ind
   "Returns number of nodes (both functions and terminals) in given individual's
   tree."
   [ind]
-  (tree-size (get-fn-body (get-func ind))))
+  (util/tree-size (util/get-fn-body (util/get-func ind))))
 
 (defn tree-depth-ind
   "Returns max depth of given individual's tree."
   [ind]
-  (tree-depth (get-fn-body (get-func ind))))
+  (util/tree-depth (util/get-fn-body (util/get-func ind))))
 
 (defn fitness-all
   "Returns minimum, maximum and average fitness in a single loop over the
   population. This is much faster than calling fitness-min, fitness-max, and
   fitness-avg separately."              ; of course, fast is not always pretty
   [pop]
-  (loop [fit-ind (float (get-fitness (first pop)))
+  (loop [fit-ind (float (util/get-fitness (first pop)))
          poprest (rest pop)
          fit-min Float/MAX_VALUE
          fit-max Float/MIN_VALUE
@@ -91,7 +91,7 @@
           fmax (float (max fit-max fit-ind))
           ftot (+ fit-tot fit-ind)]
       (if (seq poprest)
-        (recur (float (get-fitness (first poprest)))
+        (recur (float (util/get-fitness (first poprest)))
                (rest poprest)
                fmin fmax ftot)
         {:fit-min fmin
@@ -99,9 +99,9 @@
          :fit-avg (/ ftot (count pop))}))))
 
 ; These defs were macro'd, but this seemed to obfuscate things unnecessarily
-(def fitness-avg (partial pop-avg-of get-fitness))
-(def fitness-min (partial pop-min-of get-fitness))
-(def fitness-max (partial pop-max-of get-fitness))
+(def fitness-avg (partial pop-avg-of util/get-fitness))
+(def fitness-min (partial pop-min-of util/get-fitness))
+(def fitness-max (partial pop-max-of util/get-fitness))
 
 (def tree-depth-avg (partial pop-avg-of tree-depth-ind))
 (def tree-depth-min (partial pop-min-of tree-depth-ind))

@@ -18,14 +18,13 @@
 
   [1] David J. Montana. Strongly typed genetic programming. Evolutionary
       Computation, 3(2):199--230, 1995."
-  (:require [cljgp.core :refer [generate-run]]
-            [cljgp.selection :refer :all]
-            [cljgp.breeding :refer :all]
-            [cljgp.generate :refer :all]
-            [cljgp.tools.logging :refer :all]
-            [cljgp.config :refer :all]
-            [cljgp.random :refer :all]
-            [cljgp.util :refer :all]))
+  (:require [cljgp.core :as core]
+            [cljgp.selection :as selection]
+            [cljgp.breeding :as breeding]
+            [cljgp.generate :as gen]
+            [cljgp.tools.logging :as log]
+            [cljgp.config :as config :refer [prim]]
+            [cljgp.util :as util]))
 
 ;;; The canonical STGP nth experiment aims to evolve an iterative solution using
 ;;; a mutable variable to store lists. Though not idiomatic clojure, this
@@ -148,28 +147,28 @@
       ;; We need our evolved trees to be made into functions with the right
       ;; argument list, so we use a helper to create an appropriate "templating"
       ;; function here that takes a tree and turns it into such an fn form.
-      :func-template-fn (make-func-template 'stgp-nth '[coll index])
+      :func-template-fn (config/make-func-template 'stgp-nth '[coll index])
 
       :evaluation-fn evaluate-stgp-nth
 
       :population-size 1000
 
       ;; Stop after 50 generations or when a perfect individual exist.
-      :end-condition-fn (make-end 50)
+      :end-condition-fn (config/make-end 50)
 
       ;; Very deep trees are not of interest here, so we can limit the search
       ;; space a bit.
-      :validate-tree-fn #(<= (tree-depth %) 7)
+      :validate-tree-fn #(<= (util/tree-depth %) 7)
 
       ;; Some tweaking of the breeding facilities, not really required.
-      :pop-generation-fn (partial generate-ramped {:max-depth 5
-                                                   :grow-chance 0.5})
+      :pop-generation-fn (partial gen/generate-ramped {:max-depth 5
+                                                       :grow-chance 0.5})
 
-      :selection-fn (partial tournament-select {:size 14})
+      :selection-fn (partial selection/tournament-select {:size 14})
 
-      :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
-                 {:prob 0.2  :breeder-fn (partial mutation-breeder
-                                           {:max-depth 5})}]
+      :breeders [{:prob 0.8  :breeder-fn breeding/crossover-breeder}
+                 {:prob 0.2  :breeder-fn (partial breeding/mutation-breeder
+                                                   {:max-depth 5})}]
 
       :breeding-retries 500
 
@@ -177,7 +176,7 @@
 
       ;; Generate new seeds on each run, and report them to stdout for
       ;; later reproduction of the results.
-      :rand-seeds (seeds-from-time true)
+      :rand-seeds (config/seeds-from-time true)
 
       ;; Alternative good seeds:
       ;; - (repeat 1243761389515) ; same for all threads
@@ -193,10 +192,10 @@
   ([]
      (run :basic-trees))
   ([print-type]
-     (print-best
+     (log/print-best
       (last
-       (map #(print-stats print-type %)
-            (generate-run config-stgp-nth))))))
+       (map #(log/print-stats print-type %)
+            (core/generate-run config-stgp-nth))))))
 
 
 ;;; Translation of the solution as listed in the STGP article.

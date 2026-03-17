@@ -7,11 +7,11 @@
 ;; this software.
 
 (ns cljgp.selection-test
-  (:use clojure.test
-        cljgp.test-helpers
-        cljgp.selection
-        [cljgp.evaluation :only (evaluate-pop)]
-        [cljgp.generate :only (generate-pop)]))
+  (:require [clojure.test :refer :all]
+            [cljgp.test-helpers :refer :all]
+            [cljgp.selection :refer :all]
+            [cljgp.evaluation :refer [evaluate-pop]]
+            [cljgp.generate :refer [generate-pop]]))
 
 ; Which individuals are selected is not predictable without random seed
 ; mangling, making it cumbersome to test for correctness. However,

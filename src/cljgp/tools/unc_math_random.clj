@@ -8,7 +8,7 @@
 
 (ns cljgp.tools.unc-math-random
   (:import [org.uncommons.maths.random MersenneTwisterRNG])
-  (:use [cljgp.random :only (rand-fn)]))
+  (:require [cljgp.random :refer [rand-fn]]))
 
 ; Example of how one would wrap a third party PRNG for use in cljgp experiments.
 

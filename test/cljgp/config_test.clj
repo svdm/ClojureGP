@@ -7,11 +7,11 @@
 ;; this software.
 
 (ns cljgp.config-test
-  (:use clojure.test
-        cljgp.test-helpers
-        cljgp.config
-        cljgp.util
-        cljgp.core))
+  (:require [clojure.test :refer :all]
+            [cljgp.test-helpers :refer :all]
+            [cljgp.config :refer :all]
+            [cljgp.util :refer :all]
+            [cljgp.core :refer :all]))
 
 (deftest test-prim
   (let [m {:foo 27723 :bar true}]

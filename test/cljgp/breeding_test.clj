@@ -7,12 +7,12 @@
 ;; this software.
 
 (ns cljgp.breeding-test
-  (:use clojure.test
-        cljgp.test-helpers
-        cljgp.generate
-        cljgp.breeding
-        cljgp.evaluation
-        cljgp.util))
+  (:require [clojure.test :refer :all]
+            [cljgp.test-helpers :refer :all]
+            [cljgp.generate :refer :all]
+            [cljgp.breeding :refer :all]
+            [cljgp.evaluation :refer :all]
+            [cljgp.util :refer :all]))
 
 
 (deftest test-parent-arg-type

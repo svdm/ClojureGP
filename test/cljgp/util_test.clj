@@ -7,8 +7,8 @@
 ;; this software.
 
 (ns cljgp.util-test
-  (:use clojure.test
-        cljgp.util))
+  (:require [clojure.test :refer :all]
+            [cljgp.util :refer :all]))
 
 ; mock expression tree, for the util functions the actual tree does not affect
 ; things

@@ -21,7 +21,7 @@
   (:import [javax.swing JFrame JPanel]
            [java.awt Color Graphics Dimension]
            [net.quies.math.plot Graph Function ChartStyle ChartType])
-  (:use cljgp.tools.analyse))
+  (:require [cljgp.tools.analyse :as analyse]))
 
 
 (defn- make-style
@@ -55,14 +55,14 @@
                    (.validate)
                    (.setVisible true))]
        (fn [generation]
-         (when-let [gen-seq (setup-stats-map generation)]
+         (when-let [gen-seq (analyse/setup-stats-map generation)]
            (let [;; Capture the JFrame in this closure
                  gui frame
                  ;; QN Plot wants BigDecimals for everything
                  gen-num (bigdec (:gen (first gen-seq)))
                  stats (:stats-map (meta gen-seq))
-                 {:keys [fit-min fit-max fit-avg]} (get-stat stats
-                                                             :fitness-all)]
+                 {:keys [fit-min fit-max fit-avg]} (analyse/get-stat stats
+                                                                     :fitness-all)]
              (.addPoint min-fit-func gen-num (bigdec fit-min))
              (when (not draw-min-only)
                (.addPoint avg-fit-func gen-num (bigdec fit-avg))

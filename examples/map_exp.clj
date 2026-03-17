@@ -17,14 +17,10 @@
 
   [1] David J. Montana. Strongly typed genetic programming. Evolutionary
       Computation, 3(2):199--230, 1995."
-  (:require [cljgp.core :refer [generate-run]]
-            [cljgp.selection :refer :all]
-            [cljgp.generate :refer :all]
-            [cljgp.breeding :refer :all]
-            [cljgp.tools.logging :refer :all]
-            [cljgp.config :refer :all]
-            [cljgp.random :refer :all]
-            [cljgp.util :refer :all]))
+  (:require [cljgp.core :as core]
+            [cljgp.tools.logging :as log]
+            [cljgp.config :as config :refer [primitive]]
+            [cljgp.util :as util]))
 
 
 ;;;; Evaluation
@@ -179,17 +175,17 @@
       :root-type ::seq
 
       ;; Evolved functions must be of the form (fn [f coll] ..)
-      :func-template-fn (make-func-template '[f coll])
+      :func-template-fn (config/make-func-template '[f coll])
 
-      :validate-tree-fn #(< (tree-depth %) 7)
+      :validate-tree-fn #(< (util/tree-depth %) 7)
       :breeding-retries 256})
 
 (def run-options
      {:evaluation-fn evaluate-map
       :population-size 1024
-      :end-condition-fn (make-end 50)
+      :end-condition-fn (config/make-end 50)
       :threads 2
-      :rand-seeds (seeds-from-time true)
+      :rand-seeds (config/seeds-from-time true)
       ;; Lucky seeds:
       ;;:rand-seeds [236245406373, 565772875052]
       })
@@ -209,9 +205,9 @@
   ([]
      (run :basic-trees))
   ([print-type]
-     (reduce-to-summary
-      (map #(print-stats print-type %)
-           (generate-run config-map)))))
+     (log/reduce-to-summary
+      (map #(log/print-stats print-type %)
+           (core/generate-run config-map)))))
 
 
 ;;; Example of an evolution result, with instances of 'wrapped-gp-map renamed to

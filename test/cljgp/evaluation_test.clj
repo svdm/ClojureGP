@@ -7,12 +7,12 @@
 ;; this software.
 
 (ns cljgp.evaluation-test
-  (:use clojure.test
-        cljgp.test-helpers
-        cljgp.evaluation
-        cljgp.breeding
-        cljgp.util
-        cljgp.random))
+  (:require [clojure.test :refer :all]
+            [cljgp.test-helpers :refer :all]
+            [cljgp.evaluation :refer :all]
+            [cljgp.breeding :refer :all]
+            [cljgp.util :refer :all]
+            [cljgp.random :refer :all]))
 
 (defn- excepting-evaluator
   [func ind]

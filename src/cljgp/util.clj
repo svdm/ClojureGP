@@ -8,7 +8,7 @@
 
 (ns cljgp.util
   "Utility functions and macros."
-  (:use [cljgp.random :only (pick-rand)]))
+  (:require [cljgp.random :refer [pick-rand]]))
 
 
 (defstruct individual :func :gen :fitness)

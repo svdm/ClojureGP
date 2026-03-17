@@ -10,9 +10,11 @@
 (ns cljgp.breeding
   "Facilities for generating an initial population and breeding an evaluated
   one, including some standard breeding procedures."
-  (:use cljgp.generate
-        cljgp.random
-        cljgp.util))
+  (:require [cljgp.generate :as gen]
+            [cljgp.random :as random]
+            [cljgp.util :refer [gp-type gp-arg-type make-tree-seq pick-rand-typed
+                                get-fn-body get-func get-gen make-individual
+                                divide-up]]))
 
 (declare crossover-individuals crossover-uniform
          mutate-individual reproduce-individual 
@@ -155,7 +157,7 @@
   [[tree-a tree-b] root-type]
   ;; First select a node from tree A, and gather type information on it
   (let [seq-a (make-tree-seq tree-a)
-        idx-a (gp-rand-int (count seq-a))
+        idx-a (random/gp-rand-int (count seq-a))
         pick-a (nth seq-a idx-a)
         type-a (gp-type pick-a)
         parent-type-a (parent-arg-type idx-a root-type seq-a)
@@ -165,7 +167,7 @@
         valid-indices (find-valid-indices seq-b type-a parent-type-a root-type)]
     (when (seq valid-indices)
       ;; Select an index and perform the switch
-      (let [idx-b (pick-rand valid-indices)
+      (let [idx-b (random/pick-rand valid-indices)
             pick-b (nth seq-b idx-b)]
         [(tree-replace idx-a pick-b tree-a)
          (tree-replace idx-b pick-a tree-b)]))))
@@ -181,9 +183,9 @@
   nil."
   [tree max-depth func-set term-set root-type]
   (let [tree-seq (make-tree-seq tree)
-        idx (gp-rand-int (count tree-seq))
+        idx (random/gp-rand-int (count tree-seq))
         pick-type (parent-arg-type idx root-type tree-seq)
-        subtree (try (generate-tree max-depth :grow func-set term-set pick-type)
+        subtree (try (gen/generate-tree max-depth :grow func-set term-set pick-type)
                      (catch RuntimeException e nil))]
     (if (nil? subtree)
       nil
@@ -197,7 +199,7 @@
         subtrees (filter #(isa? (gp-type %) root-type) 
                          (drop 1 tree-seq))]
     (if-let [options (seq subtrees)]
-      (pick-rand subtrees)
+      (random/pick-rand subtrees)
       nil)))
 
 (defn point-mutate
@@ -206,7 +208,7 @@
   the tree."
   [tree function-set terminal-set root-type]
   (let [tree-seq (make-tree-seq tree)
-        idx (gp-rand-int (count tree-seq))
+        idx (random/gp-rand-int (count tree-seq))
         pick (nth tree-seq idx)
         pick-type (parent-arg-type idx root-type tree-seq)
         pick-argtypes (gp-arg-type pick)
@@ -223,7 +225,7 @@
     (when-let [options (seq (filter same-types? (if (coll? pick)
                                                   function-set
                                                   terminal-set)))]
-      (let [selected (pick-rand options)
+      (let [selected (random/pick-rand options)
             ;; cons the original node's subtree back on
             replacement (if (coll? pick)
                           (cons selected (next pick))
@@ -241,12 +243,12 @@
                                                       idx)) 
                                      tree-seq
                                      (range (count tree-seq))))
-        idx (pick-rand nonterm-indices)
+        idx (random/pick-rand nonterm-indices)
         pick (nth tree-seq idx)
         pick-type (parent-arg-type idx root-type tree-seq)]
     (when-let [options (seq (filter #(isa? (gp-type %) pick-type)
                                     terminal-set))]
-      (tree-replace idx (pick-rand options) tree))))
+      (tree-replace idx (random/pick-rand options) tree))))
 
 ;;; TODO: the mutation -individual fns have significant amounts of identical
 ;;; code that should be extracted
@@ -259,7 +261,7 @@
         :keys [validate-tree-fn breeding-retries func-template-fn
                terminal-set root-type]}]
   (let [parent (get-fn-body (get-func ind))
-        child (get-valid validate-tree-fn breeding-retries
+        child (gen/get-valid validate-tree-fn breeding-retries
                          #(shrink-mutate parent terminal-set root-type))
         tree (if (nil? child) parent child)
         gen (inc (get-gen ind))]
@@ -274,7 +276,7 @@
         :keys [validate-tree-fn breeding-retries func-template-fn 
                function-set terminal-set root-type]}]
   (let [parent (get-fn-body (get-func ind))
-        child (get-valid validate-tree-fn breeding-retries
+        child (gen/get-valid validate-tree-fn breeding-retries
                          #(point-mutate parent 
                                         function-set terminal-set root-type))
         tree (if (nil? child) parent child)
@@ -288,7 +290,7 @@
   [ind {:as run-config,
         :keys [validate-tree-fn breeding-retries func-template-fn root-type]}]
   (let [parent (get-fn-body (get-func ind))
-        child (get-valid validate-tree-fn breeding-retries
+        child (gen/get-valid validate-tree-fn breeding-retries
                          #(hoist-mutate parent root-type))
         tree (if (nil? child) parent child)
         gen (inc (get-gen ind))]
@@ -303,7 +305,7 @@
                       :keys [validate-tree-fn func-template-fn
                              breeding-retries root-type]}]
   (let [orig-trees (map (comp get-fn-body get-func) inds)
-        new-trees (get-valid validate-tree-fn breeding-retries
+        new-trees (gen/get-valid validate-tree-fn breeding-retries
                              #(crossover-fn orig-trees root-type))
         gen (inc (get-gen (first inds)))]
     (doall (map #(make-individual (func-template-fn %) gen)
@@ -318,7 +320,7 @@
                   :keys [validate-tree-fn breeding-retries func-template-fn
                          function-set terminal-set root-type]}]
   (let [parent (get-fn-body (get-func ind))
-        child (get-valid validate-tree-fn breeding-retries
+        child (gen/get-valid validate-tree-fn breeding-retries
                          #(mutate parent
                                   max-depth
                                   function-set terminal-set
@@ -363,7 +365,7 @@
   "Returns a random breeder from a collection of them according to their :prob
   values. See 'setup-breeders."
   [breeders]
-  (let [p (gp-rand)]
+  (let [p (random/gp-rand)]
     (first (filter #(< p (:prob %)) breeders))))
 
 (defn breed-new-pop

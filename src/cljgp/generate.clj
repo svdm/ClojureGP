@@ -11,8 +11,8 @@
 
   generate-ramped is currently the only provided population generation function
   ready for use in experiment configurations."
-  (:use cljgp.random
-        cljgp.util))
+  (:require [cljgp.random :as random]
+            [cljgp.util :as util]))
 
 (declare generate-tree)
 
@@ -29,8 +29,8 @@
    {:as run-config,
     :keys [function-set terminal-set root-type]}]
   (try
-   (generate-tree (inc (gp-rand-int max-depth))
-                  (if (< (gp-rand) grow-chance) :grow :full)
+   (generate-tree (inc (random/gp-rand-int max-depth))
+                  (if (< (random/gp-rand) grow-chance) :grow :full)
                   function-set
                   terminal-set
                   root-type)
@@ -49,13 +49,13 @@
   [max-depth method func-set term-set node-type]
   (if (or (<= max-depth 1)
           (and (= method :grow)
-               (< (gp-rand) (/ (count term-set)
-                               (+ (count term-set) (count func-set))))))
-    (if-let [tnode (pick-rand-typed node-type term-set)]
+               (< (random/gp-rand) (/ (count term-set)
+                                      (+ (count term-set) (count func-set))))))
+    (if-let [tnode (util/pick-rand-typed node-type term-set)]
       tnode
       (throw (RuntimeException. 
               (str "No available terminal of type " node-type))))
-    (if-let [fnode (pick-rand-typed node-type func-set)]
+    (if-let [fnode (util/pick-rand-typed node-type func-set)]
       (cons fnode (doall     ; force seq to realize inside try/catch
                    (for [cur-type (:gp-arg-types (meta fnode))]
                      (generate-tree (dec max-depth) method 
@@ -94,8 +94,8 @@
                                   retries " attempts. Most likely there is "
                                   "an issue that makes valid trees "
                                   "impossible to generate.")))))]
-    (repeatedly 
-     #(make-individual (func-template-fn (generate)) 0))))
+    (repeatedly
+     #(util/make-individual (func-template-fn (generate)) 0))))
 
 ;;; Note that it is intentional that (individual-generator-seq ..) is called
 ;;; inside each future, even though one might think it's just a producer
@@ -109,7 +109,7 @@
   specified in the 'run-config (typically ramped half and half). The work is
   divided over worker threads, each with their own RNG instance."
   [{:keys [population-size threads rand-fns] :as run-config}]
-  (let [per-future (divide-up population-size threads)]
+  (let [per-future (util/divide-up population-size threads)]
     (mapcat deref
             (doall 
              (map #(future

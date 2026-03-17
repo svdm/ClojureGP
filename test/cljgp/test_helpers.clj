@@ -9,13 +9,13 @@
 ; Various functions and data structures used in the tests
 
 (ns cljgp.test-helpers
-  (:use clojure.test
-        cljgp.breeding
-        cljgp.generate
-        cljgp.selection
-        cljgp.config
-        cljgp.random
-        cljgp.util)
+  (:require [clojure.test :refer :all]
+            [cljgp.breeding :refer :all]
+            [cljgp.generate :refer :all]
+            [cljgp.selection :refer :all]
+            [cljgp.config :refer :all]
+            [cljgp.random :refer :all]
+            [cljgp.util :refer :all])
   (:import [java.io OutputStreamWriter OutputStream]))
 
 (defmacro quiet

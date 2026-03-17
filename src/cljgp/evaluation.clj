@@ -8,9 +8,9 @@
 
 (ns cljgp.evaluation
   "Functionality concerning the evaluation of (populations of) individuals."
-  (:use [cljgp.random :only (gp-rand)]
-        cljgp.util
-        [cljgp.tools.logging :only (print-code)]))
+  (:require [cljgp.random :as random]
+            [cljgp.util :as util]
+            [cljgp.tools.logging :as log]))
 
 ; It's recommended that evaluator functions handle any exceptions they might
 ; expect themselves, for example by catching them and giving the individual a
@@ -23,7 +23,7 @@
   [e ind msg]
   `(do
      (println ~msg (str ~e))
-     (println "\tCaused by:\n" (print-code ~ind))
+     (println "\tCaused by:\n" (log/print-code ~ind))
      (throw ~e)))
 
 
@@ -35,8 +35,8 @@
   individual. This allows storing additional evaluation details such as \"hits\"
   or raw score (eg. for analysis or customized selection)."
   [ind evaluator]
-  (let [func (try 
-              (eval (get-func ind))     ; compile tree
+  (let [func (try
+              (eval (util/get-func ind))  ; compile tree
               (catch Exception e 
                 (report-exception e ind 
                                   "Exception in (eval ..) of individual: ")))

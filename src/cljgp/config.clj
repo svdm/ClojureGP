@@ -16,13 +16,11 @@
   A detailed explanation of every configuration key is available in the
   configuration key reference that can be found with the rest of the (external)
   documentation."
-  (:use [cljgp.breeding :only [crossover-breeder
-                               mutation-breeder
-                               reproduction-breeder]]
-        [cljgp.generate :only [generate-ramped]]
-        [cljgp.selection :only [tournament-select]]
-        cljgp.random
-        cljgp.util))
+  (:require [cljgp.breeding :as breeding]
+            [cljgp.generate :as gen]
+            [cljgp.selection :as selection]
+            [cljgp.random :as random]
+            [cljgp.util :as util]))
 
 ;;;;
 ;;;; Helper fns for config creation
@@ -52,7 +50,7 @@
      (fn [pop]
        (let [ind (first pop)]
          (or (>= (:gen ind) max-generations)
-             (some #(>= fit-tolerance (get-fitness %)) pop)))))
+             (some #(>= fit-tolerance (util/get-fitness %)) pop)))))
   ([max-generations] (make-end max-generations 0.0001)))
 
 (defn seeds-from-time
@@ -100,16 +98,16 @@
   "Default values of experiment configuration options, used when no user-defined
   value is present."
   {:func-template-fn (make-func-template)
-   :breeders [{:prob 0.8  :breeder-fn crossover-breeder}
-              {:prob 0.1  :breeder-fn mutation-breeder}
-              {:prob 0.1  :breeder-fn reproduction-breeder}]
+   :breeders [{:prob 0.8  :breeder-fn breeding/crossover-breeder}
+              {:prob 0.1  :breeder-fn breeding/mutation-breeder}
+              {:prob 0.1  :breeder-fn breeding/reproduction-breeder}]
    :breeding-retries 1
-   :selection-fn #(tournament-select {:size 7} %1) ; faster than (partial ..)
+   :selection-fn #(selection/tournament-select {:size 7} %1) ; faster than (partial ..)
    :end-condition-fn (make-end 100)
-   :pop-generation-fn #(generate-ramped {:max-depth 7
-                                         :grow-chance 0.5}
-                                        %1)
-   :rand-fn-maker make-default-rand
+   :pop-generation-fn #(gen/generate-ramped {:max-depth 7
+                                             :grow-chance 0.5}
+                                            %1)
+   :rand-fn-maker random/make-default-rand
    :rand-seeds (seeds-from-time)
    :validate-tree-fn identity
    :root-type nil

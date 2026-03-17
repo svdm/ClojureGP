@@ -7,8 +7,8 @@
 ;; this software.
 
 (ns cljgp.random-test
-  (:use clojure.test
-        cljgp.random))
+  (:require [clojure.test :refer :all]
+            [cljgp.random :refer :all]))
 
 (deftest test-gp-rand
   (let [r (gp-rand)]

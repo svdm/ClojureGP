@@ -7,10 +7,10 @@
 ;; this software.
 
 (ns cljgp.generate-test
-  (:use clojure.test
-        cljgp.test-helpers
-        cljgp.generate
-        cljgp.util))
+  (:require [clojure.test :refer :all]
+            [cljgp.test-helpers :refer :all]
+            [cljgp.generate :refer :all]
+            [cljgp.util :refer :all]))
 
 
 (deftest test-generate-tree

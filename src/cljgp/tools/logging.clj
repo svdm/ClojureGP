@@ -31,9 +31,8 @@
     - print-best
     - log-stats
     - reduce-to-summary"
-  (:use cljgp.tools.analyse
-        cljgp.util)
-  (:require [clojure.pprint :as ppr])
+  (:require [cljgp.tools.analyse :refer [setup-stats-map get-stat]]
+            [clojure.pprint :as ppr])
   (:import [java.io Writer BufferedWriter FileWriter]))
 
 

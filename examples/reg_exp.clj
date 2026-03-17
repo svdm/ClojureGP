@@ -9,19 +9,17 @@
 
 (ns reg-exp
   "Example 02: evolving a solution to a simple regression problem."
-  (:require [cljgp.core :refer [generate-run]]
-            [cljgp.config :refer [prim
-                                  make-func-template]]
-            [cljgp.random :refer [gp-rand]]
-            [cljgp.util :refer [tree-depth]]
-            [cljgp.tools.logging :refer [print-stats
-                                         reduce-to-summary]]))
+  (:require [cljgp.core :as core]
+            [cljgp.config :as config :refer [prim]]
+            [cljgp.random :as random]
+            [cljgp.util :as util]
+            [cljgp.tools.logging :as log]))
 
 (defn test-reg-once
   "Evaluate the given function on a single result, returning the abs error."
   [func]
-  (let [x (double (gp-rand))
-        y (double (gp-rand))
+  (let [x (double (random/gp-rand))
+        y (double (random/gp-rand))
         target (+ 
                 (+ (* (* x x) (* y y)) (* (* x x) (* x x)))
                 (* x y))                ; z = x^2 * y^2 + x^4 + xy
@@ -39,14 +37,14 @@
 (def config-reg
      {
       ;; Some mathematical operators
-      :function-set [(prim `- {:gp-type Number 
-                               :gp-arg-types [Number Number]})
+      :function-set [(prim `- {:gp-type Number
+                                      :gp-arg-types [Number Number]})
 
-                     (prim `+ {:gp-type Number 
-                               :gp-arg-types [Number Number]})
+                     (prim `+ {:gp-type Number
+                                      :gp-arg-types [Number Number]})
 
-                     (prim `* {:gp-type Number 
-                               :gp-arg-types [Number Number]})]
+                     (prim `* {:gp-type Number
+                                      :gp-arg-types [Number Number]})]
 
       ;; The two variables in the equation
       :terminal-set [(prim 'x {:gp-type Number})
@@ -57,12 +55,12 @@
       :root-type Number
 
       ;; Basic template for a fn with our arguments
-      :func-template-fn (make-func-template '[x y])
+      :func-template-fn (config/make-func-template '[x y])
 
       :evaluation-fn evaluate-reg
 
       ;; Keep tree size sane
-      :validate-tree-fn #(< (tree-depth %) 10)
+      :validate-tree-fn #(< (util/tree-depth %) 10)
 
       :population-size 128
 
@@ -77,9 +75,9 @@
   ([]
      (run :basic))
   ([print-type]
-     (reduce-to-summary
-      (map #(print-stats print-type %)
-           (generate-run config-reg)))))
+     (log/reduce-to-summary
+      (map #(log/print-stats print-type %)
+           (core/generate-run config-reg)))))
 
 
 ;;; Uncomment the below with the QN Plot .jar in your classpath to try the

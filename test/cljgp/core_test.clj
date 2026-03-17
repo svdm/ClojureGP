@@ -7,10 +7,10 @@
 ;; this software.
 
 (ns cljgp.core-test
-  (:use clojure.test
-        cljgp.test-helpers
-        cljgp.core
-        [cljgp.generate :only [generate-pop]]))
+  (:require [clojure.test :refer :all]
+            [cljgp.test-helpers :refer :all]
+            [cljgp.core :refer :all]
+            [cljgp.generate :refer [generate-pop]]))
 
 (deftest test-evolve-future-generations
   (let [pop-size (:population-size config-maths)

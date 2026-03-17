@@ -8,8 +8,8 @@
 
 (ns cljgp.selection
   "Selection functions."
-  (:use cljgp.random
-        [cljgp.tools.analyse :only (best-fitness)]))
+  (:require [cljgp.random :as random]
+            [cljgp.tools.analyse :as analyse]))
 
 (defn tournament-select
   "Selects :size individuals from the given population 'pop and returns the one
@@ -17,6 +17,6 @@
   [{tsize :size, :or {tsize 7}} 
    pop]
   (let [pop-size (count pop)
-        competitors (take tsize 
-                          (repeatedly #(nth pop (gp-rand-int pop-size))))]
-    (best-fitness competitors)))
+        competitors (take tsize
+                          (repeatedly #(nth pop (random/gp-rand-int pop-size))))]
+    (analyse/best-fitness competitors)))
