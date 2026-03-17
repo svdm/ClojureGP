@@ -9,7 +9,7 @@ Usage
 -----
 
 Please refer to the included documentation and examples in the `./docs/` and
-`./examples/` directories. The docs are also available at <http://svdm.github.com/ClojureGP>.
+`./examples/` directories. The docs are also available at <http://svdm.github.io/ClojureGP/>.
 
 To see a basic genetic programming run in action, load one of the example
 experiments as follows, using a terminal/command prompt at the repository root:
@@ -32,7 +32,7 @@ To use ClojureGP as a git dependency in your `deps.edn` (see the
 [Clojure guide on git libraries](https://clojure.org/guides/deps_and_cli#_using_git_libraries)):
 
 ```clojure
-io.github.svdm/ClojureGP {:git/tag "v2.0.0" :git/sha "d609bb2"}
+io.github.svdm/ClojureGP {:git/tag "v2.0.0" :git/sha "f867199"}
 ```
 
 Dependencies
