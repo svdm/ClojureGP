@@ -80,16 +80,16 @@
            (core/generate-run config-reg)))))
 
 
-;;; Uncomment the below with the QN Plot .jar in your classpath to try the
-;;; simple plotting functionality, using run-graphed instead of run.
+;;; Use run-graphed for a live fitness plot. Requires the :graph alias:
+;;;   clojure -A:graph -i examples/reg_exp.clj --repl
 
 (comment
-  (use 'cljgp.extras.graph)
+  (require '[cljgp.extras.graph :as graph])
 
   (defn run-graphed
     []
-    (reduce-to-summary
-     (map print-stats
-          (map (create-fitness-plotter true)
-               (generate-run config-reg)))))
+    (log/reduce-to-summary
+     (map #(log/print-stats :basic %)
+          (map (graph/create-fitness-plotter true)
+               (core/generate-run config-reg)))))
 )

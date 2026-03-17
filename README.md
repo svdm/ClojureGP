@@ -29,18 +29,11 @@ This same example experiment is discussed in `./doc/reg_example.html`.
 Dependencies
 ------------
 
-ClojureGP only *requires* Clojure 1.3.0. For additional features such as
-plotting and improved random number generation, the QN Plot library and
-Uncommons Maths library are needed.
+ClojureGP only *requires* Clojure. Optional extras are available via aliases
+in `deps.edn`:
 
-Both Clojure and Uncommons Maths can be pulled in using Leiningen, via
-`lein deps`.
-
-QN Plot will have to be manually downloaded if you want to use the graphing
-features. It can be found at the following locations:
-
- - <http://quies.net/java/math/plot/>
- - <http://sourceforge.net/projects/qn-plot/>
+ - `:graph` — live fitness plotting using [XChart](https://knowm.org/open-source/xchart/)
+ - `:unc-math` — improved random number generation using [Uncommons Maths](https://maths.uncommons.org/)
 
 License
 -------
