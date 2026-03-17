@@ -14,17 +14,26 @@ Please refer to the included documentation and examples in the `./docs/` and
 To see a basic genetic programming run in action, load one of the example
 experiments as follows, using a terminal/command prompt at the repository root:
 
-    $ java -cp ./examples/;./src/;./lib/* clojure.main -i examples/reg_exp.clj --repl
+    $ clojure -M -i examples/reg_exp.clj --repl
 
 Then call the `run` function from the Clojure REPL:
 
-    Clojure 1.3.0
+    Clojure 1.12.4
     user=> (reg-exp/run)
 
 This same example experiment is discussed in `./docs/reg_example.md`.
 
-*NOTE:* On Linux versions of the JVM, replace the ; in the classpath with : (so
- semicolons to colons).
+Release Information
+-------------------
+
+Latest release: **v2.0.0**
+
+To use ClojureGP as a git dependency in your `deps.edn` (see the
+[Clojure guide on git libraries](https://clojure.org/guides/deps_and_cli#_using_git_libraries)):
+
+```clojure
+io.github.svdm/ClojureGP {:git/tag "v2.0.0" :git/sha "d609bb2"}
+```
 
 Dependencies
 ------------

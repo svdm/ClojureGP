@@ -386,18 +386,13 @@ an example of performing a run, we will look at running the **reg-exp** example
 experiment, which is virtually identical to the experiment we defined in this
 tutorial.
 
-From inside the **examples** directory, we run:
+From the repository root, we run:
 
 ```
-java -cp .;../src/;../lib/* clojure.main -i reg_exp.clj --repl
+clojure -M -i examples/reg_exp.clj --repl
 ```
 
-The ClojureGP source should be in **../src/** (relative to the examples
-directory), and the required .jar packages (**clojure.jar** and
-**clojure-contrib.jar** in this case) should be in **../lib/**.
-
-Assuming this is true and we do not need to fight the JVM over classpaths, we
-should get a REPL prompt with the **reg\_exp.clj** file already loaded. We can
+This should give us a REPL prompt with the **reg\_exp.clj** file already loaded. We can
 then simply run the experiment as follows:
 
 ```
@@ -461,3 +456,4 @@ tempted to take a look at the ClojureGP source to gain a deeper understanding.
 All functions are documented in a (hopefully) useful manner.
 
 [^end]: We left the [:end-condition-fn](./config_reference.md#end-condition-fn) at the default, which at the time of writing is max. 100 generations or an individual with a fitness extremely close to 0.
+
