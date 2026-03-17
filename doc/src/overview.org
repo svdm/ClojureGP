@@ -225,9 +225,10 @@ ClojureGP's functionality is subdivided into the following namespace structure:
   * *util* -- Various helper functions.
   * /tools/
     * *analyse* -- Statistics for use by logging et al.
-    * *graph* -- Example graphing implementation using [[http://quies.net/java/math/plot/][QN Plot]].
     * *logging* -- Logging to stdout and file.
-    * *unc-math-random* -- Example RNG replacement using [[https://uncommons-maths.dev.java.net/][Uncommons Maths]].
+  * /extras/ (optional, require =:unc-math= or =:graph= alias in =deps.edn=)
+    * *cljgp.extras.graph* -- Example graphing implementation using [[http://quies.net/java/math/plot/][QN Plot]].
+    * *cljgp.extras.unc-math-random* -- Example RNG replacement using [[https://uncommons-maths.dev.java.net/][Uncommons Maths]].
 
 [fn:gpfg] R. Poli, W.B. Langdon, N.F. McPhee, and J.R. Koza. @<em>[[http://www.gp-field-guide.org.uk/][A Field Guide to
 Genetic Programming]]@</em>, 2008.

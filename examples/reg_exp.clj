@@ -84,7 +84,7 @@
 ;;; simple plotting functionality, using run-graphed instead of run.
 
 (comment
-  (use 'cljgp.tools.graph)
+  (use 'cljgp.extras.graph)
 
   (defn run-graphed
     []
