@@ -14,24 +14,26 @@ Alternatively, open **examples/reg\_exp.clj** as included in the ClojureGP
 package and follow along there.
 
 It's good practice to keep an experiment in its own namespace, but this is not a
-technical requirement. Still, for this tutorial, let's do it properly:
+technical requirement.
 
 ```clojure
 (ns reg-exp
-  (:use [cljgp.core :only [generate-run]]
-        [cljgp.config :only [prim, make-func-template]]
-        [cljgp.random :only [gp-rand]]
-        [cljgp.util :only [tree-depth]]
-        [cljgp.tools.logging :only [print-stats, reduce-to-summary]]))
+  "Example 02: evolving a solution to a simple regression problem."
+  (:require [cljgp.core :as core]
+            [cljgp.config :as config :refer [prim]]
+            [cljgp.random :as random]
+            [cljgp.util :as util]
+            [cljgp.tools.logging :as log]))
 ```
 
-We will be using a few functions provided by ClojureGP, referenced explicitly
-here for clarity. Besides the core function that will generate our GP run, we
-grab two functions that will help in creating our experiment configuration from
-`cljgp.config`. As our evaluation will use random values, we need
-`cljgp.random/gp-rand`. Then there's `tree-depth`, which we will use in a tree
-validator function that will limit the size of the evolved expression
-trees. Lastly, two logging functions that will generate some useful output.
+We will be using a few functions provided by ClojureGP from the listed
+namespaces.  Besides the core function that will generate our GP run
+(`core/generate-run`), we use `config/make-func-template` and `prim` to help
+construct our experiment configuration. As our evaluation will use random
+values, we need `random/gp-rand`. Then there's `util/tree-depth`, which we will
+use in a tree validator function that will limit the size of the evolved
+expression trees. Lastly, two logging functions that will generate some useful
+output: `log/print-stats` and `log/reduce-to-summary`.
 
 ### Define an evaluation function
 
@@ -60,8 +62,8 @@ y` instance.
     (Math/abs (float (- target result)))))
 ```
 
-First we use `gp-rand` to generate our random `x` and `y`. It is important to
-use `gp-rand`, as it will be bound at runtime to a function that uses the
+First we use `random/gp-rand` to generate our random `x` and `y`. It is important to
+use `random/gp-rand`, as it will be bound at runtime to a function that uses the
 correct, thread-local, seeded RNG. This allows us to reproduce results and avoid
 bottlenecking multi-threaded performance on a single synchronised RNG.
 
@@ -260,9 +262,9 @@ function specified for that key will be used to check every tree that is
 generated. If it returns false, the tree is scrapped and a new one will be
 generated. This can be useful to prevent excessively large trees, and that is
 what we will use it for here. We simply define an anonymous function on the
-spot: `#(< (tree-depth %) 10)`. In other words: the depth of the given tree
-must be smaller than 10 levels. The `tree-depth` function comes from `cljgp.util`,
-which also has a `tree-size` function for example.
+spot: `#(< (util/tree-depth %) 10)`. In other words: the depth of the given tree
+must be smaller than 10 levels. The `util/tree-depth` function comes from `cljgp.util`,
+which also has a `util/tree-size` function for example.
 
 Next is the [:population-size](./config_reference.md#population-size). This
 value determines the number of individuals in the population, as you would
@@ -337,7 +339,7 @@ This hard work results in the following configuration:
 
 Many settings were left on their defaults, such as the functions that will be
 used to breed new individuals. When you generate a run from this configuration
-using `generate-run`, it will tell you about the keys that fell back to
+using `core/generate-run`, it will tell you about the keys that fell back to
 defaults, as we will see in a moment.
 
 ### Run the experiment
@@ -350,7 +352,7 @@ look at the output it generates.
 
 If you have read the [Overview](./overview.md), you may recall that performing a
 GP run in ClojureGP entails constructing a lazy seq of successive generations
-using `generate-run`, and then consuming it until the last generation is
+using `core/generate-run`, and then consuming it until the last generation is
 reached, which is the one for which the end condition has been
 reached.[^end]
 
@@ -361,17 +363,19 @@ interesting information on the way:
 ```clojure
 (defn run
   "Run experiment and print summary when done."
-  []
-  (reduce-to-summary
-   (map print-stats
-        (generate-run config-reg))))
+  ([]
+     (run :basic))
+  ([print-type]
+     (log/reduce-to-summary
+      (map #(log/print-stats print-type %)
+           (core/generate-run config-reg)))))
 ```
 
-Here `reduce-to-summary` consumes the sequence, tracking some statistics about
-the run as a whole, and printing the best individual at the end along with the
-stats. We also map `print-stats` over the sequence of generations, so that we
-get fitness statistics of each generation immediately after it has been
-generated. We leave out stuff like logging to a file for this example.
+Here `log/reduce-to-summary` consumes the sequence, tracking some statistics
+about the run as a whole, and printing the best individual at the end along
+with the stats. We also map `log/print-stats` over the sequence of generations,
+so that we get fitness statistics of each generation immediately after it has
+been generated. We leave out stuff like logging to a file for this example.
 
 At this point we are done defining things, and we can try running the
 experiment.
