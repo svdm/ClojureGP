@@ -1,1 +1,0 @@
-java -cp .;..;../src/;../lib/* clojure.main cljgp/test_all.clj
