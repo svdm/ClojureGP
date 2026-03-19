@@ -4,4 +4,8 @@ lib
 *.class
 classes
 *.jar
+target
+.cpcache
+.nrepl-*
+.DS_Store
 
